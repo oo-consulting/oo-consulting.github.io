@@ -1,10 +1,19 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>OO 컨설팅 | 회사 소개</title>
   <meta name="google-site-verification" content="google9c3f444d05c1610b" />
+
+  <script>
+    // Early theme boot to avoid FOUC
+    try {
+      const saved = localStorage.getItem('theme');
+      const pref = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', saved || pref);
+    } catch(e) {}
+  </script>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,61 +31,65 @@
     :root {
       --bg: #0b1020;
       --fg: #e7ecff;
+      --fg-soft: #c6cdeb;
       --muted: #8b93a7;
       --accent: #58c4ff;
       --accent-2: #7cffb2;
     }
+    :root[data-theme="light"] {
+      --bg: #f7f9ff;
+      --fg: #0b1020;
+      --fg-soft: #293042;
+      --muted: #4c5368;
+      --accent: #3e86ff;
+      --accent-2: #47e5a1;
+    }
     html { scroll-behavior: smooth; }
     body {
       font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-      background: radial-gradient(1200px 600px at 10% -10%, rgba(40,80,255,.15), transparent),
-                  radial-gradient(1000px 500px at 110% 10%, rgba(100,255,200,.12), transparent),
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(40,80,255,.12), transparent),
+                  radial-gradient(1000px 500px at 110% 10%, rgba(100,255,200,.10), transparent),
                   var(--bg);
       color: var(--fg);
       overflow-x: hidden;
     }
     .container-max { max-width: 1100px; }
+    .text-muted { color: var(--muted); }
+    .text-fg { color: var(--fg); }
+    .text-soft { color: var(--fg-soft); }
+
+    /* Top nav */
+    nav.topbar { position: sticky; top: 0; z-index: 40; backdrop-filter: blur(8px); }
+    nav.topbar .bar {
+      border: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    }
+    :root[data-theme="light"] nav.topbar .bar {
+      border: 1px solid rgba(0,0,0,.06);
+      background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.01));
+    }
 
     /* Canvas background */
-    #bg-canvas {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -1;
-      filter: contrast(105%) saturate(110%);
-    }
+    #bg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; filter: contrast(105%) saturate(110%); }
 
     /* Fancy cursor */
-    .cursor {
-      position: fixed; inset: 0 auto auto 0; transform: translate(-50%, -50%);
-      width: 18px; height: 18px; border-radius: 9999px;
-      background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2));
-      mix-blend-mode: screen; pointer-events: none; z-index: 50;
-      opacity: .8; transition: width .2s ease, height .2s ease, opacity .2s ease;
-    }
+    .cursor { position: fixed; inset: 0 auto auto 0; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 9999px; background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2)); mix-blend-mode: screen; pointer-events: none; z-index: 50; opacity: .8; transition: width .2s ease, height .2s ease, opacity .2s ease; }
     .cursor.-lg { width: 42px; height: 42px; opacity: .55; }
+    @media (prefers-reduced-motion: reduce) { .cursor { display: none; } }
+
+    /* Brand logo */
+    .brand svg { filter: drop-shadow(0 4px 12px rgba(88,196,255,.35)); }
 
     /* Hero */
-    .hero-gradient {
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
-      border: 1px solid rgba(255,255,255,.08);
-      backdrop-filter: blur(8px);
-    }
+    .hero-gradient { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0)); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(8px); }
+    :root[data-theme="light"] .hero-gradient { background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,0)); border: 1px solid rgba(0,0,0,.06); }
     .type-cycle > .active { color: var(--accent); }
 
     /* Cards */
-    .glass {
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border: 1px solid rgba(255,255,255,.08);
-      box-shadow: 0 20px 50px rgba(0,0,0,.35);
-    }
+    .glass { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 20px 50px rgba(0,0,0,.35); }
+    :root[data-theme="light"] .glass { background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.01)); border: 1px solid rgba(0,0,0,.06); box-shadow: 0 10px 30px rgba(0,0,0,.08); }
     .tilt-card { transform-style: preserve-3d; will-change: transform; }
-    .tilt-card .shine {
-      position: absolute; inset: 0; border-radius: 1rem; pointer-events: none;
-      background: radial-gradient(500px 200px at var(--mx,50%) var(--my,50%), rgba(255,255,255,.18), transparent 60%);
-      opacity: 0; transition: opacity .25s ease;
-    }
+    .tilt-card .shine { position: absolute; inset: 0; border-radius: 1rem; pointer-events: none; background: radial-gradient(500px 200px at var(--mx,50%) var(--my,50%), rgba(255,255,255,.18), transparent 60%); opacity: 0; transition: opacity .25s ease; }
     .tilt-card:hover .shine { opacity: 1; }
 
     /* Scroll progress */
@@ -88,10 +101,10 @@
     /* Magnetic CTA */
     .magnetic { will-change: transform; display: inline-flex; align-items: center; gap: .6rem; }
 
-    /* Reduce motion respect */
-    @media (prefers-reduced-motion: reduce) {
-      .cursor { display: none; }
-    }
+    /* Theme toggle icon visibility */
+    #themeToggle [data-icon="sun"] { display: none; }
+    :root[data-theme="light"] #themeToggle [data-icon="sun"] { display: inline; }
+    :root[data-theme="light"] #themeToggle [data-icon="moon"] { display: none; }
   </style>
 </head>
 <body class="antialiased leading-relaxed">
@@ -99,19 +112,58 @@
   <div class="progress" aria-hidden="true"></div>
   <div class="cursor" aria-hidden="true"></div>
 
+  <!-- Top bar -->
+  <nav class="topbar">
+    <div class="container-max mx-auto px-6 pt-4">
+      <div class="bar rounded-2xl px-5 py-3 flex items-center justify-between">
+        <a href="#" class="brand inline-flex items-center gap-3" aria-label="OO 컨설팅 홈">
+          <!-- Original inline SVG logo (orbit OO) -->
+          <svg width="36" height="36" viewBox="0 0 64 64" role="img" aria-hidden="true">
+            <title>OO Consulting Logo</title>
+            <defs>
+              <linearGradient id="gOO" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" style="stop-color: var(--accent)"/>
+                <stop offset="100%" style="stop-color: var(--accent-2)"/>
+              </linearGradient>
+            </defs>
+            <circle cx="24" cy="32" r="14" fill="none" stroke="url(#gOO)" stroke-width="4" opacity="0.95" />
+            <circle cx="40" cy="32" r="14" fill="none" stroke="url(#gOO)" stroke-width="4" opacity="0.6" />
+            <ellipse cx="32" cy="28" rx="26" ry="12" fill="none" stroke="url(#gOO)" stroke-width="1.6" opacity="0.55" />
+            <circle cx="46" cy="22" r="2.5" fill="url(#gOO)" />
+          </svg>
+          <span class="hidden sm:inline text-sm font-semibold text-soft">OO 컨설팅</span>
+        </a>
+        <div class="flex items-center gap-2">
+          <a href="#services" class="hidden sm:inline rounded-full px-4 py-2 text-sm font-medium border border-white/20 hover:bg-white/5 transition text-muted">서비스</a>
+          <a href="#portfolio" class="hidden sm:inline rounded-full px-4 py-2 text-sm font-medium border border-white/20 hover:bg-white/5 transition text-muted">포트폴리오</a>
+          <button id="themeToggle" class="rounded-full px-3.5 py-2 text-sm font-semibold border border-white/20 hover:bg-white/5 transition text-muted" aria-label="테마 전환">
+            <span data-icon="moon" aria-hidden="true">
+              <!-- Moon icon -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 12.76A8.5 8.5 0 1 1 11.24 3a7 7 0 1 0 9.76 9.76Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span data-icon="sun" aria-hidden="true">
+              <!-- Sun icon -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
   <!-- Hero -->
   <header class="relative">
-    <div class="container-max mx-auto px-6 pt-16 pb-8 sm:pt-24 sm:pb-14 lg:pt-28">
+    <div class="container-max mx-auto px-6 pt-12 pb-8 sm:pt-20 sm:pb-14 lg:pt-24">
       <div class="hero-gradient rounded-3xl p-8 sm:p-12 lg:p-16">
         <div class="flex flex-col items-center text-center gap-6">
-          <span class="inline-flex items-center gap-2 text-sm text-[color:var(--muted)]">
+          <span class="inline-flex items-center gap-2 text-sm text-muted">
             <span class="w-2 h-2 rounded-full" style="background:var(--accent)"></span>
             모바일 애플리케이션 개발 전문
           </span>
           <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight">
             <span class="block">OO 컨설팅</span>
           </h1>
-          <p class="type-cycle text-base sm:text-lg text-[color:var(--muted)]">
+          <p class="type-cycle text-base sm:text-lg text-muted">
             <span class="cycle-item active">유지보수 · 고도화</span>
             <span class="cycle-item hidden">품질 · 성능 최적화</span>
             <span class="cycle-item hidden">안정적인 배포 파이프라인</span>
@@ -121,7 +173,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="opacity-80"><path d="M4 8l8 5 8-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               문의하기
             </a>
-            <a href="#about" class="rounded-full px-5 py-3 text-sm font-semibold text-white/90 border border-white/20 hover:bg-white/5 transition">회사 소개 보기</a>
+            <a href="#services" class="rounded-full px-5 py-3 text-sm font-semibold border border-white/20 hover:bg-white/5 transition text-fg">서비스 보기</a>
           </div>
         </div>
       </div>
@@ -134,10 +186,99 @@
       <div class="glass rounded-2xl p-6 sm:p-10 tilt-card relative">
         <div class="shine" aria-hidden="true"></div>
         <h2 class="text-2xl sm:text-3xl font-bold mb-4">회사 소개</h2>
-        <p class="text-white/80 leading-7">
+        <p class="text-soft leading-7">
           OO 컨설팅은 모바일 애플리케이션 개발에 특화된 팀입니다. 고객의 목표 달성을 위해 설계부터 개발, 테스트, 배포, 유지보수까지
           전 과정을 책임지고 수행하며, 성능과 안정성을 최우선으로 생각합니다.
         </p>
+      </div>
+    </section>
+
+    <!-- Services -->
+    <section id="services" class="container-max mx-auto px-6 py-6 sm:py-8 lg:py-10">
+      <h2 class="text-2xl sm:text-3xl font-bold mb-6">서비스</h2>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- App Development -->
+        <article class="glass rounded-2xl p-6 tilt-card relative">
+          <div class="shine" aria-hidden="true"></div>
+          <div class="h-10 w-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="3" stroke="white" stroke-width="1.7"/><circle cx="12" cy="17" r="1.2" fill="white"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-lg">모바일 앱 개발</h3>
+          <p class="text-sm text-muted mt-1">iOS/Android 네이티브 및 크로스 플랫폼 설계·개발.</p>
+        </article>
+        <!-- Maintenance -->
+        <article class="glass rounded-2xl p-6 tilt-card relative">
+          <div class="shine" aria-hidden="true"></div>
+          <div class="h-10 w-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11l9-7 9 7v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-7Z" stroke="white" stroke-width="1.7"/><path d="M9 21v-6h6v6" stroke="white" stroke-width="1.7"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-lg">유지보수/고도화</h3>
+          <p class="text-sm text-muted mt-1">레거시 개선, 신규 기능 추가, 안정성 향상.</p>
+        </article>
+        <!-- Performance -->
+        <article class="glass rounded-2xl p-6 tilt-card relative">
+          <div class="shine" aria-hidden="true"></div>
+          <div class="h-10 w-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20a8 8 0 1 0-8-8" stroke="white" stroke-width="1.7"/><path d="M12 12l5-2" stroke="white" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-lg">성능 최적화</h3>
+          <p class="text-sm text-muted mt-1">프레임·메모리·배터리 최적화, 스타트업 타임 단축.</p>
+        </article>
+        <!-- Security/CI -->
+        <article class="glass rounded-2xl p-6 tilt-card relative">
+          <div class="shine" aria-hidden="true"></div>
+          <div class="h-10 w-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-3Z" stroke="white" stroke-width="1.7"/><path d="M7 15h10" stroke="white" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="mt-4 font-semibold text-lg">보안/배포</h3>
+          <p class="text-sm text-muted mt-1">보안 점검, 서명·배포 자동화, 릴리즈 파이프라인.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Portfolio -->
+    <section id="portfolio" class="container-max mx-auto px-6 py-6 sm:py-8 lg:py-10">
+      <h2 class="text-2xl sm:text-3xl font-bold mb-6">포트폴리오</h2>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Project Card 1 -->
+        <article class="glass rounded-2xl overflow-hidden tilt-card relative">
+          <div class="shine" aria-hidden="true"></div>
+          <div class="h-36" style="background:linear-gradient(135deg, rgba(88,196,255,.25), rgba(124,255,178,.18));"></div>
+          <div class="p-5">
+            <h3 class="font-semibold">Project A</h3>
+            <p class="text-sm text-muted mt-1">크로스 플랫폼 앱 리디자인 및 성능 2배 향상.</p>
+            <div class="mt-3 flex flex-wrap gap-2 text-xs text-muted">
+              <span class="px-2 py-1 rounded-full border border-white/15">Flutter</span>
+              <span class="px-2 py-1 rounded-full border border-white/15">CI/CD</span>
+            </div>
+          </div>
+        </article>
+        <!-- Project Card 2 -->
+        <article class="glass rounded-2xl overflow-hidden tilt-card relative">
+          <div class="shine" aria-hidden="true"></div>
+          <div class="h-36" style="background:linear-gradient(135deg, rgba(124,255,178,.25), rgba(88,196,255,.18));"></div>
+          <div class="p-5">
+            <h3 class="font-semibold">Project B</h3>
+            <p class="text-sm text-muted mt-1">네이티브 센서 처리 고도화, 배터리 사용 30% 절감.</p>
+            <div class="mt-3 flex flex-wrap gap-2 text-xs text-muted">
+              <span class="px-2 py-1 rounded-full border border-white/15">Android</span>
+              <span class="px-2 py-1 rounded-full border border-white/15">iOS</span>
+            </div>
+          </div>
+        </article>
+        <!-- Project Card 3 -->
+        <article class="glass rounded-2xl overflow-hidden tilt-card relative">
+          <div class="shine" aria-hidden="true"></div>
+          <div class="h-36" style="background:linear-gradient(135deg, rgba(88,196,255,.28), rgba(35,60,120,.18));"></div>
+          <div class="p-5">
+            <h3 class="font-semibold">Project C</h3>
+            <p class="text-sm text-muted mt-1">보안 점검 및 배포 자동화 파이프라인 구축.</p>
+            <div class="mt-3 flex flex-wrap gap-2 text-xs text-muted">
+              <span class="px-2 py-1 rounded-full border border-white/15">Security</span>
+              <span class="px-2 py-1 rounded-full border border-white/15">DevOps</span>
+            </div>
+          </div>
+        </article>
       </div>
     </section>
 
@@ -148,8 +289,8 @@
         <article class="glass rounded-2xl p-6 sm:p-8 tilt-card relative">
           <div class="shine" aria-hidden="true"></div>
           <h3 class="text-xl sm:text-2xl font-bold mb-2">개인정보 처리방침 (국문)</h3>
-          <p class="text-sm text-white/60 mb-4">시행일: 2025-09-06</p>
-          <div class="policy-content text-sm text-white/85 space-y-4 pr-1">
+          <p class="text-sm text-muted mb-4">시행일: 2025-09-06</p>
+          <div class="policy-content text-sm text-soft space-y-4 pr-1">
             <p>본 방침은 OO 컨설팅이 제공하는 모바일 고도계 애플리케이션(이하 “애플리케이션”)에 적용됩니다. 서비스는 “있는 그대로(as-is)” 제공됩니다.</p>
             <h4 class="text-base font-semibold mt-4">수집 항목 및 이용 목적</h4>
             <p>애플리케이션은 고도 계산 및 표시 기능 제공을 위해 아래 항목을 기기 내에서만 처리합니다.</p>
@@ -170,8 +311,8 @@
         <article class="glass rounded-2xl p-6 sm:p-8 tilt-card relative">
           <div class="shine" aria-hidden="true"></div>
           <h3 class="text-xl sm:text-2xl font-bold mb-2">Privacy Policy (English)</h3>
-          <p class="text-sm text-white/60 mb-4">Effective Date: September 6, 2025</p>
-          <div class="policy-content text-sm text-white/85 space-y-4 pr-1">
+          <p class="text-sm text-muted mb-4">Effective Date: September 6, 2025</p>
+          <div class="policy-content text-sm text-soft space-y-4 pr-1">
             <p>This Policy applies to the mobile altimeter application (the "Application") provided by OO Consulting. The service is provided on an "as-is" basis.</p>
             <h4 class="text-base font-semibold mt-4">Information Collection and Use</h4>
             <p>The Application processes data locally on your device solely to calculate and display altitude:</p>
@@ -193,7 +334,7 @@
     </section>
   </main>
 
-  <footer class="container-max mx-auto px-6 pb-12 text-center text-sm text-white/60">
+  <footer class="container-max mx-auto px-6 pb-12 text-center text-sm text-muted">
     &copy; 2025 OO Consulting. All rights reserved.
   </footer>
 
@@ -202,96 +343,79 @@
   <script>
     // Utils
     const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+    const getCSSVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const hexToRgb = (hex) => {
+      const h = hex.replace('#','').trim();
+      if (/^[0-9a-fA-F]{3}$/.test(h)) {
+        const r = parseInt(h[0]+h[0],16), g = parseInt(h[1]+h[1],16), b = parseInt(h[2]+h[2],16); return {r,g,b};
+      }
+      if (/^[0-9a-fA-F]{6}$/.test(h)) {
+        return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
+      }
+      return { r: 88, g: 196, b: 255 }; // fallback
+    };
 
-    // Animated background (particles + links)
+    // Theme toggle
+    (function(){
+      const btn = document.getElementById('themeToggle');
+      function current() { return document.documentElement.getAttribute('data-theme') || 'dark'; }
+      function setTheme(t) { document.documentElement.setAttribute('data-theme', t); try { localStorage.setItem('theme', t); } catch(e) {} document.dispatchEvent(new CustomEvent('themechange', { detail: t })); }
+      btn.addEventListener('click', () => setTheme(current() === 'light' ? 'dark' : 'light'));
+    })();
+
+    // Animated background (particles + links) with theme colors
     (function() {
       const c = document.getElementById('bg-canvas');
       const ctx = c.getContext('2d');
       let dpr = Math.max(1, window.devicePixelRatio || 1);
-      let w, h; let particles = []; const COUNT = 80;
-      const R = 2.2; const LINK_DIST = 140; const SPEED = .35;
-      function resize() {
-        w = c.clientWidth; h = c.clientHeight;
-        c.width = Math.floor(w * dpr); c.height = Math.floor(h * dpr);
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      }
+      let w, h; let particles = []; const COUNT = 80; const R = 2.2; const LINK_DIST = 140; const SPEED = .35;
+      let colors = { a: hexToRgb(getCSSVar('--accent')), b: hexToRgb(getCSSVar('--accent-2')) };
+      function resize() { w = c.clientWidth; h = c.clientHeight; c.width = Math.floor(w * dpr); c.height = Math.floor(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
       window.addEventListener('resize', resize, { passive: true }); resize();
-      function spawn() {
-        particles = Array.from({length: COUNT}, () => ({
-          x: Math.random()*w,
-          y: Math.random()*h,
-          vx: (Math.random()-.5)*SPEED,
-          vy: (Math.random()-.5)*SPEED
-        }));
-      }
+      function spawn() { particles = Array.from({length: COUNT}, () => ({ x: Math.random()*w, y: Math.random()*h, vx: (Math.random()-.5)*SPEED, vy: (Math.random()-.5)*SPEED })); }
       spawn();
+      function rgba(c, a) { return `rgba(${c.r}, ${c.g}, ${c.b}, ${a})`; }
       function step() {
         ctx.clearRect(0,0,w,h);
-        // subtle vignette
+        // subtle vignette using accent
         const g = ctx.createRadialGradient(w*0.5,h*0.2,0,w*0.5,h*0.2,w*0.9);
-        g.addColorStop(0,'rgba(88,196,255,0.05)'); g.addColorStop(1,'rgba(0,0,0,0)');
+        g.addColorStop(0, rgba(colors.a, 0.06)); g.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
-        for (let p of particles) {
-          p.x += p.vx; p.y += p.vy;
-          if (p.x < -50 || p.x > w+50) p.vx *= -1;
-          if (p.y < -50 || p.y > h+50) p.vy *= -1;
-        }
+        for (let p of particles) { p.x += p.vx; p.y += p.vy; if (p.x < -50 || p.x > w+50) p.vx *= -1; if (p.y < -50 || p.y > h+50) p.vy *= -1; }
         // links
-        ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(124,255,178,0.25)';
+        ctx.lineWidth = 1;
         for (let i=0;i<particles.length;i++){
           const p = particles[i];
           for (let j=i+1;j<particles.length;j++){
-            const q = particles[j];
-            const dx = p.x-q.x, dy = p.y-q.y; const dist = Math.hypot(dx,dy);
-            if (dist < LINK_DIST) {
-              const alpha = (1 - dist / LINK_DIST) * 0.5;
-              ctx.strokeStyle = `rgba(124,255,178,${alpha})`;
-              ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
-            }
+            const q = particles[j]; const dx = p.x-q.x, dy = p.y-q.y; const dist = Math.hypot(dx,dy);
+            if (dist < LINK_DIST) { const alpha = (1 - dist / LINK_DIST) * 0.45; ctx.strokeStyle = rgba(colors.b, alpha); ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke(); }
           }
         }
         // points
-        for (let p of particles){
-          ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, Math.PI*2);
-          ctx.fillStyle = 'rgba(88,196,255,0.85)'; ctx.fill();
-        }
+        for (let p of particles){ ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, Math.PI*2); ctx.fillStyle = rgba(colors.a, 0.85); ctx.fill(); }
         requestAnimationFrame(step);
       }
       requestAnimationFrame(step);
+      document.addEventListener('themechange', () => { colors = { a: hexToRgb(getCSSVar('--accent')), b: hexToRgb(getCSSVar('--accent-2')) }; });
     })();
 
     // Text cycle in hero
     (function() {
       const items = Array.from(document.querySelectorAll('.type-cycle .cycle-item'));
       if (!items.length) return;
-      let i = 0; setInterval(() => {
-        items.forEach(el => el.classList.add('hidden'));
-        i = (i+1) % items.length;
-        items[i].classList.remove('hidden');
-      }, 2200);
+      let i = 0; setInterval(() => { items.forEach(el => el.classList.add('hidden')); i = (i+1) % items.length; items[i].classList.remove('hidden'); }, 2200);
     })();
 
     // Cursor follower + magnetic effect
     (function(){
       const cursor = document.querySelector('.cursor');
       let x = 0, y = 0, tx = 0, ty = 0;
-      function raf(){
-        x += (tx - x) * 0.18; y += (ty - y) * 0.18;
-        cursor.style.transform = `translate(${x}px, ${y}px)`;
-        requestAnimationFrame(raf);
-      }
+      function raf(){ x += (tx - x) * 0.18; y += (ty - y) * 0.18; cursor.style.transform = `translate(${x}px, ${y}px)`; requestAnimationFrame(raf); }
       window.addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; }, { passive: true });
       raf();
-      // Magnetic
       for (const m of document.querySelectorAll('.magnetic')){
         const strength = 18;
-        m.addEventListener('pointermove', e => {
-          const r = m.getBoundingClientRect();
-          const mx = e.clientX - r.left - r.width/2;
-          const my = e.clientY - r.top - r.height/2;
-          m.style.transform = `translate(${mx/strength}px, ${my/strength}px)`;
-          cursor.classList.add('-lg');
-        });
+        m.addEventListener('pointermove', e => { const r = m.getBoundingClientRect(); const mx = e.clientX - r.left - r.width/2; const my = e.clientY - r.top - r.height/2; m.style.transform = `translate(${mx/strength}px, ${my/strength}px)`; cursor.classList.add('-lg'); });
         m.addEventListener('pointerleave', () => { m.style.transform = ''; cursor.classList.remove('-lg'); });
       }
     })();
@@ -301,16 +425,7 @@
       const cards = document.querySelectorAll('.tilt-card');
       cards.forEach(card => {
         const max = 8; // degrees
-        card.addEventListener('pointermove', e => {
-          const r = card.getBoundingClientRect();
-          const px = (e.clientX - r.left) / r.width; // 0..1
-          const py = (e.clientY - r.top) / r.height; // 0..1
-          const rx = (py - .5) * -max;
-          const ry = (px - .5) * max;
-          card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
-          card.style.setProperty('--mx', `${px*100}%`);
-          card.style.setProperty('--my', `${py*100}%`);
-        });
+        card.addEventListener('pointermove', e => { const r = card.getBoundingClientRect(); const px = (e.clientX - r.left) / r.width; const py = (e.clientY - r.top) / r.height; const rx = (py - .5) * -max; const ry = (px - .5) * max; card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`; card.style.setProperty('--mx', `${px*100}%`); card.style.setProperty('--my', `${py*100}%`); });
         card.addEventListener('pointerleave', () => { card.style.transform = ''; });
       });
     })();
@@ -319,32 +434,16 @@
     (function(){
       const bar = document.querySelector('.progress');
       const btn = document.getElementById('backToTop');
-      function onScroll(){
-        const s = window.scrollY;
-        const h = document.body.scrollHeight - innerHeight;
-        const p = clamp(h > 0 ? s/h : 0, 0, 1);
-        bar.style.width = `${p*100}%`;
-        if (s > innerHeight * 0.6) {
-          btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
-        } else {
-          btn.style.opacity = '0'; btn.style.pointerEvents = 'none';
-        }
-      }
+      function onScroll(){ const s = window.scrollY; const h = document.body.scrollHeight - innerHeight; const p = clamp(h > 0 ? s/h : 0, 0, 1); bar.style.width = `${p*100}%`; if (s > innerHeight * 0.6) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; } else { btn.style.opacity = '0'; btn.style.pointerEvents = 'none'; } }
       window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
       btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     })();
 
-    // GSAP entrance + scroll reveals (progressive enhancement)
+    // GSAP entrance + scroll reveals
     window.addEventListener('load', () => {
-      if (!window.gsap) return;
-      const { gsap } = window; if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+      if (!window.gsap) return; const { gsap } = window; if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
       gsap.from('header .hero-gradient', { y: 20, autoAlpha: 0, duration: 0.8, ease: 'power2.out' });
-      gsap.utils.toArray('.tilt-card').forEach((el, i) => {
-        gsap.from(el, {
-          y: 30, autoAlpha: 0, duration: 0.7, ease: 'power2.out', delay: i*0.05,
-          scrollTrigger: { trigger: el, start: 'top 85%' }
-        });
-      });
+      gsap.utils.toArray('.tilt-card').forEach((el, i) => { gsap.from(el, { y: 30, autoAlpha: 0, duration: 0.7, ease: 'power2.out', delay: i*0.05, scrollTrigger: { trigger: el, start: 'top 85%' } }); });
     });
   </script>
 </body>
