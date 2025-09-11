@@ -78,7 +78,9 @@
     @media (prefers-reduced-motion: reduce) { .cursor { display: none; } }
 
     /* Brand logo */
-    .brand svg { filter: drop-shadow(0 4px 12px rgba(88,196,255,.35)); }
+    .brand .logo { filter: drop-shadow(0 4px 12px rgba(88,196,255,.35)); }
+    .brand svg { display: none; }
+    :root[data-theme="light"] .brand .logo { filter: drop-shadow(0 0 1px rgba(0,0,0,.35)) drop-shadow(0 0 8px rgba(0,0,0,.12)); }
 
     /* Hero */
     .hero-gradient { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0)); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(8px); }
@@ -117,6 +119,8 @@
     <div class="container-max mx-auto px-6 pt-4">
       <div class="bar rounded-2xl px-5 py-3 flex items-center justify-between">
         <a href="#" class="brand inline-flex items-center gap-3" aria-label="OO 컨설팅 홈">
+          <!-- External logo image -->
+          <img src="assets/logo.png" alt="WRSoft 로고" class="logo h-7 sm:h-8" />
           <!-- Original inline SVG logo (orbit OO) -->
           <svg width="36" height="36" viewBox="0 0 64 64" role="img" aria-hidden="true">
             <title>우리소프트 Logo</title>
