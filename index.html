@@ -409,6 +409,8 @@
           precision mediump float;
           uniform vec2 u_res; uniform float u_time;
           uniform vec3 u_skyTop; uniform vec3 u_skyBot; uniform vec3 u_star; uniform vec3 u_milk;
+          uniform float u_layerMult; // apparent star density multiplier
+          uniform float u_meteorMult; // meteor frequency/intensity multiplier
 
           float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }
           float noise(vec2 p){ vec2 i=floor(p), f=fract(p); float a=hash(i); float b=hash(i+vec2(1.,0.)); float c=hash(i+vec2(0.,1.)); float d=hash(i+vec2(1.,1.)); vec2 u=f*f*(3.-2.*f); return mix(a,b,u.x)+(c-a)*u.y*(1.-u.x)+(d-b)*u.x*u.y; }
@@ -469,7 +471,7 @@
             s += starLayer(rot(-0.15) * p, 18.0) * 0.65;
             s += starLayer(rot(0.40) * p, 26.0) * 0.5;
 
-            vec3 stars = u_star * (0.10 + 1.5*s);
+            vec3 stars = u_star * (0.10 + 1.5*s*u_layerMult);
             col += stars;
 
             // Meteors (shooting stars) – more frequent
@@ -479,7 +481,7 @@
             m += 0.6 * meteorAt(p, 9.1);
             m += 0.5 * meteorAt(p, 12.3);
             m += 0.4 * meteorAt(p, 15.7);
-            col += u_star * (0.8*m) + u_milk * (0.4*m);
+            col += u_star * (0.8*m*u_meteorMult) + u_milk * (0.4*m*u_meteorMult);
 
             gl_FragColor = vec4(col, 1.0);
           }
@@ -500,14 +502,43 @@
         const uSkyB = gl.getUniformLocation(prog,'u_skyBot');
         const uStar = gl.getUniformLocation(prog,'u_star');
         const uMilk = gl.getUniformLocation(prog,'u_milk');
+        const uLayerMult = gl.getUniformLocation(prog,'u_layerMult');
+        const uMeteorMult = gl.getUniformLocation(prog,'u_meteorMult');
 
         function setColors(){ gl.uniform3fv(uSkyT, new Float32Array(skyTop())); gl.uniform3fv(uSkyB, new Float32Array(skyBot())); gl.uniform3fv(uStar, new Float32Array(starTint())); gl.uniform3fv(uMilk, new Float32Array(milkTint())); }
         function resize(){ const w=Math.floor(canvas.clientWidth*dpr), h=Math.floor(canvas.clientHeight*dpr); canvas.width=w; canvas.height=h; gl.viewport(0,0,w,h); gl.uniform2f(uRes,w,h); }
         window.addEventListener('resize', resize, { passive:true }); resize();
         setColors(); document.addEventListener('themechange', setColors);
+
+        // Density ramp controller (day mode only)
+        let densityScale = 1.0; // 1..3
+        let cycle = 'idle';
+        let t0 = 0;
+        const grow = 8000, hold = 4000, decay = 8000; // ms
+        function resetCycle(){ densityScale = 1.0; cycle = 'idle'; }
+        function startCycle(){ cycle = 'grow'; t0 = performance.now(); }
+        function onTheme(){ const th = (document.documentElement.getAttribute('data-theme')||'dark'); if (th === 'light') startCycle(); else resetCycle(); }
+        document.addEventListener('themechange', onTheme);
+        onTheme();
         gl.clearColor(0,0,0,0);
         const start = performance.now();
-        function raf(t){ gl.clear(gl.COLOR_BUFFER_BIT); gl.uniform1f(uTime, (t-start)/1000); gl.drawArrays(gl.TRIANGLES,0,3); requestAnimationFrame(raf); }
+        function raf(t){
+          if (cycle === 'grow'){
+            const p = Math.min(1, (t - t0)/grow); densityScale = 1 + 2*p; if (p >= 1){ cycle = 'hold'; t0 = t; }
+          } else if (cycle === 'hold'){
+            if (t - t0 > hold){ cycle = 'decay'; t0 = t; }
+          } else if (cycle === 'decay'){
+            const p = Math.min(1, (t - t0)/decay); densityScale = 3 - 2*p; if (p >= 1){ cycle = 'idle'; densityScale = 1; }
+          }
+          const layerMult = densityScale;
+          const meteorMult = 1.0 + 0.8*(densityScale - 1.0);
+          gl.uniform1f(uLayerMult, layerMult);
+          gl.uniform1f(uMeteorMult, meteorMult);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.uniform1f(uTime, (t-start)/1000);
+          gl.drawArrays(gl.TRIANGLES,0,3);
+          requestAnimationFrame(raf);
+        }
         requestAnimationFrame(raf);
         return;
       }
@@ -532,6 +563,7 @@
         }
       }
       seed();
+      let BASE_COUNT = stars.length;
 
       // Meteors
       const meteors = [];
@@ -549,11 +581,35 @@
         nextMeteorAt = time + 1000 + Math.random()*1200;
       }
 
+      // Density ramp controller (day mode only)
+      let densityScale = 1.0; // 1..3
+      let cycle = 'idle';
+      let t0 = 0; const grow=8000, hold=4000, decay=8000; // ms
+      function resetCycle(){ densityScale=1.0; cycle='idle'; }
+      function startCycle(){ cycle='grow'; t0=time; }
+      document.addEventListener('themechange', () => { const th=(document.documentElement.getAttribute('data-theme')||'dark'); if (th==='light'){ startCycle(); } else { resetCycle(); } });
+
       let time=0; function draw(){
         // sky
         const st=skyTop(), sb=skyBot();
         const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,`rgb(${st.map(v=>Math.round(v*255)).join(',')})`); g.addColorStop(1,`rgb(${sb.map(v=>Math.round(v*255)).join(',')})`); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-        if (needsReseed) { seed(); needsReseed = false; }
+        if (needsReseed) { seed(); BASE_COUNT = stars.length; needsReseed = false; }
+
+        // density cycle update + star count adjust
+        if (cycle === 'grow'){
+          const p = Math.min(1, (time - t0)/grow); densityScale = 1 + 2*p; if (p>=1){ cycle='hold'; t0=time; }
+        } else if (cycle === 'hold'){
+          if (time - t0 > hold){ cycle='decay'; t0=time; }
+        } else if (cycle === 'decay'){
+          const p = Math.min(1, (time - t0)/decay); densityScale = 3 - 2*p; if (p>=1){ cycle='idle'; densityScale=1; }
+        }
+        const target = Math.floor(BASE_COUNT * densityScale);
+        if (stars.length < target){
+          const add = Math.min(50, target - stars.length);
+          for(let i=0;i<add;i++){ const x=rand()*W, y=rand()*H; stars.push({ x, y, r: 1.2 + 2.6*Math.pow(rand(),2), spd: 0.6+1.3*rand(), ph: rand()*Math.PI*2 }); }
+        } else if (stars.length > target){
+          stars.splice(target, Math.min(50, stars.length - target));
+        }
 
         // stars
         ctx.globalCompositeOperation='lighter';
@@ -563,8 +619,7 @@
 
         // meteors
         if (time > nextMeteorAt) spawnMeteor();
-        // occasional extra meteor to increase frequency (mobile too)
-        if (Math.random() < 0.005) spawnMeteor();
+        if (Math.random() < 0.003 * densityScale) spawnMeteor();
         for (let i=meteors.length-1; i>=0; i--){
           const m = meteors[i];
           const ph = (time - m.start) / m.dur;
