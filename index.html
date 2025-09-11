@@ -446,10 +446,10 @@
 
             // Starfield: multi-scale, rotated layers with jitter (no grid lines)
             float s = 0.0;
-            s += starLayer(rot(0.17) * p, 8.0);
-            s += starLayer(rot(0.51) * p, 12.0) * 0.8;
-            s += starLayer(rot(-0.37) * p, 18.0) * 0.65;
-            s += starLayer(rot(0.93) * p, 26.0) * 0.5;
+            s += starLayer(rot(0.5) * p, 8.0);
+            s += starLayer(rot(0.20) * p, 12.0) * 0.8;
+            s += starLayer(rot(-0.15) * p, 18.0) * 0.65;
+            s += starLayer(rot(0.40) * p, 26.0) * 0.5;
 
             // uniform random distribution (avoid band-driven alignment)
             // s remains unmodulated by band density
