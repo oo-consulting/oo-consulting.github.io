@@ -79,7 +79,8 @@
 
     /* Brand logo */
     .brand .logo { filter: drop-shadow(0 4px 12px rgba(88,196,255,.35)); }
-    .brand svg { display: none; }
+    .brand > span { display: none; }
+    .brand svg[viewBox="0 0 64 64"] { display: none; }
     :root[data-theme="light"] .brand .logo { filter: drop-shadow(0 0 1px rgba(0,0,0,.35)) drop-shadow(0 0 8px rgba(0,0,0,.12)); }
 
     /* Hero */
@@ -119,8 +120,26 @@
     <div class="container-max mx-auto px-6 pt-4">
       <div class="bar rounded-2xl px-5 py-3 flex items-center justify-between">
         <a href="#" class="brand inline-flex items-center gap-3" aria-label="OO 컨설팅 홈">
-          <!-- External logo image -->
-          <img src="assets/logo.png" alt="WRSoft 로고" class="logo h-7 sm:h-8" />
+          
+          <!-- Brand wordmark in SVG -->
+          <svg class="wordmark h-7 sm:h-8" viewBox="0 0 260 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="(주)오심폴">
+            <title>(주)오심폴</title>
+            <defs>
+              <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="var(--accent)"/>
+                <stop offset="100%" stop-color="var(--accent-2)"/>
+              </linearGradient>
+              <filter id="softGlow" x="-20%" y="-50%" width="140%" height="200%" color-interpolation-filters="sRGB">
+                <feGaussianBlur stdDeviation="1.2" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <circle cx="14" cy="12" r="3" fill="url(#brandGrad)" opacity="0.95"/>
+            <text x="28" y="27" font-size="22" font-weight="800" font-family="'Noto Sans KR','Malgun Gothic','Inter',system-ui,sans-serif" fill="url(#brandGrad)" filter="url(#softGlow)">(주)오심폴</text>
+          </svg>
           <!-- Original inline SVG logo (orbit OO) -->
           <svg width="36" height="36" viewBox="0 0 64 64" role="img" aria-hidden="true">
             <title>(주)오심폴 Logo</title>
@@ -319,7 +338,7 @@
           <h3 class="text-xl sm:text-2xl font-bold mb-2">Privacy Policy (English)</h3>
           <p class="text-sm text-muted mb-4">Effective Date: September 6, 2025</p>
           <div class="policy-content text-sm text-soft space-y-4 pr-1">
-            <p>This Policy applies to the mobile altimeter application (the "Application") provided by OO Consulting. The service is provided on an "as-is" basis.</p>
+            <p>This Policy applies to the mobile altimeter application (the "Application") provided by (주)오심폴. The service is provided on an "as-is" basis.</p>
             <h4 class="text-base font-semibold mt-4">Information Collection and Use</h4>
             <p>The Application processes data locally on your device solely to calculate and display altitude:</p>
             <ul class="list-disc pl-5 space-y-1">
@@ -341,7 +360,7 @@
   </main>
 
   <footer class="container-max mx-auto px-6 pb-12 text-center text-sm text-muted">
-    &copy; 2025 OO Consulting. All rights reserved.
+    &copy; 2025 (주)오심폴. All rights reserved.
   </footer>
 
   <button id="backToTop" aria-label="맨 위로" class="fixed bottom-5 right-5 rounded-full px-4 py-3 text-sm font-semibold text-black bg-white shadow-lg border border-white/20 opacity-0 pointer-events-none transition">Top</button>
