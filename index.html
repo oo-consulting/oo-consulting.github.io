@@ -388,151 +388,130 @@
       btn.addEventListener('click', () => setTheme(current() === 'light' ? 'dark' : 'light'));
     })();
 
-    // New Animated Background: Domain-warped gradient (WebGL) with Canvas2D fallback
+    // Cloud Background: billowy cumulus over a clear sky (WebGL) + Canvas2D fallback
     (function() {
       const canvas = document.getElementById('bg-canvas');
       let dpr = Math.max(1, window.devicePixelRatio || 1);
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      function cssRgb01(name){
-        const c = hexToRgb(getCSSVar(name));
-        return [c.r/255, c.g/255, c.b/255];
-      }
+      function theme() { return document.documentElement.getAttribute('data-theme') || 'dark'; }
+      function skyTop()   { return theme()==='light' ? [0.58, 0.78, 0.98] : [0.06, 0.12, 0.22]; }
+      function skyBottom(){ return theme()==='light' ? [0.74, 0.88, 0.99] : [0.10, 0.18, 0.30]; }
+      function cloudCol() { return theme()==='light' ? [1.00, 1.00, 1.00] : [0.95, 0.97, 1.00]; }
 
-      // Try WebGL for a silky, semi-transparent flowing field
+      // WebGL shader-based clouds
       const gl = canvas.getContext('webgl', { alpha: true, antialias: true });
       if (gl && !prefersReduced) {
         const vertSrc = `
-          attribute vec2 a_pos;
-          void main(){ gl_Position = vec4(a_pos, 0.0, 1.0); }
+          attribute vec2 a_pos; void main(){ gl_Position = vec4(a_pos, 0.0, 1.0); }
         `;
         const fragSrc = `
           precision mediump float;
-          uniform vec2 u_res;
-          uniform float u_time;
-          uniform vec3 u_colA;
-          uniform vec3 u_colB;
+          uniform vec2 u_res; uniform float u_time;
+          uniform vec3 u_skyTop; uniform vec3 u_skyBot; uniform vec3 u_cloud;
 
-          // Hash & noise utils
-          float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
-          float noise(vec2 p){
-            vec2 i = floor(p), f = fract(p);
-            float a = hash(i);
-            float b = hash(i + vec2(1.0, 0.0));
-            float c = hash(i + vec2(0.0, 1.0));
-            float d = hash(i + vec2(1.0, 1.0));
-            vec2 u = f*f*(3.0-2.0*f);
-            return mix(a, b, u.x) + (c - a)*u.y*(1.0-u.x) + (d - b)*u.x*u.y;
-          }
-          float fbm(vec2 p){
-            float t = 0.0; float a = 0.5; mat2 m = mat2(1.6,1.2,-1.2,1.6);
-            for(int i=0;i<5;i++){ t += a*noise(p); p = m*p*1.2; a *= 0.55; }
-            return t;
-          }
+          float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }
+          float noise(vec2 p){ vec2 i=floor(p), f=fract(p); float a=hash(i); float b=hash(i+vec2(1.,0.)); float c=hash(i+vec2(0.,1.)); float d=hash(i+vec2(1.,1.)); vec2 u=f*f*(3.-2.*f); return mix(a,b,u.x)+(c-a)*u.y*(1.-u.x)+(d-b)*u.x*u.y; }
+          float fbm(vec2 p){ float t=0., a=.5; mat2 m=mat2(1.6,1.2,-1.2,1.6); for(int i=0;i<6;i++){ t+=a*noise(p); p=m*p*1.2; a*=.55; } return t; }
 
           void main(){
-            vec2 uv = gl_FragCoord.xy / u_res.xy;
-            vec2 p = (gl_FragCoord.xy - 0.5*u_res.xy) / u_res.y; // keep aspect
+            vec2 res=u_res; vec2 uv=gl_FragCoord.xy/res; vec2 p=(gl_FragCoord.xy-0.5*res)/res.y;
+            float T=u_time*0.03; // gentle wind
+            // Domain-warped fbm for billowy density
+            vec2 wind = vec2(0.12, 0.02);
+            vec2 q = p*1.1 + wind*T;
+            q += 0.25*vec2(fbm(q*1.8 + T), fbm(q*1.7 - T));
+            vec2 r = p*1.6 + 0.6*vec2(fbm(q*2.3 - T*0.8), fbm(q*2.1 + T*0.7));
+            float d = fbm(r*2.2);
+            // billow & shaping
+            d = abs(d*2.0-1.0);
+            d = 1.0 - d; // brighter puffs
+            d = smoothstep(0.55, 0.95, d);
+            // horizon fade (fewer clouds near top)
+            float skyY = uv.y;
+            d *= smoothstep(1.0, 0.25, skyY);
+            // soft vignette at edges
+            float ed = length(p*1.2);
+            d *= smoothstep(1.1, 0.2, ed);
 
-            // Domain warp for rich, fluid shapes
-            float t = u_time * 0.08;
-            vec2 q = p;
-            q += 0.25 * vec2(fbm(p*1.4 + t), fbm(p*1.4 - t));
-            vec2 r = p + 0.6 * vec2(fbm(q*2.0 - t*0.7), fbm(q*2.2 + t*0.6));
-
-            float v = fbm(r*3.0);
-
-            // Soft vignette mask to keep edges subtle
-            float dist = length(p*1.4);
-            float mask = smoothstep(1.0, 0.2, dist);
-
-            // Semi-transparent blend between accent colors
-            vec3 col = mix(u_colA, u_colB, smoothstep(0.2, 0.9, v));
-            float alpha = 0.18 + 0.12 * smoothstep(0.4, 1.0, v);
-            alpha *= mask;
-
-            gl_FragColor = vec4(col, alpha);
+            vec3 sky = mix(u_skyBot, u_skyTop, pow(uv.y, 1.2));
+            vec3 col = mix(sky, u_cloud, d*0.95);
+            gl_FragColor = vec4(col, 1.0);
           }
         `;
 
         function compile(type, src){ const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.error(gl.getShaderInfoLog(s)); } return s; }
         const vs = compile(gl.VERTEX_SHADER, vertSrc);
         const fs = compile(gl.FRAGMENT_SHADER, fragSrc);
-        const prog = gl.createProgram(); gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
-        gl.useProgram(prog);
+        const prog = gl.createProgram(); gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog); gl.useProgram(prog);
 
-        // Fullscreen triangle
         const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-          -1, -1,  3, -1,  -1, 3
-        ]), gl.STATIC_DRAW);
-        const loc = gl.getAttribLocation(prog, 'a_pos');
-        gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+        const loc = gl.getAttribLocation(prog, 'a_pos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
 
         const uRes = gl.getUniformLocation(prog, 'u_res');
         const uTime = gl.getUniformLocation(prog, 'u_time');
-        const uColA = gl.getUniformLocation(prog, 'u_colA');
-        const uColB = gl.getUniformLocation(prog, 'u_colB');
+        const uSkyT = gl.getUniformLocation(prog, 'u_skyTop');
+        const uSkyB = gl.getUniformLocation(prog, 'u_skyBot');
+        const uCld  = gl.getUniformLocation(prog, 'u_cloud');
 
-        function setColors(){ const a = cssRgb01('--accent'); const b = cssRgb01('--accent-2'); gl.uniform3fv(uColA, a); gl.uniform3fv(uColB, b); }
+        function setColors(){ const t=theme(); const st=skyTop(), sb=skyBottom(), cl=cloudCol(); gl.uniform3fv(uSkyT, new Float32Array(st)); gl.uniform3fv(uSkyB, new Float32Array(sb)); gl.uniform3fv(uCld, new Float32Array(cl)); }
+        function resize(){ const w=Math.floor(canvas.clientWidth*dpr), h=Math.floor(canvas.clientHeight*dpr); canvas.width=w; canvas.height=h; gl.viewport(0,0,w,h); gl.uniform2f(uRes,w,h); }
 
-        function resize(){ const w = Math.floor(canvas.clientWidth * dpr), h = Math.floor(canvas.clientHeight * dpr); canvas.width = w; canvas.height = h; gl.viewport(0,0,w,h); gl.uniform2f(uRes, w, h); }
-        window.addEventListener('resize', resize, { passive: true }); resize();
+        window.addEventListener('resize', resize, { passive:true }); resize();
         setColors();
         document.addEventListener('themechange', setColors);
 
         gl.clearColor(0,0,0,0);
         let start = performance.now();
-        function raf(t){
-          gl.clear(gl.COLOR_BUFFER_BIT);
-          gl.uniform1f(uTime, (t - start) / 1000);
-          gl.drawArrays(gl.TRIANGLES, 0, 3);
-          requestAnimationFrame(raf);
-        }
+        function raf(t){ gl.clear(gl.COLOR_BUFFER_BIT); gl.uniform1f(uTime, (t-start)/1000); gl.drawArrays(gl.TRIANGLES, 0, 3); requestAnimationFrame(raf); }
         requestAnimationFrame(raf);
-        return; // done (WebGL path)
+        return;
       }
 
-      // Fallback: Canvas2D translucent ribbons powered by noise
+      // Fallback: layered drifting cloud puffs (Canvas2D)
       const ctx = canvas.getContext('2d');
-      let w=0, h=0; function resize(){ w = canvas.clientWidth; h = canvas.clientHeight; canvas.width = Math.floor(w * dpr); canvas.height = Math.floor(h * dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
-      window.addEventListener('resize', resize, { passive: true }); resize();
-      let t = 0; const ribbons = 5;
-      function rgba01(arr, a){ return `rgba(${Math.round(arr[0]*255)}, ${Math.round(arr[1]*255)}, ${Math.round(arr[2]*255)}, ${a})`; }
-      let colA = cssRgb01('--accent'), colB = cssRgb01('--accent-2');
-      document.addEventListener('themechange', () => { colA = cssRgb01('--accent'); colB = cssRgb01('--accent-2'); });
+      let W=0,H=0; function resize(){ W=canvas.clientWidth; H=canvas.clientHeight; canvas.width=Math.floor(W*dpr); canvas.height=Math.floor(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
+      window.addEventListener('resize', resize, { passive:true }); resize();
 
-      function n(x,y){ // tiny value noise
-        const s = Math.sin(x*12.9898 + y*78.233) * 43758.5453; return s - Math.floor(s);
-      }
-      function smoothN(x,y){ const iX=Math.floor(x), iY=Math.floor(y); const fX=x-iX, fY=y-iY; const u=fX*fX*(3-2*fX), v=fY*fY*(3-2*fY);
-        const a=n(iX,iY), b=n(iX+1,iY), c=n(iX,iY+1), d=n(iX+1,iY+1);
-        return a + (b-a)*u + (c-a)*v + (d-b-a+c)*u*v; }
+      // Build puff sprites
+      function makePuff(r){ const c=document.createElement('canvas'); c.width=c.height=r*2; const g=c.getContext('2d'); const grd=g.createRadialGradient(r*0.8,r*0.8,r*0.2, r,r,r); grd.addColorStop(0,'rgba(255,255,255,0.9)'); grd.addColorStop(1,'rgba(255,255,255,0.0)'); g.fillStyle=grd; g.beginPath(); g.arc(r,r,r,0,Math.PI*2); g.fill(); return c; }
+      const puff = makePuff(120);
 
-      function draw(){
-        ctx.clearRect(0,0,w,h);
-        // background wash
-        const g = ctx.createRadialGradient(w*0.6,h*0.2,0,w*0.5,h*0.5,Math.max(w,h));
-        g.addColorStop(0, rgba01(colA, 0.06)); g.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+      const layers = [
+        { speed: 6,  scale: 0.9, y:  H*0.25, alpha: 0.8 },
+        { speed: 12, scale: 1.0, y:  H*0.35, alpha: 0.85 },
+        { speed: 18, scale: 1.1, y:  H*0.48, alpha: 0.9 }
+      ];
+      function resetLayer(L){ L.clouds = []; const count = Math.max(3, Math.ceil(W/260)); for(let i=0;i<count;i++){ L.clouds.push({ x: Math.random()*W, off: Math.random()*1000 }); } }
+      layers.forEach(L=>resetLayer(L));
 
-        for(let i=0;i<ribbons;i++){
-          const ph = i*0.7;
-          ctx.beginPath();
-          for(let x= -50; x<= w+50; x+= 24){
-            const nx = x*0.004 + ph;
-            const y = h*0.5 + Math.sin(x*0.004 + t*0.7 + ph)*18 + (smoothN(nx, t*0.2 + ph)-0.5)*120;
-            const y2 = y + 18 + (smoothN(nx+3.1, t*0.2 + ph)-0.5)*60;
-            if(x===-50) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-            ctx.lineTo(x,y2);
+      let t=0; function draw(){
+        // sky gradient
+        const st=skyTop(), sb=skyBottom();
+        const g = ctx.createLinearGradient(0,0,0,H);
+        g.addColorStop(0, `rgba(${Math.round(st[0]*255)},${Math.round(st[1]*255)},${Math.round(st[2]*255)},1)`);
+        g.addColorStop(1, `rgba(${Math.round(sb[0]*255)},${Math.round(sb[1]*255)},${Math.round(sb[2]*255)},1)`);
+        ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+        // clouds
+        ctx.globalCompositeOperation = 'lighter';
+        layers.forEach((L, idx)=>{
+          const y = L.y + Math.sin((t+idx*3000)/5000)*10;
+          ctx.globalAlpha = L.alpha * (theme()==='light' ? 1.0 : 0.85);
+          for(const c of L.clouds){
+            const x = (c.x + (t/1000)*L.speed + c.off) % (W+320) - 160;
+            // assemble a cloud from several puffs
+            for(let i=-2;i<=2;i++){
+              const px = x + i*90*L.scale + Math.sin((t+c.off+i*233)/3000)*12;
+              const py = y + (i%2===0? -12: 8) * L.scale;
+              ctx.drawImage(puff, px, py, puff.width*0.006*L.scale*W, puff.height*0.006*L.scale*W);
+            }
           }
-          ctx.closePath();
-          const mix = i/(ribbons-1);
-          const r = [ colA[0]*(1-mix)+colB[0]*mix, colA[1]*(1-mix)+colB[1]*mix, colA[2]*(1-mix)+colB[2]*mix ];
-          ctx.fillStyle = rgba01(r, 0.12);
-          ctx.fill();
-        }
-        t += prefersReduced ? 0 : 0.016;
+        });
+        ctx.globalCompositeOperation = 'source-over';
+
+        if(!prefersReduced) t += 16; // ms
         requestAnimationFrame(draw);
       }
       requestAnimationFrame(draw);
