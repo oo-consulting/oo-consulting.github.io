@@ -137,7 +137,6 @@
                 </feMerge>
               </filter>
             </defs>
-            <circle cx="14" cy="12" r="3" fill="url(#brandGrad)" opacity="0.95"/>
             <text x="28" y="27" font-size="22" font-weight="800" font-family="'Noto Sans KR','Malgun Gothic','Inter',system-ui,sans-serif" fill="url(#brandGrad)" filter="url(#softGlow)">(주)오심폴</text>
           </svg>
           <!-- Original inline SVG logo (orbit OO) -->
@@ -178,7 +177,6 @@
       <div class="hero-gradient rounded-3xl p-8 sm:p-12 lg:p-16">
         <div class="flex flex-col items-center text-center gap-6">
           <span class="inline-flex items-center gap-2 text-sm text-muted">
-            <span class="w-2 h-2 rounded-full" style="background:var(--accent)"></span>
             정보통신공사 수주 및 앱 개발 전문
           </span>
           <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight">
@@ -673,6 +671,22 @@
       if (!window.gsap) return; const { gsap } = window; if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
       gsap.from('header .hero-gradient', { y: 20, autoAlpha: 0, duration: 0.8, ease: 'power2.out' });
       gsap.utils.toArray('.tilt-card').forEach((el, i) => { gsap.from(el, { y: 30, autoAlpha: 0, duration: 0.7, ease: 'power2.out', delay: i*0.05, scrollTrigger: { trigger: el, start: 'top 85%' } }); });
+    });
+
+    // Shrink the leading (주) in the main title to 1/2 size
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const el = document.querySelector('header h1 .block');
+        if (!el) return;
+        const raw = (el.textContent || '').trim();
+        const open = raw.indexOf('(');
+        const close = raw.indexOf(')');
+        if (open === 0 && close > open) {
+          const prefix = raw.slice(0, close + 1);
+          const rest = raw.slice(close + 1);
+          el.innerHTML = `<span style="font-size:0.5em; vertical-align:baseline;">${prefix}</span><span class="ml-1 align-baseline">${rest}</span>`;
+        }
+      } catch(e) {}
     });
   </script>
 </body>
