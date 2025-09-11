@@ -420,7 +420,7 @@
             p *= scale;
             vec2 id = floor(p);
             vec2 f  = fract(p);
-            float present = step(0.975, hash(id*1.21)); // ~2.5% cells present (denser)
+            float present = step(0.925, hash(id*1.21)); // ~7.5% cells present (≈3x denser)
             if (present < 0.5) return 0.0;
             vec2 jitter = vec2(hash(id + vec2(13.1, 7.7)), hash(id + vec2(5.2, 9.3))) - 0.5;
             vec2 gv = (f - 0.5) - 0.35 * jitter;
@@ -437,9 +437,9 @@
 
           // Shooting star brightness helper
           float meteorAt(vec2 P, float timeShift){
-            float period = mix(6.0, 10.0, fract(sin(timeShift*12.3)*43758.5453));
+            float period = mix(2.0, 4.0, fract(sin(timeShift*12.3)*43758.5453));
             float tLocal = fract((u_time + timeShift) / period);
-            if (tLocal > 0.30) return 0.0; // active ~30% per cycle (more frequent)
+            if (tLocal > 0.45) return 0.0; // active ~45% per cycle (more frequent)
             float k = floor((u_time + timeShift) / period);
             float ang = mix(-1.1, 1.1, fract(sin((k+timeShift)*23.7)*43758.5453));
             vec2 dir = normalize(vec2(cos(ang), sin(ang)));
@@ -471,11 +471,13 @@
             vec3 stars = u_star * (0.10 + 1.5*s);
             col += stars;
 
-            // Meteors (shooting stars)
+            // Meteors (shooting stars) – more frequent
             float m = 0.0;
             m += meteorAt(p, 2.7);
             m += 0.8 * meteorAt(p, 5.9);
             m += 0.6 * meteorAt(p, 9.1);
+            m += 0.5 * meteorAt(p, 12.3);
+            m += 0.4 * meteorAt(p, 15.7);
             col += u_star * (0.8*m) + u_milk * (0.4*m);
 
             gl_FragColor = vec4(col, 1.0);
@@ -522,6 +524,11 @@
           const x = rand()*W, y = rand()*H;
           stars.push({ x, y, r: 1.2 + 2.6*Math.pow(rand(),2), spd: 0.6+1.3*rand(), ph: rand()*Math.PI*2 });
         }
+        // 추가 별 생성으로 총 3배 밀도
+        for (let i=0;i<2*STAR_COUNT;i++){
+          const x = rand()*W, y = rand()*H;
+          stars.push({ x, y, r: 1.2 + 2.6*Math.pow(rand(),2), spd: 0.6+1.3*rand(), ph: rand()*Math.PI*2 });
+        }
       }
       seed();
 
@@ -532,9 +539,13 @@
         const ang = (Math.random()*2-1) * 1.1;
         const len = Math.max(W, H) * (0.5 + Math.random()*0.6);
         const y = Math.random()*H*0.8 + H*0.1;
-        const startX = -0.2*W;
-        meteors.push({ start: time, dur: 1200 + Math.random()*1200, x: startX, y, ang, len, w: 2 + Math.random()*2 });
-        nextMeteorAt = time + 3000 + Math.random()*3500;
+        let sx = -0.2*W, sy = y, a = ang;
+        const edge = Math.floor(Math.random()*4);
+        if (edge === 1){ sx = W*1.1; sy = y; a = Math.PI - ang; }
+        else if (edge === 2){ sx = Math.random()*W; sy = -0.1*H; a = Math.PI/2 + (Math.random()*0.6 - 0.3); }
+        else if (edge === 3){ sx = Math.random()*W; sy = H*1.1; a = -Math.PI/2 + (Math.random()*0.6 - 0.3); }
+        meteors.push({ start: time, dur: 800 + Math.random()*900, x: sx, y: sy, ang: a, len, w: 2 + Math.random()*2 });
+        nextMeteorAt = time + 1000 + Math.random()*1200;
       }
 
       let time=0; function draw(){
@@ -551,6 +562,8 @@
 
         // meteors
         if (time > nextMeteorAt) spawnMeteor();
+        // occasional extra meteor to increase frequency (mobile too)
+        if (Math.random() < 0.005) spawnMeteor();
         for (let i=meteors.length-1; i>=0; i--){
           const m = meteors[i];
           const ph = (time - m.start) / m.dur;
