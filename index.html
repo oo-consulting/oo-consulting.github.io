@@ -415,34 +415,50 @@
           mat2 rot(float a){ float c=cos(a), s=sin(a); return mat2(c,-s,s,c); }
 
           float starLayer(vec2 p, float scale){
-            // scale to cell space and add per-cell jitter to avoid grid alignment
+            // sparse, jittered cells to avoid line patterns
             p *= scale;
             vec2 id = floor(p);
             vec2 f  = fract(p);
+            float present = step(0.985, hash(id*1.21)); // ~1.5% cells present
+            if (present < 0.5) return 0.0;
             vec2 jitter = vec2(hash(id + vec2(13.1, 7.7)), hash(id + vec2(5.2, 9.3))) - 0.5;
             vec2 gv = (f - 0.5) - 0.35 * jitter;
-            float n = hash(id);
-            // much larger stars (about >20x visual area vs before)
-            float r = mix(0.20, 0.60, pow(n, 6.0));
+            float n = hash(id + vec2(9.9, 2.3));
+            // realistic sizes: mostly small, rare bright
+            float r = mix(0.028, 0.10, pow(n, 6.0));
+            r *= mix(1.0, 2.6, step(0.996, hash(id + vec2(4.7,5.3))));
             float d = length(gv);
             float core = smoothstep(r, 0.0, d);
-            float halo = smoothstep(1.6*r, 0.0, d) * 0.5;
-            float tw = 0.65 + 0.35 * sin(u_time*2.0 + n*6.2831);
-            return (core + halo) * tw * (0.6 + 0.4*n);
+            float halo = smoothstep(2.2*r, 0.0, d) * 0.35;
+            float tw = 0.85 + 0.15 * sin(u_time*1.7 + n*6.2831);
+            return (core + halo) * tw * (0.7 + 0.3*n);
+          }
+
+          // Shooting star brightness helper
+          float meteorAt(vec2 P, float timeShift){
+            float period = mix(9.0, 15.0, fract(sin(timeShift*12.3)*43758.5453));
+            float tLocal = fract((u_time + timeShift) / period);
+            if (tLocal > 0.22) return 0.0; // active ~22% per cycle
+            float k = floor((u_time + timeShift) / period);
+            float ang = mix(-1.1, 1.1, fract(sin((k+timeShift)*23.7)*43758.5453));
+            vec2 dir = normalize(vec2(cos(ang), sin(ang)));
+            vec2 start = vec2(-1.2, mix(-0.6, 0.8, fract(sin((k*1.3+timeShift)*37.1)*43758.5453)));
+            float L = 2.2;
+            vec2 pos = start + dir * (tLocal * (L+1.0));
+            float d = abs(dir.x*(P.y - pos.y) - dir.y*(P.x - pos.x));
+            float along = dot(P - pos, dir);
+            float trail = smoothstep(0.6, -1.6, along);
+            float core = exp(-pow(d/0.008, 2.0)) * trail;
+            float glow = exp(-pow(d/0.036, 2.0)) * trail;
+            return core*1.1 + glow*0.6;
           }
 
           void main(){
             vec2 res = u_res; vec2 uv = gl_FragCoord.xy / res; vec2 p = (gl_FragCoord.xy - 0.5*res) / res.y;
             vec3 sky = mix(u_skyBot, u_skyTop, pow(uv.y, 1.6));
 
-            // Milky Way: a diagonal band with nebula noise
-            float a = 0.62; // band angle
-            vec2 pr = rot(a) * p;
-            float band = pr.y;
-            float bandMask = exp(-pow(band/0.28, 2.0));
-            float neb = fbm(pr*2.5 + vec2(0.0, u_time*0.02));
-            neb = smoothstep(0.4, 0.95, neb) * bandMask;
-            vec3 col = mix(sky, u_milk, neb*0.45);
+            // Clear night sky
+            vec3 col = sky;
 
             // Starfield: multi-scale, rotated layers with jitter (no grid lines)
             float s = 0.0;
@@ -451,11 +467,14 @@
             s += starLayer(rot(-0.15) * p, 18.0) * 0.65;
             s += starLayer(rot(0.40) * p, 26.0) * 0.5;
 
-            // uniform random distribution (avoid band-driven alignment)
-            // s remains unmodulated by band density
-
-            vec3 stars = u_star * (0.25 + 1.8*s);
+            vec3 stars = u_star * (0.10 + 1.5*s);
             col += stars;
+
+            // Meteors (shooting stars)
+            float m = 0.0;
+            m += meteorAt(p, 2.7);
+            m += 0.8 * meteorAt(p, 5.9);
+            col += u_star * (0.8*m) + u_milk * (0.4*m);
 
             gl_FragColor = vec4(col, 1.0);
           }
@@ -492,29 +511,58 @@
       const ctx = canvas.getContext('2d');
       let W=0,H=0; function resize(){ W=canvas.clientWidth; H=canvas.clientHeight; canvas.width=Math.floor(W*dpr); canvas.height=Math.floor(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); } window.addEventListener('resize', resize, { passive:true }); resize();
 
-      const ANG = 0.62; // band angle
+      const ANG = 0.62; // retained for compatibility (unused)
       function rand(){ return Math.random(); }
-      function gaussian(){ let u=0,v=0; while(u===0) u=Math.random(); while(v===0) v=Math.random(); return Math.sqrt(-2.0*Math.log(u)) * Math.cos(2*Math.PI*v); }
-      const stars = []; const COUNT = 220;
-      function bandWeight(x,y){ const cx=W*0.5, cy=H*0.5; const dx=x-cx, dy=y-cy; const rx =  dx*Math.cos(ANG)+dy*Math.sin(ANG); const ry = -dx*Math.sin(ANG)+dy*Math.cos(ANG); const bw = Math.exp(-Math.pow(ry/(0.28*H),2)); return 0.3+0.7*bw; }
-      function seed(){ stars.length=0; for(let i=0;i<COUNT;i++){ const x=rand()*W, y=rand()*H; const w=bandWeight(x,y); if(rand()<0.12+0.88*w){ stars.push({ x, y, r: 14 + 50*Math.pow(rand(),2), spd: 0.6+1.3*rand(), ph: rand()*Math.PI*2 }); } } }
+      const stars = []; const COUNT = 180;
+      function seed(){ stars.length=0; for(let i=0;i<COUNT;i++){ const x=rand()*W, y=rand()*H; stars.push({ x, y, r: 1.2 + 2.6*Math.pow(rand(),2), spd: 0.6+1.3*rand(), ph: rand()*Math.PI*2 }); } }
       seed();
+
+      // Meteors
+      const meteors = [];
+      let nextMeteorAt = 2000 + Math.random()*6000;
+      function spawnMeteor(){
+        const ang = (Math.random()*2-1) * 1.1;
+        const len = Math.max(W, H) * (0.5 + Math.random()*0.6);
+        const y = Math.random()*H*0.8 + H*0.1;
+        const startX = -0.2*W;
+        meteors.push({ start: time, dur: 1200 + Math.random()*1200, x: startX, y, ang, len, w: 2 + Math.random()*2 });
+        nextMeteorAt = time + 6000 + Math.random()*8000;
+      }
 
       let time=0; function draw(){
         // sky
         const st=skyTop(), sb=skyBot();
         const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,`rgb(${st.map(v=>Math.round(v*255)).join(',')})`); g.addColorStop(1,`rgb(${sb.map(v=>Math.round(v*255)).join(',')})`); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
 
-        // milky way band glow
-        ctx.save(); ctx.translate(W/2,H/2); ctx.rotate(ANG); const grad = ctx.createLinearGradient(0,-H,0,H); const m = milkTint(); const mc = `rgba(${Math.round(m[0]*255)},${Math.round(m[1]*255)},${Math.round(m[2]*255)},`;
-        grad.addColorStop(0.40, `${mc}0)`); grad.addColorStop(0.50, `${mc}0.10)`); grad.addColorStop(0.55, `${mc}0.18)`); grad.addColorStop(0.60, `${mc}0.10)`); grad.addColorStop(0.70, `${mc}0)`);
-        ctx.fillStyle=grad; ctx.fillRect(-W, -H, W*2, H*2); ctx.restore();
-
         // stars
         ctx.globalCompositeOperation='lighter';
         const t = time/1000; const tint = starTint();
         for(const s of stars){ const tw = 0.6+0.4*Math.sin((t*s.spd)+s.ph); const a = 0.6*tw; ctx.fillStyle = `rgba(${Math.round(tint[0]*255)},${Math.round(tint[1]*255)},${Math.round(tint[2]*255)},${a})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r*tw, 0, Math.PI*2); ctx.fill(); }
         ctx.globalCompositeOperation='source-over';
+
+        // meteors
+        if (time > nextMeteorAt) spawnMeteor();
+        for (let i=meteors.length-1; i>=0; i--){
+          const m = meteors[i];
+          const ph = (time - m.start) / m.dur;
+          if (ph <= 0 || ph >= 1){ meteors.splice(i,1); continue; }
+          const len = m.len * ph;
+          const x = m.x + len * Math.cos(m.ang);
+          const y = m.y + len * Math.sin(m.ang);
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(m.ang);
+          ctx.globalCompositeOperation = 'lighter';
+          const g1 = ctx.createLinearGradient(-len*0.2, 0, 0, 0);
+          g1.addColorStop(0, 'rgba(255,255,255,0.0)');
+          g1.addColorStop(1, 'rgba(255,255,255,0.9)');
+          ctx.fillStyle = g1; ctx.fillRect(-len*0.2, -m.w*0.5, len*0.2, m.w);
+          const g2 = ctx.createLinearGradient(0, 0, len, 0);
+          g2.addColorStop(0, 'rgba(255,255,255,0.9)');
+          g2.addColorStop(1, 'rgba(255,255,255,0.0)');
+          ctx.fillStyle = g2; ctx.fillRect(0, -m.w*0.5, len, m.w);
+          ctx.restore();
+        }
 
         if(!prefersReduced) time += 16; requestAnimationFrame(draw);
       }
