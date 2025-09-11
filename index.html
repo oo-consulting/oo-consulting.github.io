@@ -431,7 +431,8 @@
             float d = length(gv);
             float core = smoothstep(r, 0.0, d);
             float halo = smoothstep(2.2*r, 0.0, d) * 0.35;
-            float tw = 0.85 + 0.15 * sin(u_time*1.7 + n*6.2831);
+            float tw = 0.55 + 0.45 * sin(u_time*3.0 + n*6.2831) + 0.20 * sin(u_time*7.5 + n*12.566);
+            tw = clamp(tw, 0.3, 1.4);
             return (core + halo) * tw * (0.7 + 0.3*n);
           }
 
@@ -557,7 +558,7 @@
         // stars
         ctx.globalCompositeOperation='lighter';
         const t = time/1000; const tint = starTint();
-        for(const s of stars){ const tw = 0.6+0.4*Math.sin((t*s.spd)+s.ph); const a = 0.6*tw; ctx.fillStyle = `rgba(${Math.round(tint[0]*255)},${Math.round(tint[1]*255)},${Math.round(tint[2]*255)},${a})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r*tw, 0, Math.PI*2); ctx.fill(); }
+        for(const s of stars){ const tw = Math.min(1.4, 0.55+0.45*Math.sin((t*2.0*s.spd)+s.ph) + 0.25*Math.sin((t*5.5*s.spd)+s.ph*1.7)); const a = 0.7*tw; ctx.fillStyle = `rgba(${Math.round(tint[0]*255)},${Math.round(tint[1]*255)},${Math.round(tint[2]*255)},${a})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r*tw, 0, Math.PI*2); ctx.fill(); }
         ctx.globalCompositeOperation='source-over';
 
         // meteors
