@@ -37,6 +37,12 @@
       --muted: #8b93a7;
       --accent: #58c4ff;
       --accent-2: #7cffb2;
+      --fs-body: clamp(0.98rem, 0.92rem + 0.55vw, 1.05rem);
+      --fs-small: clamp(0.82rem, 0.78rem + 0.3vw, 0.94rem);
+      --fs-lead: clamp(1.05rem, 0.95rem + 1vw, 1.25rem);
+      --fs-h1: clamp(2.2rem, 1.6rem + 3.1vw, 3.5rem);
+      --fs-h2: clamp(1.65rem, 1.4rem + 1.6vw, 2.35rem);
+      --fs-h3: clamp(1.3rem, 1.15rem + 0.9vw, 1.8rem);
     }
     :root[data-theme="light"] {
       --bg: #f7f9ff;
@@ -51,8 +57,22 @@
       font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
       background: var(--bg);
       color: var(--fg);
+      font-size: var(--fs-body);
+      line-height: 1.72;
+      letter-spacing: 0.01em;
       overflow-x: hidden;
     }
+    p { margin-bottom: 0.85em; }
+    p.lead { font-size: var(--fs-lead); }
+    small, .text-sm { font-size: var(--fs-small); }
+    h1, h2, h3, h4 { font-weight: 800; line-height: 1.2; margin-bottom: 0.6em; }
+    h1 { font-size: var(--fs-h1); }
+    h2 { font-size: var(--fs-h2); }
+    h3 { font-size: var(--fs-h3); }
+    header h1[class*="text-"] { font-size: var(--fs-h1); letter-spacing: -0.01em; }
+    header h1 span.text-2xl { font-size: clamp(1.25rem, 1.1rem + 1vw, 1.85rem); }
+    header h1 span.text-3xl { font-size: clamp(1.45rem, 1.2rem + 1.2vw, 2.1rem); }
+    .type-cycle { font-size: var(--fs-small); line-height: 1.6; }
     .container-max { max-width: 1100px; }
     .text-muted { color: var(--muted); }
     .text-fg { color: var(--fg); }
@@ -78,31 +98,32 @@
     /* 모바일 최적화 */
     @media (max-width: 767px) {
       html { font-size: 16px; } /* iOS Safari에서 줌 방지 */
-      body { font-size: 1rem; padding: 0 1rem; }
-      .container-max { max-width: 100%; padding: 0 1rem; }
+      body { padding: 0 1rem; letter-spacing: 0; }
+      .container-max { max-width: 100%; }
+      .container-max.mx-auto { padding-left: 0.5rem; padding-right: 0.5rem; }
 
       /* 헤더 크기 조정 */
-      header { padding: 1rem 0 2rem; }
-      header h1 { font-size: 2rem; line-height: 1.2; }
+      header { padding: 1.25rem 0 2.25rem; }
+      header h1 { font-size: clamp(2.1rem, 1.9rem + 1.5vw, 2.8rem); line-height: 1.18; }
 
       /* 내비게이션 최적화 */
       .topbar { display: none; } /* 모바일에서는 간소화 */
 
       /* 섹션 패딩 조정 */
-      section { padding: 2rem 0; }
-      section h2 { font-size: 1.75rem; margin-bottom: 1.5rem; }
-      section p { font-size: 1rem; line-height: 1.6; }
+      section { padding: 2.25rem 0; }
+      section h2 { margin-bottom: 1.25rem; }
+      section p { line-height: 1.7; }
 
       /* 버튼 크기 확대 */
-      a.rounded-full { padding: 0.75rem 1.5rem; font-size: 1rem; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+      a.rounded-full { padding: 0.85rem 1.6rem; font-size: 1.02rem; min-height: 46px; display: flex; align-items: center; justify-content: center; }
 
       /* 글래스 패널 조정 */
-      .glass { padding: 1.5rem 1rem; border-radius: 1.5rem; }
-      .glass h2 { font-size: 1.5rem; }
-      .glass p { font-size: 0.95rem; }
+      .glass { padding: 1.4rem 1.1rem; border-radius: 1.4rem; backdrop-filter: blur(18px); }
+      .glass h2 { font-size: clamp(1.45rem, 1.3rem + 0.8vw, 1.7rem); }
+      .glass p { font-size: clamp(0.95rem, 0.92rem + 0.3vw, 1.05rem); }
 
       /* 코드 블록 조정 */
-      pre { font-size: 0.85rem; padding: 1rem; }
+      pre { font-size: clamp(0.82rem, 0.78rem + 0.3vw, 0.9rem); padding: 1rem; border-radius: 1rem; }
 
       /* 그리드 조정 */
       .grid.md\:grid-cols-2 { grid-template-columns: 1fr; gap: 1.5rem; }
@@ -111,13 +132,13 @@
       .grid.lg\:grid-cols-[1.1fr,0.9fr] { grid-template-columns: 1fr; }
 
       /* 리스트 항목 간격 조정 */
-      ol.space-y-6 > li, ul.space-y-3 > li { margin-bottom: 1.5rem; }
+      ol.space-y-6 > li, ul.space-y-3 > li { margin-bottom: 1.4rem; }
 
       /* 이미지 반응형 */
       img { max-width: 100%; height: auto; }
 
       /* 터치 쇠사례 버튼 */
-      button, input, select, textarea { min-height: 44px; padding: 0.75rem; }
+      button, input, select, textarea { min-height: 46px; padding: 0.75rem; }
 
       /* 스크롤 팁 */
       .policy-content { max-height: 300px; }
@@ -129,8 +150,14 @@
     /* 중간 크기 장치 */
     @media (min-width: 768px) and (max-width: 1023px) {
       .container-max { padding: 0 1.5rem; }
-      header h1 { font-size: 2.5rem; }
-      section { padding: 2.5rem 0; }
+      header h1 { font-size: clamp(2.45rem, 2rem + 1vw, 3rem); }
+      section { padding: 2.8rem 0; }
+    }
+
+    @media (min-width: 1024px) {
+      .container-max { padding: 0 2rem; }
+      section { padding: 3.5rem 0; }
+      main p { max-width: 70ch; }
     }
 
     .brand .logo { filter: drop-shadow(0 4px 12px rgba(88,196,255,.35)); }
