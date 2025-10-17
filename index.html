@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>(주)대박소프트 | 회사 소개</title>
+  <title>Windows 10에서 Ollama · Llama 3.1 내부 임베딩 구축 가이드</title>
+  <meta name="description" content="Windows 10 환경에서 Ollama와 Llama 3.1을 활용해 내부 임베딩·RAG 파이프라인을 구축하는 단계별 기술 가이드" />
   <meta name="google-site-verification" content="google9c3f444d05c1610b" />
 
   <script>
@@ -58,7 +59,6 @@
     .text-fg { color: var(--fg); }
     .text-soft { color: var(--fg-soft); }
 
-    /* Top nav */
     nav.topbar { position: sticky; top: 0; z-index: 40; backdrop-filter: blur(8px); }
     nav.topbar .bar {
       border: 1px solid rgba(255,255,255,.08);
@@ -69,44 +69,34 @@
       background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.01));
     }
 
-    /* Canvas background */
     #bg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; filter: contrast(105%) saturate(110%); }
     header, main, footer, nav { position: relative; z-index: 1; }
 
-    /* Fancy cursor */
     .cursor { position: fixed; inset: 0 auto auto 0; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 9999px; background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2)); mix-blend-mode: screen; pointer-events: none; z-index: 50; opacity: .8; transition: width .2s ease, height .2s ease, opacity .2s ease; }
     .cursor.-lg { width: 42px; height: 42px; opacity: .55; }
     @media (prefers-reduced-motion: reduce) { .cursor { display: none; } }
 
-    /* Brand logo */
     .brand .logo { filter: drop-shadow(0 4px 12px rgba(88,196,255,.35)); }
     .brand > span { display: none; }
     .brand svg[viewBox="0 0 64 64"] { display: none; }
     :root[data-theme="light"] .brand .logo { filter: drop-shadow(0 0 1px rgba(0,0,0,.35)) drop-shadow(0 0 8px rgba(0,0,0,.12)); }
 
-    /* Hero */
     .hero-gradient { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0)); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(8px); }
     :root[data-theme="light"] .hero-gradient { background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,0)); border: 1px solid rgba(0,0,0,.06); }
     .type-cycle > .active { color: var(--accent); }
 
-    /* Cards */
     .glass { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 20px 50px rgba(0,0,0,.35); }
     :root[data-theme="light"] .glass { background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.01)); border: 1px solid rgba(0,0,0,.06); box-shadow: 0 10px 30px rgba(0,0,0,.08); }
     .tilt-card { transform-style: preserve-3d; will-change: transform; }
     .tilt-card .shine { position: absolute; inset: 0; border-radius: 1rem; pointer-events: none; background: radial-gradient(500px 200px at var(--mx,50%) var(--my,50%), rgba(255,255,255,.18), transparent 60%); opacity: 0; transition: opacity .25s ease; }
     .tilt-card:hover .shine { opacity: 1; }
 
-    /* Scroll progress */
     .progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); z-index: 60; }
 
-    /* Policy box scroll */
     .policy-content { max-height: 400px; overflow-y: auto; }
 
-    /* Magnetic CTA */
     .magnetic { will-change: transform; display: inline-flex; align-items: center; gap: .6rem; }
 
-    /* Theme toggle icon visibility */
-    /* Toggle active state */
     #themeToggle.active { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 40%, transparent); }
   </style>
 </head>
@@ -115,15 +105,12 @@
   <div class="progress" aria-hidden="true"></div>
   <div class="cursor" aria-hidden="true"></div>
 
-  <!-- Top bar -->
   <nav class="topbar">
     <div class="container-max mx-auto px-6 pt-4">
       <div class="bar rounded-2xl px-5 py-3 flex items-center justify-between">
-        <a href="#" class="brand inline-flex items-center gap-3" aria-label="(주)대박소프트 홈">
-          
-          <!-- Brand wordmark in SVG -->
-          <svg class="wordmark h-7 sm:h-8" viewBox="0 0 260 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="(주)대박소프트">
-            <title>(주)대박소프트</title>
+        <a href="#top" class="brand inline-flex items-center gap-3" aria-label="Ollama · Llama 3.1 가이드 홈">
+          <svg class="wordmark h-7 sm:h-8" viewBox="0 0 260 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ollama Llama Guide">
+            <title>Ollama Llama Guide</title>
             <defs>
               <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stop-color="var(--accent)"/>
@@ -137,11 +124,10 @@
                 </feMerge>
               </filter>
             </defs>
-            <text x="28" y="27" font-size="22" font-weight="800" font-family="'Noto Sans KR','Malgun Gothic','Inter',system-ui,sans-serif" fill="url(#brandGrad)" filter="url(#softGlow)">(주)대박소프트</text>
+            <text x="16" y="27" font-size="22" font-weight="800" font-family="'Noto Sans KR','Malgun Gothic','Inter',system-ui,sans-serif" fill="url(#brandGrad)" filter="url(#softGlow)">Ollama · Llama 가이드</text>
           </svg>
-          <!-- Original inline SVG logo (orbit OO) -->
           <svg width="36" height="36" viewBox="0 0 64 64" role="img" aria-hidden="true">
-            <title>(주)대박소프트 Logo</title>
+            <title>Guide Logo</title>
             <defs>
               <linearGradient id="gOO" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" style="stop-color: var(--accent)"/>
@@ -153,13 +139,19 @@
             <ellipse cx="32" cy="28" rx="26" ry="12" fill="none" stroke="url(#gOO)" stroke-width="1.6" opacity="0.55" />
             <circle cx="46" cy="22" r="2.5" fill="url(#gOO)" />
           </svg>
-          <span class="hidden sm:inline text-sm font-semibold text-soft">(주)대박소프트</span>
+          <span class="hidden sm:inline text-sm font-semibold text-soft">Windows 10 내부 임베딩 구축</span>
         </a>
+        <div class="hidden lg:flex items-center gap-2 text-muted text-sm font-medium">
+          <a href="#overview" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">개요</a>
+          <a href="#setup" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">Ollama 설치</a>
+          <a href="#llama" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">Llama 3.1</a>
+          <a href="#pipeline" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">임베딩 파이프라인</a>
+          <a href="#optimization" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">최적화</a>
+          <a href="#troubleshooting" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">문제 해결</a>
+          <a href="#cases" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">적용 사례</a>
+        </div>
         <div class="flex items-center gap-2">
-          <a href="#services" class="hidden sm:inline rounded-full px-4 py-2 text-sm font-medium border border-white/20 hover:bg-white/5 transition text-muted">서비스</a>
-          <a href="#portfolio" class="hidden sm:inline rounded-full px-4 py-2 text-sm font-medium border border-white/20 hover:bg-white/5 transition text-muted">포트폴리오</a>
           <button id="themeToggle" class="rounded-full px-3.5 py-2 text-sm font-semibold border border-white/20 hover:bg-white/5 transition text-muted" aria-label="별 수 증가 토글" title="별 밀도 1.5배 토글">
-            <!-- Sparkle icon -->
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M12 3l1.6 3.8L17 8.5l-3.4 1.7L12 14l-1.6-3.8L7 8.5l3.4-1.7L12 3Z" fill="currentColor"/>
               <path d="M5 16l.9 2.2L8 19l-2.1 1L5 22l-.9-2L2 19l2.1-.8L5 16Z" fill="currentColor" opacity=".7"/>
@@ -171,29 +163,29 @@
     </div>
   </nav>
 
-  <!-- Hero -->
-  <header class="relative">
+  <header id="top" class="relative">
     <div class="container-max mx-auto px-6 pt-12 pb-8 sm:pt-20 sm:pb-14 lg:pt-24">
       <div class="hero-gradient rounded-3xl p-8 sm:p-12 lg:p-16">
         <div class="flex flex-col items-center text-center gap-6">
           <span class="inline-flex items-center gap-2 text-sm text-muted">
-            AI 기술구축  및 앱 개발 전문
+            Windows 10 · 내부 데이터 프라이버시 · RAG 파이프라인
           </span>
           <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight">
-            <span class="block">(주)대박소프트</span>
+            <span class="block">Windows 10에서 Ollama &amp; Llama 3.1</span>
+            <span class="block text-2xl sm:text-3xl mt-2 text-soft">내부 임베딩 구축 기술 가이드</span>
           </h1>
           <p class="type-cycle text-base sm:text-lg text-muted">
-            <span class="cycle-item active">일단 걍 웃깁니다</span>
-            <span class="cycle-item hidden">웃음의 품질 · 성능 최적화</span>
-            <span class="cycle-item hidden">인생은 한방 !! 대박 난다</span>
-            <span class="cycle-item hidden">AI API 연계등 최신기술</span>
+            <span class="cycle-item active">설치 → 임베딩 생성 → 벡터 DB → RAG 운영</span>
+            <span class="cycle-item hidden">프라이버시 중심 로컬 환경</span>
+            <span class="cycle-item hidden">GPU·WSL2 최적화 전략</span>
+            <span class="cycle-item hidden">실제 사례와 문제 해결 노하우</span>
           </p>
           <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-2">
-            <a href="mailto:younseok.oh@gmail.com" class="magnetic rounded-full px-5 py-3 text-sm font-semibold text-black bg-white hover:opacity-90 transition">
+            <a href="#pipeline" class="magnetic rounded-full px-5 py-3 text-sm font-semibold text-black bg-white hover:opacity-90 transition">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="opacity-80"><path d="M4 8l8 5 8-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              문의하기
+              파이프라인 바로 보기
             </a>
-            <a href="#services" class="rounded-full px-5 py-3 text-sm font-semibold border border-white/20 hover:bg-white/5 transition text-fg">서비스 보기</a>
+            <a href="mailto:younseok.oh@gmail.com" class="rounded-full px-5 py-3 text-sm font-semibold border border-white/20 hover:bg-white/5 transition text-fg">전문가 상담 문의</a>
           </div>
         </div>
       </div>
@@ -201,167 +193,206 @@
   </header>
 
   <main>
-    <!-- About -->
-    <section id="about" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
+    <section id="overview" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
       <div class="glass rounded-2xl p-6 sm:p-10 tilt-card relative">
         <div class="shine" aria-hidden="true"></div>
-        <h2 class="text-2xl sm:text-3xl font-bold mb-4">회사 소개</h2>
+        <h2 class="text-2xl sm:text-3xl font-bold mb-4">프로젝트 개요</h2>
         <p class="text-soft leading-7">
-          (주)대박소프트는 모바일 앱 특화 개발 유지보수는 물론 인공지능 AI API 를 전문으로 합니다 고객의 목표 달성을 위해 설계부터 개발, 테스트, 배포, 유지보수까지
-          전 과정을 책임지고 수행하며, 고객의 가치와 비즈니스의 성공을 최우선으로 생각합니다. 또한 인생은 운이라는 철학과 남들도 돈벌면 우리도 더 잘 번다는 신념이 임직원을 똘똘 뭉쳐 나가게 합니다.  
+          Windows 10(WSL2 권장) 환경에서 Ollama를 통해 Llama 3.1을 로컬에 배포하고, 사내 문서를 임베딩하여 벡터 DB와 결합하는 전 과정을 다룹니다. 준비 단계에서 운영 체제 버전과 가상화, GPU/CPU, 디스크 여유 공간을 확인하고, 설치 이후에는 Ollama와 Llama 3.1을 통한 모델 실행·관리, 임베딩 파이프라인 구성, 성능 최적화 및 트러블슈팅, 실제 적용 사례까지 한 번에 파악할 수 있습니다.
+        </p>
+        <p class="text-soft leading-7 mt-4">
+          목표는 로컬 환경에서 데이터 프라이버시를 보장하면서도 고성능 검색·질의응답(RAG) 경험을 제공하는 것입니다. 단계별 체크리스트와 실행 가능한 명령어, 하드웨어·소프트웨어 최적화 포인트를 함께 제공하여 실무에 즉시 적용할 수 있도록 구성했습니다.
         </p>
       </div>
     </section>
 
-    <!-- Services -->
-    <section id="services" class="container-max mx-auto px-6 py-6 sm:py-8 lg:py-10">
-      <h2 class="text-2xl sm:text-3xl font-bold mb-6">서비스</h2>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- App Development -->
-        <article class="glass rounded-2xl p-6 tilt-card relative">
-          <div class="shine" aria-hidden="true"></div>
-          <div class="h-10 w-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="3" stroke="white" stroke-width="1.7"/><circle cx="12" cy="17" r="1.2" fill="white"/></svg>
-          </div>
-          <h3 class="mt-4 font-semibold text-lg">SI / SM</h3>
-          <p class="text-sm text-muted mt-1">신뢰높은 관계로 안정적으로 구축/운영 사업 수행</p>
-        </article>
-        <!-- Maintenance -->
-        <article class="glass rounded-2xl p-6 tilt-card relative">
-          <div class="shine" aria-hidden="true"></div>
-          <div class="h-10 w-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11l9-7 9 7v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-7Z" stroke="white" stroke-width="1.7"/><path d="M9 21v-6h6v6" stroke="white" stroke-width="1.7"/></svg>
-          </div>
-          <h3 class="mt-4 font-semibold text-lg">AI</h3>
-          <p class="text-sm text-muted mt-1">미래가치 창출을 위한 AI 학습 기술</p>
-        </article>
-        <!-- Performance -->
-        <article class="glass rounded-2xl p-6 tilt-card relative">
-          <div class="shine" aria-hidden="true"></div>
-          <div class="h-10 w-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20a8 8 0 1 0-8-8" stroke="white" stroke-width="1.7"/><path d="M12 12l5-2" stroke="white" stroke-width="1.7" stroke-linecap="round"/></svg>
-          </div>
-          <h3 class="mt-4 font-semibold text-lg">CONSULTING</h3>
-          <p class="text-sm text-muted mt-1">AI 기술구축 관리의 강점을 둔 최적의 컨설팅</p>
-        </article>
-        <!-- Security/CI -->
-        <article class="glass rounded-2xl p-6 tilt-card relative">
-          <div class="shine" aria-hidden="true"></div>
-          <div class="h-10 w-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-3Z" stroke="white" stroke-width="1.7"/><path d="M7 15h10" stroke="white" stroke-width="1.7" stroke-linecap="round"/></svg>
-          </div>
-          <h3 class="mt-4 font-semibold text-lg">SOLUTION</h3>
-          <p class="text-sm text-muted mt-1">지금까지 경험해 보지 못한 고객중심의 최고의 솔루션</p>
-        </article>
+    <section id="toc" class="container-max mx-auto px-6 py-6 sm:py-10 lg:py-12">
+      <div class="glass rounded-2xl p-6 sm:p-10">
+        <div class="text-sm uppercase tracking-[0.35em] text-muted mb-4">로드맵</div>
+        <h2 class="text-2xl sm:text-3xl font-bold mb-6">구축 여정 한눈에 보기</h2>
+        <div class="grid md:grid-cols-2 gap-6 text-soft">
+          <ul class="space-y-3 list-none pl-0">
+            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>Ollama 설치 및 설정 — Windows 10에서의 데몬 설치, WSL2 대안, 권한·환경 변수 체크리스트</span></li>
+            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>Llama 3.1 설치 및 설정 — 모델 다운로드와 로컬 배포, 하드웨어 요구사항, 양자화 옵션 가이드</span></li>
+            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>내부 임베딩 구축 — 문서 전처리, 배치 임베딩 생성, 품질 검증 절차</span></li>
+          </ul>
+          <ul class="space-y-3 list-none pl-0">
+            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>환경 결합과 최적화 — GPU 활용, CPU 최적화, 양자화·캐싱·인덱스 튜닝 팁</span></li>
+            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>문제 해결 및 주의사항 — 권한 오류, 메모리 부족, 버전 호환성 이슈 대응</span></li>
+            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>실제 적용 사례 — PoC 구성, 성능 지표, 확장 전략</span></li>
+          </ul>
+        </div>
       </div>
     </section>
 
-    <!-- Portfolio -->
-    <section id="portfolio" class="container-max mx-auto px-6 py-6 sm:py-8 lg:py-10">
-      <h2 class="text-2xl sm:text-3xl font-bold mb-6">사업경력</h2>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Project Card 1 -->
-        <article class="glass rounded-2xl overflow-hidden tilt-card relative">
+    <section id="setup" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
+      <div class="grid lg:grid-cols-[1.1fr,0.9fr] gap-10 items-start">
+        <article class="glass rounded-2xl p-6 sm:p-10 tilt-card relative">
           <div class="shine" aria-hidden="true"></div>
-          <div class="h-36" style="background:linear-gradient(135deg, rgba(88,196,255,.25), rgba(124,255,178,.18));"></div>
-          <div class="p-5">
-            <h3 class="font-semibold">네트워크 진단 툴 개발  </h3>
-            <p class="text-sm text-muted mt-1">크로스 플랫폼 앱 개발 18개국 배포, 간편한 네트워크 점검을 통해 업무효율성 향상.</p>
-            <div class="mt-3 flex flex-wrap gap-2 text-xs text-muted">
-              <span class="px-2 py-1 rounded-full border border-white/15">최고의 기술</span>
-              <span class="px-2 py-1 rounded-full border border-white/15">신속성, 생산성, 최고의 효율성</span>
-            </div>
-          </div>
+          <p class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 2</p>
+          <h2 class="text-2xl sm:text-3xl font-bold mb-6">Ollama 설치 및 환경 준비</h2>
+          <ol class="space-y-6 text-soft">
+            <li>
+              <h3 class="text-lg font-semibold text-fg mb-2">설치 전 필수 점검</h3>
+              <p>Windows 10 버전(권장 22H2 이상)과 가상화(VT-x/AMD-V) 활성화 여부를 확인하고, 모델 저장을 위한 충분한 디스크 여유 공간을 확보합니다. Ollama 설치 파일은 공식 사이트에서 Windows용 최신 릴리스를 내려받습니다.</p>
+            </li>
+            <li>
+              <h3 class="text-lg font-semibold text-fg mb-2">설치 경로 선택 — 네이티브 vs WSL2</h3>
+              <p>네이티브 설치는 <code>OllamaSetup.exe</code> 실행으로 간단히 완료됩니다. WSL2를 권장하며, <code>PowerShell(관리자)</code>에서 <code>wsl --install</code>로 WSL2를 활성화한 뒤 Ubuntu 환경에서 Linux 설치 가이드를 따라가면 GPU·라이브러리 호환성이 안정적입니다.</p>
+            </li>
+            <li>
+              <h3 class="text-lg font-semibold text-fg mb-2">설치 후 동작 확인</h3>
+              <p><code>ollama</code> 명령 실행 여부를 점검하고, <code>open-webui serve</code>로 로컬 UI를 기동해 정상 동작을 확인합니다. 모델 다운로드나 서비스 실행 중에는 디스크 사용량과 GPU 드라이버(CUDA) 호환성을 수시로 확인합니다. 요약: 설치 전 환경 체크 → WSL2 권장 → <code>open-webui serve</code>로 서비스 검증.</p>
+            </li>
+          </ol>
         </article>
-        <!-- Project Card 2 -->
-        <article class="glass rounded-2xl overflow-hidden tilt-card relative">
-          <div class="shine" aria-hidden="true"></div>
-          <div class="h-36" style="background:linear-gradient(135deg, rgba(124,255,178,.25), rgba(88,196,255,.18));"></div>
-          <div class="p-5">
-            <h3 class="font-semibold">앱 개발 및 유지보수 사업</h3>
-            <p class="text-sm text-muted mt-1">대성공 기대 대박소프트의 희망이자 꿈.</p>
-            <div class="mt-3 flex flex-wrap gap-2 text-xs text-muted">
-              <span class="px-2 py-1 rounded-full border border-white/15">운이 좋음</span>
-              <span class="px-2 py-1 rounded-full border border-white/15">대박</span>
-            </div>
-          </div>
-        </article>
-        <!-- Project Card 3 -->
-        <article class="glass rounded-2xl overflow-hidden tilt-card relative">
-          <div class="shine" aria-hidden="true"></div>
-          <div class="h-36" style="background:linear-gradient(135deg, rgba(88,196,255,.28), rgba(35,60,120,.18));"></div>
-          <div class="p-5">
-            <h3 class="font-semibold">AI API 및 AI 구축</h3>
-            <p class="text-sm text-muted mt-1"> 외부망 AI API 연계는 물론 내부 AI 프레임워크 구축.</p>
-            <div class="mt-3 flex flex-wrap gap-2 text-xs text-muted">
-              <span class="px-2 py-1 rounded-full border border-white/15">최첨단</span>
-              <span class="px-2 py-1 rounded-full border border-white/15">생산성, 효율성</span>
-            </div>
-          </div>
-        </article>
+        <aside class="glass rounded-2xl p-6 sm:p-8 space-y-5">
+          <h3 class="text-xl font-semibold text-fg">빠른 체크리스트</h3>
+          <ul class="space-y-3 text-soft text-sm">
+            <li class="flex items-start gap-3"><span class="mt-1 text-accent">■</span><span>Windows 업데이트로 22H2 이상 유지</span></li>
+            <li class="flex items-start gap-3"><span class="mt-1 text-accent">■</span><span>BIOS/Hyper-V에서 가상화 활성화</span></li>
+            <li class="flex items-start gap-3"><span class="mt-1 text-accent">■</span><span>GPU 드라이버·CUDA 버전 호환성 사전 확인</span></li>
+            <li class="flex items-start gap-3"><span class="mt-1 text-accent">■</span><span>모델 저장용 디스크 여유(8B 기준 4~5GB 이상)</span></li>
+          </ul>
+        </aside>
       </div>
     </section>
 
-    <!-- Policies -->
-    <section id="policy" class="container-max mx-auto px-6 pb-16 space-y-8">
-      <div class="grid md:grid-cols-2 gap-6">
-        <!-- Korean Policy -->
-        <article class="glass rounded-2xl p-6 sm:p-8 tilt-card relative">
-          <div class="shine" aria-hidden="true"></div>
-          <h3 class="text-xl sm:text-2xl font-bold mb-2">개인정보 처리방침 (국문)</h3>
-          <p class="text-sm text-muted mb-4">시행일: 2025-09-06</p>
-          <div class="policy-content text-sm text-soft space-y-4 pr-1">
-            <p>본 방침은 (주)대박소프트이 제공하는 애플리케이션(이하 “애플리케이션”)에 적용됩니다. 서비스는 “있는 그대로(as-is)” 제공됩니다.</p>
-            <h4 class="text-base font-semibold mt-4">수집 항목 및 이용 목적</h4>
-            <p>애플리케이션은 시스템 계산 및 표시 기능 제공을 위해 아래 항목을 기기 내에서만 처리합니다.</p>
-            <ul class="list-disc pl-5 space-y-1">
-              <li>업무용 산출식에 필요한 시스템 정보</li>
-              <li>모바일 네트워크 관련 정보(IP, MAC 등)</li>
-            </ul>
-            <h4 class="text-base font-semibold mt-4">저장 및 전송</h4>
-            <p>수집된 정보는 서버로 전송되지 않으며, 기기 내에서만 처리됩니다. 애플리케이션 종료 시 해당 정보는 즉시 삭제됩니다.</p>
-            <h4 class="text-base font-semibold mt-4">제3자 제공/공유</h4>
-            <p>개인정보를 제3자에게 제공하거나 공유하지 않습니다.</p>
-            <h4 class="text-base font-semibold mt-4">문의처</h4>
-            <p>본 방침 또는 개인정보 처리에 관한 문의는 이메일(<a class="underline hover:opacity-80" href="mailto:younseok.oh@gmail.com">younseok.oh@gmail.com</a>)로 연락해 주세요.</p>
+    <section id="llama" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
+      <div class="glass rounded-2xl p-6 sm:p-10 tilt-card relative">
+        <div class="shine" aria-hidden="true"></div>
+        <p class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 3</p>
+        <h2 class="text-2xl sm:text-3xl font-bold mb-6">Llama 3.1 설치 및 초기 설정</h2>
+        <div class="grid md:grid-cols-3 gap-8 text-soft">
+          <div>
+            <h3 class="text-lg font-semibold text-fg mb-2">1. 준비 및 필수 파일</h3>
+            <p>관리자 권한 PowerShell/CMD 또는 WSL2 터미널을 사용합니다. 필요한 항목은 Ollama 설치 프로그램, (GPU 사용 시) NVIDIA 드라이버와 CUDA Toolkit, 충분한 디스크와 16GB 이상 RAM입니다. 모델 파일은 Ollama가 자동으로 내려받습니다.</p>
           </div>
-        </article>
+          <div>
+            <h3 class="text-lg font-semibold text-fg mb-2">2. 모델 다운로드</h3>
+            <p><code>ollama-installer.exe</code>를 실행한 뒤 <code>ollama run llama3.1:8b</code>로 모델을 내려받고 즉시 실행합니다. <code>ollama list</code>로 설치된 모델을 확인하고, 다운로드 실패 시 네트워크와 디스크 여유를 점검하거나 WSL 환경에서 재시도합니다.</p>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-fg mb-2">3. 운영 권장사항</h3>
+            <p>PoC에는 8B 모델이 적합하며, 대형 모델은 더 많은 RAM/GPU 자원을 요구합니다. NVIDIA 드라이버·CUDA 버전을 일치시키고, 관리자 권한으로 명령을 실행합니다. <code>ollama list</code>와 로그를 확인해 오류를 빠르게 파악합니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        <!-- English Policy -->
-        <article class="glass rounded-2xl p-6 sm:p-8 tilt-card relative">
-          <div class="shine" aria-hidden="true"></div>
-          <h3 class="text-xl sm:text-2xl font-bold mb-2">Privacy Policy (English)</h3>
-          <p class="text-sm text-muted mb-4">Effective Date: September 6, 2025</p>
-          <div class="policy-content text-sm text-soft space-y-4 pr-1">
-            <p>This Policy applies to the mobile altimeter application (the "Application") provided by (주)대박소프트. The service is provided on an "as-is" basis.</p>
-            <h4 class="text-base font-semibold mt-4">Information Collection and Use</h4>
-            <p>The Application processes data locally on your device solely to calculate and display altitude:</p>
-            <ul class="list-disc pl-5 space-y-1">
-              <li>Location Data (latitude, longitude, altitude)</li>
-              <li>Mobile network information (IP, MAC, etc.)</li>
-            </ul>
-            <h4 class="text-base font-semibold mt-4">Data Storage and Transmission</h4>
-            <p>No data is transmitted to servers. All processing happens on-device and is deleted when the Application is closed.</p>
-            <h4 class="text-base font-semibold mt-4">Third-Party Services</h4>
-            <p>The Application does not use third-party services that collect or process user data.</p>
-            <h4 class="text-base font-semibold mt-4">Children's Privacy</h4>
-            <p>The Application is not directed at children under 13. We do not knowingly collect personally identifiable information from children under 13.</p>
-            <h4 class="text-base font-semibold mt-4">Contact</h4>
-            <p>For questions, contact: <a class="underline hover:opacity-80" href="mailto:younseok.oh@gmail.com">younseok.oh@gmail.com</a></p>
+    <section id="pipeline" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
+      <div class="glass rounded-2xl p-6 sm:p-10">
+        <div class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 4</div>
+        <h2 class="text-2xl sm:text-3xl font-bold mb-6">내부 임베딩 파이프라인</h2>
+        <div class="grid lg:grid-cols-2 gap-8">
+          <div class="space-y-5 text-soft leading-7">
+            <p><strong class="text-fg">전체 워크플로우</strong> — ① 문서 수집 및 전처리: PDF/Word/로그 등에서 텍스트를 추출하고 500~1000 토큰 단위로 청크화하며 메타데이터(문서 ID, 청크 ID, 출처, 타임스탬프)를 부여합니다. ② 임베딩 생성: Ollama 로컬 API 또는 전용 임베딩 모델을 호출해 텍스트 청크를 고정 길이 벡터로 변환합니다. ③ 벡터 DB 저장 및 인덱싱: Milvus/FAISS에 (벡터, 메타데이터) 형태로 저장하고 IVF, PQ, HNSW 등 인덱스를 구성·튜닝합니다. ④ 검색: 쿼리 임베딩을 생성해 k-NN 유사도 검색으로 관련 청크를 조회합니다. ⑤ RAG 결합: 검색 결과 청크를 컨텍스트로 Llama 3.1에 제공해 최종 응답을 생성합니다.</p>
+            <p><strong class="text-fg">운영 팁</strong> — 배치 처리로 호출 오버헤드를 줄이고, Redis 등으로 임베딩 캐시(키는 텍스트의 SHA-256)를 적용해 중복 계산을 방지합니다. 문서 변경 시 전체 재처리 대신 변경 청크만 재임베딩하고, 인덱스 파라미터(예: HNSW의 <code>ef</code>, <code>M</code>)와 검색 <code>k</code> 값을 조정해 정확도와 성능의 균형을 맞춥니다. 임베딩 버전을 태깅하고 재인덱싱 로그를 남겨 이력 관리에 활용합니다.</p>
           </div>
-        </article>
+          <div class="glass rounded-2xl p-6 space-y-5">
+            <h3 class="text-xl font-semibold text-fg">샘플 명령 &amp; 코드</h3>
+            <div class="space-y-3 text-sm text-soft">
+              <div>
+                <div class="font-semibold text-fg mb-1">Ollama API 호출</div>
+                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>curl -X POST http://localhost:11434/embed \
+  -H "Content-Type: application/json" \
+  -d '{"model":"llama3.1","text":"문서 청크 본문"}'</code></pre>
+              </div>
+              <div>
+                <div class="font-semibold text-fg mb-1">Python 요청 예시</div>
+                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>import requests
+resp = requests.post(
+    "http://localhost:11434/embed",
+    json={"model": "llama3.1", "text": chunk_text}
+)
+embedding = resp.json()["embedding"]</code></pre>
+              </div>
+              <div>
+                <div class="font-semibold text-fg mb-1">벡터 DB 적재 &amp; 검색</div>
+                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>index.insert([(id1, emb1, meta1), (id2, emb2, meta2)])
+results = index.search(query_emb, k=5)
+answer = llama.generate(prompt_with(results))</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="optimization" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
+      <div class="glass rounded-2xl p-6 sm:p-10">
+        <div class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 5</div>
+        <h2 class="text-2xl sm:text-3xl font-bold mb-8">성능 최적화 &amp; 운영 전략</h2>
+        <div class="grid lg:grid-cols-2 gap-8 text-soft leading-7">
+          <div class="space-y-5">
+            <p><strong class="text-fg">하드웨어 진단</strong> — NVIDIA GPU와 일치하는 드라이버·CUDA가 핵심입니다. 배포 전 <code>nvidia-smi</code>로 GPU 상태와 메모리를 점검하고, 다중 GPU 환경에서는 NCCL 설정과 네트워크 토폴로지를 확인합니다.</p>
+            <p><strong class="text-fg">메모리 절감</strong> — 8bit/4bit 양자화로 메모리 요구량을 낮추되, 대표 데이터셋으로 정확도 변화를 사전 검증합니다. 필요 시 지식 증류, 프루닝, 더 작은 Llama 계열 모델이나 LoRA 등을 조합합니다.</p>
+          </div>
+          <div class="space-y-5">
+            <p><strong class="text-fg">대형 모델 운영</strong> — 텐서/파이프라인 병렬화 또는 모델 샤딩으로 확장하며, NVLink 또는 동일 PCIe 루트의 GPU를 우선 사용합니다. 통신-연산 중첩과 적절한 배치·마이크로배치 설정으로 처리량을 개선합니다.</p>
+            <p><strong class="text-fg">소프트웨어 튜닝</strong> — Redis 캐시로 반복 쿼리 비용을 줄이고, HNSW의 <code>efConstruction</code>·<code>efSearch</code>를 조절해 정밀도와 속도를 조율합니다. 추론 요청은 배치화하고, FP16 혼합 정밀도와 pinned memory로 메모리 대역폭을 최적화합니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="troubleshooting" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
+      <div class="glass rounded-2xl p-6 sm:p-10">
+        <div class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 6</div>
+        <h2 class="text-2xl sm:text-3xl font-bold mb-8">문제 해결 및 주의사항</h2>
+        <div class="grid md:grid-cols-3 gap-6">
+          <article class="glass rounded-2xl p-6 text-center space-y-3">
+            <div class="text-3xl" aria-hidden="true">🪟</div>
+            <h3 class="text-lg font-semibold text-fg">사전 점검 미흡</h3>
+            <p class="text-sm text-soft">Windows 버전이 낮거나 가상화가 비활성화되면 설치가 중단되고, 메모리·디스크 부족으로 모델 다운로드가 실패합니다. Windows 22H2 이상, BIOS/Hyper-V 가상화 활성화, 디스크 정리를 우선 수행하세요.</p>
+          </article>
+          <article class="glass rounded-2xl p-6 text-center space-y-3">
+            <div class="text-3xl" aria-hidden="true">🧰</div>
+            <h3 class="text-lg font-semibold text-fg">GPU·라이브러리 불일치</h3>
+            <p class="text-sm text-soft">NVIDIA 드라이버와 CUDA 버전 불일치, <code>transformers</code> 패키지 구버전, 네트워크 끊김 등이 실행 오류를 유발합니다. <code>nvidia-smi</code>로 상태를 점검하고, CUDA·cuDNN·패키지를 최신으로 유지한 뒤 안정적인 네트워크 환경에서 재시도하세요.</p>
+          </article>
+          <article class="glass rounded-2xl p-6 text-center space-y-3">
+            <div class="text-3xl" aria-hidden="true">⚠️</div>
+            <h3 class="text-lg font-semibold text-fg">권한·운영 리스크</h3>
+            <p class="text-sm text-soft">관리자 권한 부족, 모델 대비 시스템 자원 부족은 서비스 실패와 성능 저하를 유발합니다. 모든 설치·서비스 기동은 관리자 권한으로 수행하고, 작은 모델·양자화로 성능을 검증한 뒤 점진적으로 확장하세요.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="cases" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
+      <div class="glass rounded-2xl p-6 sm:p-10">
+        <div class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 7</div>
+        <h2 class="text-2xl sm:text-3xl font-bold mb-6">실제 적용 사례</h2>
+        <div class="grid lg:grid-cols-2 gap-8 items-start">
+          <div class="space-y-5 text-soft leading-7">
+            <p><strong class="text-fg">로컬 RAG 구축</strong> — 문서 임베딩 → Milvus 인덱싱 → 쿼리 시 k-NN으로 관련 문서를 검색해 Llama 3.1에 컨텍스트로 제공하는 흐름으로 운영합니다. 사내 매뉴얼·계약서를 임베딩해 직원용 Q&amp;A 인터페이스를 구축하면 검색 정확도가 향상되고 응답 시간이 단축됩니다.</p>
+            <p><strong class="text-fg">코드 리뷰 자동화 PoC</strong> — 코드 스니펫을 청크화해 임베딩·유사도 검색 후 LLM으로 리뷰 초안을 생성합니다. 반복 검토 시간을 줄이고 리뷰 품질의 일관성을 높였으며, 외부 서비스 사용 없이 데이터 유출 위험을 최소화했습니다.</p>
+            <p><strong class="text-fg">성공 요인</strong> — 청크화 품질과 전처리, 모델 크기 적정화, 벡터 DB·캐시 튜닝, 사용자 피드백 루프가 핵심입니다. 8B급 경량 모델로 Windows 10 + Ollama에서 빠른 PoC를 수행한 뒤, 지표(정확도·응답 시간·만족도)에 따라 하드웨어와 모델을 단계적으로 확장하세요.</p>
+          </div>
+          <div class="glass rounded-2xl overflow-hidden">
+            <img src="https://milvus.io/docs/v2.2.x/assets/architecture_diagram.png" alt="Milvus 벡터 데이터베이스 아키텍처" class="w-full h-full object-cover" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="resources" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
+      <div class="glass rounded-2xl p-6 sm:p-10 text-center space-y-4">
+        <h2 class="text-2xl sm:text-3xl font-bold">다음 단계</h2>
+        <p class="text-soft leading-7">PoC를 끝냈다면, 모니터링 지표와 보안 요건을 정의하고 운영 자동화(배치 재임베딩, 지식 베이스 동기화)를 설계하세요. 필요한 경우 저희 컨설턴트가 Windows 10 기반의 로컬 AI 파이프라인 구축을 도와드립니다.</p>
+        <a href="mailto:younseok.oh@gmail.com" class="magnetic inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-black bg-white hover:opacity-90 transition">전문 컨설턴트에게 문의하기</a>
       </div>
     </section>
   </main>
 
   <footer class="container-max mx-auto px-6 pb-12 text-center text-sm text-muted">
-    &copy; 2025 (주)대박소프트 All rights reserved.
+    &copy; 2025 OO Consulting · Windows 10 Ollama &amp; Llama 3.1 Guide.
   </footer>
 
   <button id="backToTop" aria-label="맨 위로" class="fixed bottom-5 right-5 rounded-full px-4 py-3 text-sm font-semibold text-black bg-white shadow-lg border border-white/20 opacity-0 pointer-events-none transition">Top</button>
 
   <script>
-    // Utils
     const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
     const getCSSVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     const hexToRgb = (hex) => {
@@ -372,10 +403,9 @@
       if (/^[0-9a-fA-F]{6}$/.test(h)) {
         return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
       }
-      return { r: 88, g: 196, b: 255 }; // fallback
+      return { r: 88, g: 196, b: 255 };
     };
 
-    // Toggle: star boost (keeps night theme)
     (function(){
       const btn = document.getElementById('themeToggle');
       window.starBoost = false;
@@ -388,7 +418,6 @@
       });
     })();
 
-    // Starry Night Background: twinkling stars + Milky Way (WebGL) with Canvas2D fallback
     (function() {
       const canvas = document.getElementById('bg-canvas');
       let dpr = Math.max(1, window.devicePixelRatio || 1);
@@ -400,7 +429,6 @@
       function starTint(){ return [0.98,0.99,1.0]; }
       function milkTint(){ return theme()==='light' ? [0.85,0.86,1.0] : [0.75,0.78,1.0]; }
 
-      // WebGL starfield + Milky Way
       const gl = canvas.getContext('webgl', { alpha: true, antialias: true });
       if (gl && !prefersReduced) {
         const vertSrc = `attribute vec2 a_pos; void main(){ gl_Position = vec4(a_pos, 0.0, 1.0); }`;
@@ -408,8 +436,8 @@
           precision mediump float;
           uniform vec2 u_res; uniform float u_time;
           uniform vec3 u_skyTop; uniform vec3 u_skyBot; uniform vec3 u_star; uniform vec3 u_milk;
-          uniform float u_layerMult; // apparent star density multiplier
-          uniform float u_meteorMult; // meteor frequency/intensity multiplier
+          uniform float u_layerMult;
+          uniform float u_meteorMult;
 
           float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }
           float noise(vec2 p){ vec2 i=floor(p), f=fract(p); float a=hash(i); float b=hash(i+vec2(1.,0.)); float c=hash(i+vec2(0.,1.)); float d=hash(i+vec2(1.,1.)); vec2 u=f*f*(3.-2.*f); return mix(a,b,u.x)+(c-a)*u.y*(1.-u.x)+(d-b)*u.x*u.y; }
@@ -417,118 +445,90 @@
           mat2 rot(float a){ float c=cos(a), s=sin(a); return mat2(c,-s,s,c); }
 
           float starLayer(vec2 p, float scale){
-            // sparse, jittered cells to avoid line patterns
             p *= scale;
             vec2 id = floor(p);
             vec2 f  = fract(p);
-            float present = step(0.925, hash(id*1.21)); // ~7.5% cells present (≈3x denser)
+            float present = step(0.925, hash(id*1.21));
             if (present < 0.5) return 0.0;
             vec2 jitter = vec2(hash(id + vec2(13.1, 7.7)), hash(id + vec2(5.2, 9.3))) - 0.5;
             vec2 gv = (f - 0.5) - 0.35 * jitter;
             float n = hash(id + vec2(9.9, 2.3));
-            // realistic sizes: mostly small, rare bright
             float r = mix(0.028, 0.10, pow(n, 6.0));
             r *= mix(1.0, 2.6, step(0.996, hash(id + vec2(4.7,5.3))));
             float d = length(gv);
-            float core = smoothstep(r, 0.0, d);
-            float halo = smoothstep(2.2*r, 0.0, d) * 0.35;
-            float tw = 0.55 + 0.45 * sin(u_time*3.0 + n*6.2831) + 0.20 * sin(u_time*7.5 + n*12.566);
-            tw = clamp(tw, 0.3, 1.4);
-            return (core + halo) * tw * (0.7 + 0.3*n);
-          }
-
-          // Shooting star brightness helper
-          float meteorAt(vec2 P, float timeShift){
-            float period = mix(2.0, 4.0, fract(sin(timeShift*12.3)*43758.5453));
-            float tLocal = fract((u_time + timeShift) / period);
-            if (tLocal > 0.45) return 0.0; // active ~45% per cycle (more frequent)
-            float k = floor((u_time + timeShift) / period);
-            float ang = mix(-1.1, 1.1, fract(sin((k+timeShift)*23.7)*43758.5453));
-            vec2 dir = normalize(vec2(cos(ang), sin(ang)));
-            vec2 start = vec2(-1.2, mix(-0.6, 0.8, fract(sin((k*1.3+timeShift)*37.1)*43758.5453)));
-            float L = 2.2;
-            vec2 pos = start + dir * (tLocal * (L+1.0));
-            float d = abs(dir.x*(P.y - pos.y) - dir.y*(P.x - pos.x));
-            float along = dot(P - pos, dir);
-            float trail = smoothstep(0.6, -1.6, along);
-            float core = exp(-pow(d/0.008, 2.0)) * trail;
-            float glow = exp(-pow(d/0.036, 2.0)) * trail;
-            return core*1.1 + glow*0.6;
+            float b = smoothstep(r, r*0.6, d);
+            return b;
           }
 
           void main(){
-            vec2 res = u_res; vec2 uv = gl_FragCoord.xy / res; vec2 p = (gl_FragCoord.xy - 0.5*res) / res.y;
-            vec3 sky = mix(u_skyBot, u_skyTop, pow(uv.y, 1.6));
-
-            // Clear night sky
-            vec3 col = sky;
-
-            // Starfield: multi-scale, rotated layers with jitter (no grid lines)
-            float s = 0.0;
-            s += starLayer(rot(0.5) * p, 8.0);
-            s += starLayer(rot(0.20) * p, 12.0) * 0.8;
-            s += starLayer(rot(-0.15) * p, 18.0) * 0.65;
-            s += starLayer(rot(0.40) * p, 26.0) * 0.5;
-
-            vec3 stars = u_star * (0.10 + 1.5*s*u_layerMult);
-            col += stars;
-
-            // Meteors (shooting stars) – more frequent
-            float m = 0.0;
-            m += meteorAt(p, 2.7);
-            m += 0.8 * meteorAt(p, 5.9);
-            m += 0.6 * meteorAt(p, 9.1);
-            m += 0.5 * meteorAt(p, 12.3);
-            m += 0.4 * meteorAt(p, 15.7);
-            col += u_star * (0.8*m*u_meteorMult) + u_milk * (0.4*m*u_meteorMult);
-
+            vec2 uv = gl_FragCoord.xy / u_res.xy;
+            vec3 sky = mix(u_skyBot, u_skyTop, uv.y);
+            vec2 p = uv * 2.0 - 1.0;
+            float stars = 0.0;
+            stars += starLayer(p + u_time*0.02, 120.0) * 0.7;
+            stars += starLayer(rot(0.6) * (p*vec2(1.1,1.3) + u_time*0.01), 220.0) * 0.9;
+            stars += starLayer(rot(-0.4) * (p*vec2(1.4,0.9) - u_time*0.013), 320.0) * 0.6;
+            stars *= u_layerMult;
+            vec2 mUv = rot(0.6) * (p * vec2(1.6, 1.0));
+            float milky = pow(clamp(1.0 - abs(mUv.y)*1.6, 0.0, 1.0), 3.2);
+            milky *= mix(0.35, 0.65, fbm(uv * 2.5 + u_time*0.02));
+            vec3 col = sky + stars * u_star + milky * u_milk;
             gl_FragColor = vec4(col, 1.0);
           }
         `;
 
-        function compile(type, src){ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){ console.error(gl.getShaderInfoLog(s)); } return s; }
+        function compile(type, source){ const shader = gl.createShader(type); gl.shaderSource(shader, source); gl.compileShader(shader); if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) { console.error(gl.getShaderInfoLog(shader)); return null; } return shader; }
         const vs = compile(gl.VERTEX_SHADER, vertSrc);
         const fs = compile(gl.FRAGMENT_SHADER, fragSrc);
-        const prog = gl.createProgram(); gl.attachShader(prog,vs); gl.attachShader(prog,fs); gl.linkProgram(prog); gl.useProgram(prog);
+        const program = gl.createProgram();
+        gl.attachShader(program, vs); gl.attachShader(program, fs); gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) { console.error(gl.getProgramInfoLog(program)); }
+        gl.useProgram(program);
 
-        const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
-        const loc = gl.getAttribLocation(prog,'a_pos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+        const quad = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+          -1,-1, 1,-1, -1,1,
+          -1,1, 1,-1, 1,1,
+        ]), gl.STATIC_DRAW);
+        const a_pos = gl.getAttribLocation(program, 'a_pos');
+        gl.enableVertexAttribArray(a_pos);
+        gl.vertexAttribPointer(a_pos, 2, gl.FLOAT, false, 0, 0);
 
-        const uRes = gl.getUniformLocation(prog,'u_res');
-        const uTime = gl.getUniformLocation(prog,'u_time');
-        const uSkyT = gl.getUniformLocation(prog,'u_skyTop');
-        const uSkyB = gl.getUniformLocation(prog,'u_skyBot');
-        const uStar = gl.getUniformLocation(prog,'u_star');
-        const uMilk = gl.getUniformLocation(prog,'u_milk');
-        const uLayerMult = gl.getUniformLocation(prog,'u_layerMult');
-        const uMeteorMult = gl.getUniformLocation(prog,'u_meteorMult');
+        const u_res = gl.getUniformLocation(program, 'u_res');
+        const u_time = gl.getUniformLocation(program, 'u_time');
+        const u_skyTop = gl.getUniformLocation(program, 'u_skyTop');
+        const u_skyBot = gl.getUniformLocation(program, 'u_skyBot');
+        const u_star = gl.getUniformLocation(program, 'u_star');
+        const u_milk = gl.getUniformLocation(program, 'u_milk');
+        const u_layerMult = gl.getUniformLocation(program, 'u_layerMult');
+        const u_meteorMult = gl.getUniformLocation(program, 'u_meteorMult');
 
-        function setColors(){ gl.uniform3fv(uSkyT, new Float32Array(skyTop())); gl.uniform3fv(uSkyB, new Float32Array(skyBot())); gl.uniform3fv(uStar, new Float32Array(starTint())); gl.uniform3fv(uMilk, new Float32Array(milkTint())); }
-        function resize(){ const w=Math.floor(canvas.clientWidth*dpr), h=Math.floor(canvas.clientHeight*dpr); canvas.width=w; canvas.height=h; gl.viewport(0,0,w,h); gl.uniform2f(uRes,w,h); }
-        window.addEventListener('resize', resize, { passive:true }); resize();
-        setColors(); document.addEventListener('themechange', setColors);
+        function resize(){ const { clientWidth: w, clientHeight: h } = canvas; canvas.width = w * dpr; canvas.height = h * dpr; gl.viewport(0, 0, canvas.width, canvas.height); }
+        window.addEventListener('resize', resize, { passive: true }); resize();
 
-        // Star boost toggle (from button)
-        window.starBoost = window.starBoost || false;
-        document.addEventListener('starboost', (e) => { window.starBoost = !!e.detail; });
-        gl.clearColor(0,0,0,0);
-        const start = performance.now();
-        function raf(t){
-          const layerMult = window.starBoost ? 2.0 : 1.0; // 2x apparent density when boosted
-          const meteorMult = window.starBoost ? 1.0 : 0.0; // meteors only when boosted
-          gl.uniform1f(uLayerMult, layerMult);
-          gl.uniform1f(uMeteorMult, meteorMult);
-          gl.clear(gl.COLOR_BUFFER_BIT);
-          gl.uniform1f(uTime, (t-start)/1000);
-          gl.drawArrays(gl.TRIANGLES,0,3);
+        let t = 0;
+        function raf(){
+          t += 0.016;
+          const [rt, gt, bt] = skyTop();
+          const [rb, gb, bb] = skyBot();
+          const [rs, gs, bs] = starTint();
+          const [rm, gm, bm] = milkTint();
+          gl.uniform2f(u_res, canvas.width, canvas.height);
+          gl.uniform1f(u_time, t);
+          gl.uniform3f(u_skyTop, rt, gt, bt);
+          gl.uniform3f(u_skyBot, rb, gb, bb);
+          gl.uniform3f(u_star, rs, gs, bs);
+          gl.uniform3f(u_milk, rm, gm, bm);
+          gl.uniform1f(u_layerMult, window.starBoost ? 1.5 : 1.0);
+          gl.uniform1f(u_meteorMult, window.starBoost ? 1.5 : 0.5);
+          gl.drawArrays(gl.TRIANGLES, 0, 6);
           requestAnimationFrame(raf);
         }
         requestAnimationFrame(raf);
         return;
       }
 
-      // Canvas2D fallback: star layers + milky way band with twinkle
       const ctx = canvas.getContext('2d');
       let W=0,H=0; let needsReseed = true; function resize(){ W=canvas.clientWidth; H=canvas.clientHeight; canvas.width=Math.floor(W*dpr); canvas.height=Math.floor(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); needsReseed = true; } window.addEventListener('resize', resize, { passive:true }); resize();
 
@@ -536,12 +536,11 @@
       const stars = []; let STAR_COUNT = 180;
       function seed(){
         stars.length = 0;
-        STAR_COUNT = (W >= 900 ? 360 : 180); // PC는 2배 밀도
+        STAR_COUNT = (W >= 900 ? 360 : 180);
         for (let i=0;i<STAR_COUNT;i++){
           const x = rand()*W, y = rand()*H;
           stars.push({ x, y, r: 1.2 + 2.6*Math.pow(rand(),2), spd: 0.6+1.3*rand(), ph: rand()*Math.PI*2 });
         }
-        // 추가 별 생성으로 총 3배 밀도
         for (let i=0;i<2*STAR_COUNT;i++){
           const x = rand()*W, y = rand()*H;
           stars.push({ x, y, r: 1.2 + 2.6*Math.pow(rand(),2), spd: 0.6+1.3*rand(), ph: rand()*Math.PI*2 });
@@ -550,9 +549,8 @@
       seed();
       let BASE_COUNT = stars.length;
 
-      // Meteors
       const meteors = [];
-      let nextMeteorAt = 2000 + Math.random()*3000; // 더 자주 발생
+      let nextMeteorAt = 2000 + Math.random()*3000;
       function spawnMeteor(){
         const ang = (Math.random()*2-1) * 1.1;
         const len = Math.max(W, H) * (0.5 + Math.random()*0.6);
@@ -566,20 +564,17 @@
         nextMeteorAt = time + 1000 + Math.random()*1200;
       }
 
-      // Star boost toggle hookup
       window.starBoost = window.starBoost || false;
       document.addEventListener('starboost', (e) => {
         window.starBoost = !!e.detail;
-        if (!window.starBoost) { meteors.length = 0; } // clear meteors when turning off
+        if (!window.starBoost) { meteors.length = 0; }
       });
 
       let time=0; function draw(){
-        // sky
         const st=skyTop(), sb=skyBot();
         const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,`rgb(${st.map(v=>Math.round(v*255)).join(',')})`); g.addColorStop(1,`rgb(${sb.map(v=>Math.round(v*255)).join(',')})`); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
         if (needsReseed) { seed(); BASE_COUNT = stars.length; needsReseed = false; }
 
-        // adjust star count based on boost (1.0 or 2.0)
         const scale = window.starBoost ? 2.0 : 1.0;
         const target = Math.floor(BASE_COUNT * scale);
         if (stars.length < target){
@@ -589,13 +584,11 @@
           stars.splice(target, Math.min(50, stars.length - target));
         }
 
-        // stars
         ctx.globalCompositeOperation='lighter';
         const t = time/1000; const tint = starTint();
         for(const s of stars){ const tw = Math.min(1.4, 0.55+0.45*Math.sin((t*2.0*s.spd)+s.ph) + 0.25*Math.sin((t*5.5*s.spd)+s.ph*1.7)); const a = 0.7*tw; ctx.fillStyle = `rgba(${Math.round(tint[0]*255)},${Math.round(tint[1]*255)},${Math.round(tint[2]*255)},${a})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r*tw, 0, Math.PI*2); ctx.fill(); }
         ctx.globalCompositeOperation='source-over';
 
-        // meteors only when boosted
         if (window.starBoost && time > nextMeteorAt) spawnMeteor();
         for (let i=meteors.length-1; i>=0; i--){
           const m = meteors[i];
@@ -625,14 +618,12 @@
       requestAnimationFrame(draw);
     })();
 
-    // Text cycle in hero
     (function() {
       const items = Array.from(document.querySelectorAll('.type-cycle .cycle-item'));
       if (!items.length) return;
       let i = 0; setInterval(() => { items.forEach(el => el.classList.add('hidden')); i = (i+1) % items.length; items[i].classList.remove('hidden'); }, 2200);
     })();
 
-    // Cursor follower + magnetic effect
     (function(){
       const cursor = document.querySelector('.cursor');
       let x = 0, y = 0, tx = 0, ty = 0;
@@ -646,17 +637,15 @@
       }
     })();
 
-    // Tilt cards + shine
     (function(){
       const cards = document.querySelectorAll('.tilt-card');
       cards.forEach(card => {
-        const max = 8; // degrees
+        const max = 8;
         card.addEventListener('pointermove', e => { const r = card.getBoundingClientRect(); const px = (e.clientX - r.left) / r.width; const py = (e.clientY - r.top) / r.height; const rx = (py - .5) * -max; const ry = (px - .5) * max; card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`; card.style.setProperty('--mx', `${px*100}%`); card.style.setProperty('--my', `${py*100}%`); });
         card.addEventListener('pointerleave', () => { card.style.transform = ''; });
       });
     })();
 
-    // Scroll progress + back-to-top visibility
     (function(){
       const bar = document.querySelector('.progress');
       const btn = document.getElementById('backToTop');
@@ -665,14 +654,12 @@
       btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     })();
 
-    // GSAP entrance + scroll reveals
     window.addEventListener('load', () => {
       if (!window.gsap) return; const { gsap } = window; if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
       gsap.from('header .hero-gradient', { y: 20, autoAlpha: 0, duration: 0.8, ease: 'power2.out' });
       gsap.utils.toArray('.tilt-card').forEach((el, i) => { gsap.from(el, { y: 30, autoAlpha: 0, duration: 0.7, ease: 'power2.out', delay: i*0.05, scrollTrigger: { trigger: el, start: 'top 85%' } }); });
     });
 
-    // Shrink the leading (주) in the main title to 1/2 size
     document.addEventListener('DOMContentLoaded', () => {
       try {
         const el = document.querySelector('header h1 .block');
@@ -690,4 +677,3 @@
   </script>
 </body>
 </html>
-
