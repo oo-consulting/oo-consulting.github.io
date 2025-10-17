@@ -263,6 +263,7 @@
             <span class="cycle-item hidden">프라이버시 중심 로컬 환경</span>
             <span class="cycle-item hidden">GPU·WSL2 최적화 전략</span>
             <span class="cycle-item hidden">실제 사례와 문제 해결 노하우</span>
+            <span class="cycle-item hidden">소스코드를 위한 Tree-Sitter 기반 청킹 </span>
           </p>
           <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-2">
             <a href="#pipeline" class="magnetic rounded-full px-5 py-3 text-sm font-semibold text-black bg-white hover:opacity-90 transition">
@@ -282,7 +283,7 @@
         <div class="shine" aria-hidden="true"></div>
         <h2 class="text-2xl sm:text-3xl font-bold mb-4">프로젝트 개요</h2>
         <p class="text-soft leading-7">
-          Windows 10(WSL2 권장) 환경에서 Ollama를 통해 Llama 3.1을 로컬에 배포하고, 사내 문서를 임베딩하여 벡터 DB와 결합하는 전 과정을 다룹니다. 준비 단계에서 운영 체제 버전과 가상화, GPU/CPU, 디스크 여유 공간을 확인하고, 설치 이후에는 Ollama와 Llama 3.1을 통한 모델 실행·관리, 임베딩 파이프라인 구성, 성능 최적화 및 트러블슈팅, 실제 적용 사례까지 한 번에 파악할 수 있습니다.
+          Windows 10(WSL2 권장) 환경에서 Ollama를 통해 Llama 3.1을 로컬에 배포하고, 사내 문서(또는 Tree-Sitter 기반)를 임베딩하여 벡터 DB와 결합하는 전 과정을 다룹니다. 준비 단계에서 운영 체제 버전과 가상화, GPU/CPU, 디스크 여유 공간을 확인하고, 설치 이후에는 Ollama와 Llama 3.1을 통한 모델 실행·관리, 임베딩 파이프라인 구성, 성능 최적화 및 트러블슈팅, 실제 적용 사례까지 한 번에 파악할 수 있습니다. 만약 일반 문서나 소스가 아닌 로그기반의 청킹이라면 다른 전략으로 구축해야 하므로 전문가 조언이 필요합니다. 
         </p>
         <p class="text-soft leading-7 mt-4">
           목표는 로컬 환경에서 데이터 프라이버시를 보장하면서도 고성능 검색·질의응답(RAG) 경험을 제공하는 것입니다. 단계별 체크리스트와 실행 가능한 명령어, 하드웨어·소프트웨어 최적화 포인트를 함께 제공하여 실무에 즉시 적용할 수 있도록 구성했습니다.
