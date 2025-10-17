@@ -7,6 +7,7 @@
   <meta name="description" content="Windows 10 환경에서 Ollama와 Llama 3.1을 활용해 내부 임베딩·RAG 파이프라인을 구축하는 단계별 기술 가이드" />
   <meta name="google-site-verification" content="google9c3f444d05c1610b" />
 
+  <script src="bg-stars.js" defer></script>
   <script>
     // Early theme boot to avoid FOUC
     try {
@@ -48,9 +49,7 @@
     html { scroll-behavior: smooth; }
     body {
       font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-      background: radial-gradient(1200px 600px at 10% -10%, rgba(40,80,255,.12), transparent),
-                  radial-gradient(1000px 500px at 110% 10%, rgba(100,255,200,.10), transparent),
-                  var(--bg);
+      background: var(--bg);
       color: var(--fg);
       overflow-x: hidden;
     }
@@ -69,7 +68,7 @@
       background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.01));
     }
 
-    #bg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; filter: contrast(105%) saturate(110%); }
+    #bg-stars { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
     header, main, footer, nav { position: relative; z-index: 1; }
 
     .cursor { position: fixed; inset: 0 auto auto 0; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 9999px; background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2)); mix-blend-mode: screen; pointer-events: none; z-index: 50; opacity: .8; transition: width .2s ease, height .2s ease, opacity .2s ease; }
@@ -101,7 +100,7 @@
   </style>
 </head>
 <body class="antialiased leading-relaxed">
-  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+  <canvas id="bg-stars" aria-hidden="true"></canvas>
   <div class="progress" aria-hidden="true"></div>
   <div class="cursor" aria-hidden="true"></div>
 
@@ -416,206 +415,6 @@ answer = llama.generate(prompt_with(results))</code></pre>
         btn.classList.toggle('active', window.starBoost);
         document.dispatchEvent(new CustomEvent('starboost', { detail: window.starBoost }));
       });
-    })();
-
-    (function() {
-      const canvas = document.getElementById('bg-canvas');
-      let dpr = Math.max(1, window.devicePixelRatio || 1);
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      function theme(){ return document.documentElement.getAttribute('data-theme') || 'dark'; }
-      function skyTop(){  return theme()==='light' ? [0.14,0.18,0.34] : [0.03,0.05,0.12]; }
-      function skyBot(){  return theme()==='light' ? [0.06,0.10,0.22] : [0.01,0.02,0.06]; }
-      function starTint(){ return [0.98,0.99,1.0]; }
-      function milkTint(){ return theme()==='light' ? [0.85,0.86,1.0] : [0.75,0.78,1.0]; }
-
-      const gl = canvas.getContext('webgl', { alpha: true, antialias: true });
-      if (gl && !prefersReduced) {
-        const vertSrc = `attribute vec2 a_pos; void main(){ gl_Position = vec4(a_pos, 0.0, 1.0); }`;
-        const fragSrc = `
-          precision mediump float;
-          uniform vec2 u_res; uniform float u_time;
-          uniform vec3 u_skyTop; uniform vec3 u_skyBot; uniform vec3 u_star; uniform vec3 u_milk;
-          uniform float u_layerMult;
-          uniform float u_meteorMult;
-
-          float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }
-          float noise(vec2 p){ vec2 i=floor(p), f=fract(p); float a=hash(i); float b=hash(i+vec2(1.,0.)); float c=hash(i+vec2(0.,1.)); float d=hash(i+vec2(1.,1.)); vec2 u=f*f*(3.-2.*f); return mix(a,b,u.x)+(c-a)*u.y*(1.-u.x)+(d-b)*u.x*u.y; }
-          float fbm(vec2 p){ float t=0.; float a=.5; mat2 m=mat2(1.6,1.2,-1.2,1.6); for(int i=0;i<5;i++){ t+=a*noise(p); p=m*p*1.25; a*=.55; } return t; }
-          mat2 rot(float a){ float c=cos(a), s=sin(a); return mat2(c,-s,s,c); }
-
-          float starLayer(vec2 p, float scale){
-            p *= scale;
-            vec2 id = floor(p);
-            vec2 f  = fract(p);
-            float present = step(0.925, hash(id*1.21));
-            if (present < 0.5) return 0.0;
-            vec2 jitter = vec2(hash(id + vec2(13.1, 7.7)), hash(id + vec2(5.2, 9.3))) - 0.5;
-            vec2 gv = (f - 0.5) - 0.35 * jitter;
-            float n = hash(id + vec2(9.9, 2.3));
-            float r = mix(0.028, 0.10, pow(n, 6.0));
-            r *= mix(1.0, 2.6, step(0.996, hash(id + vec2(4.7,5.3))));
-            float d = length(gv);
-            float b = smoothstep(r, r*0.6, d);
-            return b;
-          }
-
-          void main(){
-            vec2 uv = gl_FragCoord.xy / u_res.xy;
-            vec3 sky = mix(u_skyBot, u_skyTop, uv.y);
-            vec2 p = uv * 2.0 - 1.0;
-            float stars = 0.0;
-            stars += starLayer(p + u_time*0.02, 120.0) * 0.7;
-            stars += starLayer(rot(0.6) * (p*vec2(1.1,1.3) + u_time*0.01), 220.0) * 0.9;
-            stars += starLayer(rot(-0.4) * (p*vec2(1.4,0.9) - u_time*0.013), 320.0) * 0.6;
-            stars *= u_layerMult;
-            vec2 mUv = rot(0.6) * (p * vec2(1.6, 1.0));
-            float milky = pow(clamp(1.0 - abs(mUv.y)*1.6, 0.0, 1.0), 3.2);
-            milky *= mix(0.35, 0.65, fbm(uv * 2.5 + u_time*0.02));
-            vec3 col = sky + stars * u_star + milky * u_milk;
-            gl_FragColor = vec4(col, 1.0);
-          }
-        `;
-
-        function compile(type, source){ const shader = gl.createShader(type); gl.shaderSource(shader, source); gl.compileShader(shader); if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) { console.error(gl.getShaderInfoLog(shader)); return null; } return shader; }
-        const vs = compile(gl.VERTEX_SHADER, vertSrc);
-        const fs = compile(gl.FRAGMENT_SHADER, fragSrc);
-        const program = gl.createProgram();
-        gl.attachShader(program, vs); gl.attachShader(program, fs); gl.linkProgram(program);
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) { console.error(gl.getProgramInfoLog(program)); }
-        gl.useProgram(program);
-
-        const quad = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-          -1,-1, 1,-1, -1,1,
-          -1,1, 1,-1, 1,1,
-        ]), gl.STATIC_DRAW);
-        const a_pos = gl.getAttribLocation(program, 'a_pos');
-        gl.enableVertexAttribArray(a_pos);
-        gl.vertexAttribPointer(a_pos, 2, gl.FLOAT, false, 0, 0);
-
-        const u_res = gl.getUniformLocation(program, 'u_res');
-        const u_time = gl.getUniformLocation(program, 'u_time');
-        const u_skyTop = gl.getUniformLocation(program, 'u_skyTop');
-        const u_skyBot = gl.getUniformLocation(program, 'u_skyBot');
-        const u_star = gl.getUniformLocation(program, 'u_star');
-        const u_milk = gl.getUniformLocation(program, 'u_milk');
-        const u_layerMult = gl.getUniformLocation(program, 'u_layerMult');
-        const u_meteorMult = gl.getUniformLocation(program, 'u_meteorMult');
-
-        function resize(){ const { clientWidth: w, clientHeight: h } = canvas; canvas.width = w * dpr; canvas.height = h * dpr; gl.viewport(0, 0, canvas.width, canvas.height); }
-        window.addEventListener('resize', resize, { passive: true }); resize();
-
-        let t = 0;
-        function raf(){
-          t += 0.016;
-          const [rt, gt, bt] = skyTop();
-          const [rb, gb, bb] = skyBot();
-          const [rs, gs, bs] = starTint();
-          const [rm, gm, bm] = milkTint();
-          gl.uniform2f(u_res, canvas.width, canvas.height);
-          gl.uniform1f(u_time, t);
-          gl.uniform3f(u_skyTop, rt, gt, bt);
-          gl.uniform3f(u_skyBot, rb, gb, bb);
-          gl.uniform3f(u_star, rs, gs, bs);
-          gl.uniform3f(u_milk, rm, gm, bm);
-          gl.uniform1f(u_layerMult, window.starBoost ? 1.5 : 1.0);
-          gl.uniform1f(u_meteorMult, window.starBoost ? 1.5 : 0.5);
-          gl.drawArrays(gl.TRIANGLES, 0, 6);
-          requestAnimationFrame(raf);
-        }
-        requestAnimationFrame(raf);
-        return;
-      }
-
-      const ctx = canvas.getContext('2d');
-      let W=0,H=0; let needsReseed = true; function resize(){ W=canvas.clientWidth; H=canvas.clientHeight; canvas.width=Math.floor(W*dpr); canvas.height=Math.floor(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); needsReseed = true; } window.addEventListener('resize', resize, { passive:true }); resize();
-
-      function rand(){ return Math.random(); }
-      const stars = []; let STAR_COUNT = 180;
-      function seed(){
-        stars.length = 0;
-        STAR_COUNT = (W >= 900 ? 360 : 180);
-        for (let i=0;i<STAR_COUNT;i++){
-          const x = rand()*W, y = rand()*H;
-          stars.push({ x, y, r: 1.2 + 2.6*Math.pow(rand(),2), spd: 0.6+1.3*rand(), ph: rand()*Math.PI*2 });
-        }
-        for (let i=0;i<2*STAR_COUNT;i++){
-          const x = rand()*W, y = rand()*H;
-          stars.push({ x, y, r: 1.2 + 2.6*Math.pow(rand(),2), spd: 0.6+1.3*rand(), ph: rand()*Math.PI*2 });
-        }
-      }
-      seed();
-      let BASE_COUNT = stars.length;
-
-      const meteors = [];
-      let nextMeteorAt = 2000 + Math.random()*3000;
-      function spawnMeteor(){
-        const ang = (Math.random()*2-1) * 1.1;
-        const len = Math.max(W, H) * (0.5 + Math.random()*0.6);
-        const y = Math.random()*H*0.8 + H*0.1;
-        let sx = -0.2*W, sy = y, a = ang;
-        const edge = Math.floor(Math.random()*4);
-        if (edge === 1){ sx = W*1.1; sy = y; a = Math.PI - ang; }
-        else if (edge === 2){ sx = Math.random()*W; sy = -0.1*H; a = Math.PI/2 + (Math.random()*0.6 - 0.3); }
-        else if (edge === 3){ sx = Math.random()*W; sy = H*1.1; a = -Math.PI/2 + (Math.random()*0.6 - 0.3); }
-        meteors.push({ start: time, dur: 800 + Math.random()*900, x: sx, y: sy, ang: a, len, w: 2 + Math.random()*2 });
-        nextMeteorAt = time + 1000 + Math.random()*1200;
-      }
-
-      window.starBoost = window.starBoost || false;
-      document.addEventListener('starboost', (e) => {
-        window.starBoost = !!e.detail;
-        if (!window.starBoost) { meteors.length = 0; }
-      });
-
-      let time=0; function draw(){
-        const st=skyTop(), sb=skyBot();
-        const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,`rgb(${st.map(v=>Math.round(v*255)).join(',')})`); g.addColorStop(1,`rgb(${sb.map(v=>Math.round(v*255)).join(',')})`); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-        if (needsReseed) { seed(); BASE_COUNT = stars.length; needsReseed = false; }
-
-        const scale = window.starBoost ? 2.0 : 1.0;
-        const target = Math.floor(BASE_COUNT * scale);
-        if (stars.length < target){
-          const add = Math.min(50, target - stars.length);
-          for(let i=0;i<add;i++){ const x=rand()*W, y=rand()*H; stars.push({ x, y, r: 1.2 + 2.6*Math.pow(rand(),2), spd: 0.6+1.3*rand(), ph: rand()*Math.PI*2 }); }
-        } else if (stars.length > target){
-          stars.splice(target, Math.min(50, stars.length - target));
-        }
-
-        ctx.globalCompositeOperation='lighter';
-        const t = time/1000; const tint = starTint();
-        for(const s of stars){ const tw = Math.min(1.4, 0.55+0.45*Math.sin((t*2.0*s.spd)+s.ph) + 0.25*Math.sin((t*5.5*s.spd)+s.ph*1.7)); const a = 0.7*tw; ctx.fillStyle = `rgba(${Math.round(tint[0]*255)},${Math.round(tint[1]*255)},${Math.round(tint[2]*255)},${a})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r*tw, 0, Math.PI*2); ctx.fill(); }
-        ctx.globalCompositeOperation='source-over';
-
-        if (window.starBoost && time > nextMeteorAt) spawnMeteor();
-        for (let i=meteors.length-1; i>=0; i--){
-          const m = meteors[i];
-          const ph = (time - m.start) / m.dur;
-          if (ph <= 0 || ph >= 1){ meteors.splice(i,1); continue; }
-          const len = m.len * ph;
-          const x = m.x + len * Math.cos(m.ang);
-          const y = m.y + len * Math.sin(m.ang);
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.rotate(m.ang);
-          ctx.globalCompositeOperation = 'lighter';
-          const g1 = ctx.createLinearGradient(-len*0.2, 0, 0, 0);
-          g1.addColorStop(0, 'rgba(255,255,255,0.0)');
-          g1.addColorStop(1, 'rgba(255,255,255,0.9)');
-          ctx.fillStyle = g1; ctx.fillRect(-len*0.2, -m.w*0.5, len*0.2, m.w);
-          const g2 = ctx.createLinearGradient(0, 0, len, 0);
-          g2.addColorStop(0, 'rgba(255,255,255,0.9)');
-          g2.addColorStop(1, 'rgba(255,255,255,0.0)');
-          ctx.fillStyle = g2; ctx.fillRect(0, -m.w*0.5, len, m.w);
-          ctx.restore();
-        }
-
-        if(!prefersReduced) time += 16; requestAnimationFrame(draw);
-      }
-      document.addEventListener('themechange', () => { seed(); });
-      requestAnimationFrame(draw);
     })();
 
     (function() {

@@ -10,6 +10,8 @@
   let rafId = 0;
   let lastTime = 0;
   let nextShooter = 0;
+  let densityMultiplier = 1;
+  let shooterIntervalScale = 1;
 
   const STAR_COUNT_BASE = 220; // base density (slightly denser)
   const SHOOT_INTERVAL_MIN = 4;
@@ -37,7 +39,7 @@
   function initStars() {
     const now = (typeof performance !== 'undefined' ? performance.now() : Date.now()) * 0.001;
     const area = width * height;
-    const density = STAR_COUNT_BASE * (area / (1280 * 720));
+    const density = STAR_COUNT_BASE * densityMultiplier * (area / (1280 * 720));
     const count = Math.min(500, Math.max(120, Math.floor(density)));
     stars = new Array(count).fill(0).map(() => ({
       x: Math.random() * width,
@@ -83,7 +85,9 @@
 
     if (now >= nextShooter) {
       spawnShooter(now);
-      nextShooter = now + rand(SHOOT_INTERVAL_MIN, SHOOT_INTERVAL_MAX);
+      const intervalMin = SHOOT_INTERVAL_MIN * shooterIntervalScale;
+      const intervalMax = SHOOT_INTERVAL_MAX * shooterIntervalScale;
+      nextShooter = now + rand(intervalMin, intervalMax);
     }
 
     ctx.clearRect(0, 0, width, height);
@@ -187,6 +191,15 @@
   window.addEventListener('resize', resize, { passive: true });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) stop(); else start();
+  });
+
+  document.addEventListener('starboost', (event) => {
+    const boosted = !!(event && event.detail);
+    densityMultiplier = boosted ? 1.5 : 1;
+    shooterIntervalScale = boosted ? 0.65 : 1;
+    initStars();
+    shooters = [];
+    nextShooter = 0;
   });
 
   resize();
