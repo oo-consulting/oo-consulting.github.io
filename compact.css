@@ -1,0 +1,260 @@
+/* 별 배경 위에 UI를 얇게 겹치는 다크 모드 압축 스타일 */
+
+/* Increase global type scale by one step */
+html { font-size: 112.5%; } /* 16px -> 18px base */
+
+/* Space-like dark backdrop to pair with star canvas */
+body { background: #0b1020 !important; }
+
+/* Star canvas pinned underneath content */
+#bg-stars {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Lift main content above background */
+main.container { position: relative; z-index: 1; }
+
+/* Make top title (h1) smaller specifically */
+h1 {
+  font-size: clamp(1.3rem, 1.8vw, 2.0rem);
+  line-height: 1.15;
+  color: #e5e7eb;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+}
+
+body {
+  padding: min(4vh, 2rem) 1rem;
+}
+
+main.container {
+  /* Reduce vertical spacing between panels and header */
+  gap: 0.5rem;
+}
+
+.panel {
+  padding-block: 0.9rem;
+}
+
+/* Unify vertical spacing between elements inside panels */
+.panel {
+  position: relative;
+  overflow: hidden;
+  gap: 0.5rem;
+  background: linear-gradient(145deg, rgba(13, 20, 38, 0.82), rgba(10, 17, 33, 0.52));
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 26px 48px rgba(8, 15, 35, 0.45);
+  backdrop-filter: blur(22px) saturate(170%);
+  border-radius: var(--radius);
+  isolation: isolate;
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(140% 90% at 0% 0%, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0) 55%),
+    radial-gradient(120% 120% at 100% 0%, rgba(236, 72, 153, 0.22) 0%, rgba(236, 72, 153, 0) 60%);
+  pointer-events: none;
+  opacity: 0.9;
+  mix-blend-mode: screen;
+}
+
+.panel::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+/* Upload panel accent */
+#uploadPanel {
+  color: #eef4ff;
+  border-color: rgba(96, 165, 250, 0.35);
+  background: linear-gradient(160deg, rgba(13, 24, 46, 0.82), rgba(14, 82, 162, 0.38));
+}
+
+#uploadPanel::before {
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(96, 165, 250, 0.45) 0%, rgba(96, 165, 250, 0.15) 50%),
+    radial-gradient(120% 120% at 100% -10%, rgba(125, 211, 252, 0.28) 0%, rgba(125, 211, 252, 0) 60%);
+}
+
+/* Response panel accent */
+#responsePanel {
+  color: #eef2ff;
+  border-color: rgba(165, 180, 252, 0.4);
+  background: linear-gradient(155deg, rgba(16, 26, 48, 0.82), rgba(76, 29, 149, 0.42));
+}
+
+#responsePanel::before {
+  background:
+    radial-gradient(120% 95% at 0% 0%, rgba(129, 140, 248, 0.5) 0%, rgba(129, 140, 248, 0.18) 55%),
+    radial-gradient(130% 120% at 100% -10%, rgba(236, 72, 153, 0.32) 0%, rgba(236, 72, 153, 0.06) 65%);
+}
+
+#responsePanel .response-header h2 {
+  color: #f5f7ff;
+}
+
+#responsePanel .metric-label {
+  color: rgba(196, 203, 255, 0.78);
+}
+
+#responsePanel .ensemble-title {
+  color: #f4f5ff;
+}
+
+#responsePanel .ensemble-subtitle {
+  color: rgba(208, 214, 255, 0.72);
+}
+#responsePanel .metric-card,
+#responsePanel .ensemble-summary {
+  background: linear-gradient(145deg, rgba(28, 37, 65, 0.7), rgba(15, 23, 42, 0.4));
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 16px 32px rgba(8, 15, 35, 0.35);
+  color: #e0e7ff;
+}
+
+#responsePanel .metric-value,
+#responsePanel .progress-percent {
+  color: #f8fafc;
+}
+
+#responsePanel .progress-indicator {
+  background: linear-gradient(135deg, rgba(31, 41, 71, 0.6), rgba(13, 20, 38, 0.4));
+  border: 1px solid rgba(165, 180, 252, 0.35);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 14px 28px rgba(8, 15, 35, 0.32);
+  color: #e0e7ff;
+}
+
+#responsePanel .progress-text {
+  color: rgba(224, 231, 255, 0.88);
+}
+
+#responsePanel .progress-text::before {
+  color: rgba(125, 211, 252, 0.85);
+}
+
+#responsePanel pre#responseBox {
+  background: linear-gradient(145deg, rgba(12, 19, 36, 0.72), rgba(12, 23, 44, 0.42));
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  color: #f8fafc;
+}
+
+#uploadPanel label,
+#uploadPanel .hint,
+#uploadPanel .option-card label {
+  color: #f1f5f9;
+}
+
+#uploadPanel .option-card {
+  background: linear-gradient(155deg, rgba(23, 43, 78, 0.62), rgba(14, 32, 58, 0.34));
+  border-color: rgba(125, 211, 252, 0.32);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 12px 28px rgba(8, 15, 35, 0.28);
+}
+
+#uploadPanel .option-card::before {
+  background: radial-gradient(150% 120% at 0% 0%, rgba(125, 211, 252, 0.35) 0%, rgba(125, 211, 252, 0) 60%);
+}
+
+#uploadPanel input[type="file"],
+#uploadPanel select {
+  background-color: rgba(248, 250, 252, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  box-shadow: 0 10px 20px rgba(14, 82, 162, 0.18);
+  color: #0f172a;
+}
+
+#uploadPanel .hint {
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.options-grid {
+  row-gap: 0.5rem;
+}
+
+.option-card {
+  position: relative;
+  overflow: hidden;
+  padding-block: 0.6rem;
+  padding-inline: 1rem;
+  background: linear-gradient(140deg, rgba(23, 34, 58, 0.6), rgba(12, 19, 36, 0.38));
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 12px 28px rgba(8, 15, 35, 0.32);
+  border-radius: 16px;
+  gap: 0.5rem;
+}
+
+.option-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 120% at 0% 0%, rgba(125, 211, 252, 0.22) 0%, rgba(125, 211, 252, 0) 55%);
+  pointer-events: none;
+  opacity: 0.6;
+  mix-blend-mode: screen;
+}
+
+.response-header {
+  gap: 0.5rem;
+}
+
+.ensemble-summary {
+  margin-top: 0.5rem;
+  padding-block: 0.6rem;
+}
+
+pre#responseBox {
+  min-height: 160px;
+}
+
+/* Unify progress indicator vertical spacing */
+.progress-indicator { gap: 0.5rem; }
+
+/* Tighten spacing between upload label and file chooser */
+#uploadForm {
+  gap: 0.5rem;
+}
+
+label[for="fileInput"] {
+  margin-bottom: 0.2rem;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 1.2rem 0.9rem 1.6rem;
+  }
+  pre#responseBox {
+    min-height: 120px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
