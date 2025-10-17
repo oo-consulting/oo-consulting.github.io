@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tech Horizon 비즈니스 프레젠테이션</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"/>
+
+    <style>
+        :root { --font-heading: 'Noto Sans KR', sans-serif; --font-body: 'Noto Sans KR', sans-serif; --color-primary: #0ea5e9; --color-secondary: #f97316; --color-dark-text: #1e293b; --color-light-text: #f8fafc; --color-subtle-text: #64748b; --bg-color: #f1f5f9; --slide-bg: #ffffff; --border-color: #e2e8f0; }
+        body { font-family: var(--font-body); background-color: var(--bg-color); margin: 0; padding: 3rem; display: flex; flex-direction: column; align-items: center; color: var(--color-dark-text); word-break: keep-all; }
+        .presentation { width: 100%; max-width: 1200px; }
+        .deck { position: relative; width: 100%; max-width: 1200px; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 16px; border: 1px solid var(--border-color); background: var(--slide-bg); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.07); margin: 0 auto; }
+        .slide { position: absolute; inset: 0; padding: 4rem 5rem; display: flex; flex-direction: column; justify-content: center; overflow: hidden; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.5s ease; }
+        .slide.active { opacity: 1; visibility: visible; pointer-events: auto; z-index: 10; }
+        .two-column-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; width: 100%; align-items: center; }
+        .column-content img { width: 100%; border-radius: 12px; }
+        h2 { font-size: 2.8rem; color: var(--color-dark-text); margin-bottom: 2rem; }
+        p { font-size: 1.1rem; line-height: 1.8; margin: 1rem 0 0 0; }
+        .slide-header { position: absolute; top: 2.5rem; left: 5rem; font-weight: 600; font-size: 1rem; color: var(--color-subtle-text); text-transform: uppercase; letter-spacing: 0.1em; }
+        .slide-footer { position: absolute; bottom: 2rem; right: 5rem; font-weight: 600; font-size: 1rem; color: var(--color-primary); }
+    </style>
+</head>
+<body>
+    <main class="presentation">
+        <div class="deck" id="deck">
+            <section class="slide active">
+                <div class="slide-header">섹션 7 · 실제 적용 사례 분석</div>
+                <div class="two-column-layout">
+                    <div class="column-content">
+                        <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem;">Windows 10에서 Ollama + Llama 3.1 기반 내부 임베딩 적용 사례</h2>
+                        <p>실무 적용 예시: 로컬 RAG는 문서 임베딩 → Milvus 인덱싱 → 쿼리 시 k-NN으로 관련 문서를 검색해 Llama 3.1에 컨텍스트로 제공하는 흐름으로 운영됩니다. 프라이빗 Q&A는 사내 매뉴얼·계약서 등을 임베딩해 직원용 질의응답 인터페이스를 구성했고, 코드리뷰 자동화 PoC는 코드 스니펫을 청크화해 임베딩·유사도 검색 후 LLM으로 주석·리뷰 초안을 생성하여 1차 리뷰를 자동화했습니다.</p>
+                        <p>성과 분석: 한국어 문서 검색의 정확성이 유의미하게 향상되어(보고 사례 기준 검색 정확도 개선, 응답시간 단축) 내부 사용자 만족도와 정보 탐색 시간이 감소했습니다. 코드리뷰 PoC에서는 반복적 검토 시간이 크게 줄고 리뷰 품질의 일관성이 개선되었으며, 외부 서비스 미사용으로 데이터 유출 위험이 현저히 낮아졌습니다(보안·프라이버시 측면에서 큰 장점).</p>
+                        <p>성공 요인 및 권장 전략: 핵심은 청크화 품질과 전처리, 모델 크기 적정화, 벡터DB(Milvus) 및 캐시 튜닝, 지속적 피드백 루프입니다. 실무 권장 접근은 8B급 경량 모델로 Windows 10 + Ollama에서 빠른 PoC 수행으로 실사용 포인트를 검증한 뒤, 필요 시 모델·하드웨어(GPU 메모리, 디스크 I/O)·인프라를 점진적으로 확장하는 것입니다. 또한 모니터링 지표(검색 정확도, 응답시간, 사용자 만족도) 기반의 반복적 개선을 권장합니다.</p>
+                    </div>
+                    <div class="column-content">
+                        <img src="https://milvus.io/docs/v2.2.x/assets/architecture_diagram.png" alt="Milvus 로고 및 벡터DB 다이어그램" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

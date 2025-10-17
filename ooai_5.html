@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tech Horizon 비즈니스 프레젠테이션</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"/>
+
+    <style>
+        :root { --font-heading: 'Noto Sans KR', sans-serif; --font-body: 'Noto Sans KR', sans-serif; --color-primary: #0ea5e9; --color-secondary: #f97316; --color-dark-text: #1e293b; --color-light-text: #f8fafc; --color-subtle-text: #64748b; --bg-color: #f1f5f9; --slide-bg: #ffffff; --border-color: #e2e8f0; }
+        body { font-family: var(--font-body); background-color: var(--bg-color); margin: 0; padding: 3rem; display: flex; flex-direction: column; align-items: center; color: var(--color-dark-text); word-break: keep-all; }
+        .presentation { width: 100%; max-width: 1200px; }
+        .deck { position: relative; width: 100%; max-width: 1200px; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 16px; border: 1px solid var(--border-color); background: var(--slide-bg); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.07); margin: 0 auto; }
+        .slide { position: absolute; inset: 0; padding: 4rem 5rem; display: flex; flex-direction: column; justify-content: center; overflow: hidden; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.5s ease; }
+        .slide.active { opacity: 1; visibility: visible; pointer-events: auto; z-index: 10; }
+        .two-column-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; width: 100%; align-items: center; }
+        .column-content img { width: 100%; border-radius: 12px; }
+        h2 { font-size: 2.8rem; color: var(--color-dark-text); margin-bottom: 2rem; }
+        p { font-size: 1.1rem; line-height: 1.8; margin: 1rem 0 0 0; }
+        .slide-header { position: absolute; top: 2.5rem; left: 5rem; font-weight: 600; font-size: 1rem; color: var(--color-subtle-text); text-transform: uppercase; letter-spacing: 0.1em; }
+        .slide-footer { position: absolute; bottom: 2rem; right: 5rem; font-weight: 600; font-size: 1rem; color: var(--color-primary); }
+    </style>
+</head>
+<body>
+    <main class="presentation">
+        <div class="deck" id="deck">
+            <section class="slide active">
+                <div class="slide-header">핵심 기술</div>
+                <div class="two-column-layout">
+                    <div class="column-content">
+                        <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem;">확장성과 보안을 위한 기술 스택</h2>
+                        <p>내부 임베딩 구축의 전체 워크플로우(순차적 단계): 1) 문서 수집 및 전처리 — PDF/Word/로그 등에서 텍스트 추출 → 청크화(예: 500–1000 토큰 단위) → 메타데이터(문서ID, 청크ID, 출처, 타임스탬프) 추가; 2) 임베딩 생성 — Ollama의 로컬 API/CLI로 Llama 3.1을 호출하거나 전용 임베딩 모델을 사용해 텍스트 청크 → 고정 길이 벡터로 변환; 3) 벡터 DB 저장 및 인덱싱 — Milvus/FAISS에 (벡터, 메타데이터) 형태로 저장하고 IVF/PQ/HNSW 등 인덱스 구성·튜닝; 4) 검색 — 쿼리 임베딩 생성 → k-NN 유사도 검색으로 관련 청크 조회; 5) LLM 결합(RAG) — 검색 결과 청크를 컨텍스트로 Llama 3.1에 제공해 최종 응답 생성. 핵심 포인트: 청크 단위 설계, 메타데이터 관리, 인덱스 파라미터 튜닝이 검색 품질을 좌우합니다.</p>
+                        <p>구현 예시(순서대로 따라할 수 있는 명령/코드 예시 및 운영 팁): 1) Ollama 개념적 curl 호출: curl -X POST http://localhost:11434/embed -H 'Content-Type: application/json' -d '{"model":"llama3.1","text":"문서 청크 본문"}' → 응답의 embedding 배열 추출; 2) Python 개념 호출: import requests
+resp = requests.post('http://localhost:11434/embed', json={'model':'llama3.1','text':chunk_text})
+embedding = resp.json().get('embedding'); 3) 벡터DB 저장(예시): index.insert([(id1, embedding1, meta1), (id2, embedding2, meta2)] ) — Milvus/FAISS 클라이언트 사용; 4) 검색 흐름: q_emb = embed(query) → ids, scores = index.search(q_emb, k=5) → 관련 청크들을 조합해 prompt 구성 → llama3.1.generate(prompt_with_context); 5) 운영 및 효율화 팁: 배치 처리로 네트워크·호출 오버헤드 감소, Redis 등으로 임베딩 캐시(키: sha256(text)) 적용으로 중복 계산 방지, 문서 변경 시 전체 재처리 대신 변경 청크만 재임베딩해 비용 절감, 인덱스 파라미터(ef, nlist, M 등)와 k 값으로 정확도·성능 균형 조정. 추가 권장사항: 임베딩 버전 관리(버전 태그·때별 재인덱싱 로그), 메타데이터 검색용 보조 인덱스(문서ID·타임스탬프) 유지.</p>
+                    </div>
+                    <div class="column-content">
+                        <img src="https://newsjel.ly/wp-content/uploads/2024/05/%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%8B%9C%EA%B0%81%ED%99%94-%EC%8D%B8%EB%84%A4%EC%9D%BC-terminal.jpg" alt="450x550 기술 스택 이미지" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

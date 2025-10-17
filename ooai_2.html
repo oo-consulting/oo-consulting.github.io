@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tech Horizon 비즈니스 프레젠테이션 — 목차</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --font-heading: 'Noto Sans KR', sans-serif;
+      --font-body: 'Noto Sans KR', sans-serif;
+      --color-primary: #0ea5e9; /* Sky Blue */
+      --color-dark-text: #1e293b;
+      --color-subtle-text: #64748b;
+      --bg-color: #f1f5f9;
+      --slide-bg: #ffffff;
+      --border-color: #e2e8f0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--color-dark-text);
+      word-break: keep-all;
+    }
+
+    .presentation { width: 100%; max-width: 1200px; }
+
+    .deck {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      background: var(--slide-bg);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.07);
+      margin: 0 auto;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 4rem 5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      z-index: 10;
+    }
+
+    h2 {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 2.8rem;
+      line-height: 1.4;
+      color: var(--color-dark-text);
+      margin: 0 0 2rem 0;
+    }
+
+    .slide-header {
+      position: absolute;
+      top: 2.5rem;
+      left: 5rem;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--color-subtle-text);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .slide-footer {
+      position: absolute;
+      bottom: 2rem;
+      right: 5rem;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--color-primary);
+    }
+
+    .align-top { justify-content: flex-start; }
+
+    .toc-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
+    .toc-list li {
+      position: relative;
+      padding-left: 2.5rem;
+      margin-bottom: 1.2rem;
+      font-size: 1.2rem;
+      line-height: 1.8;
+    }
+    .toc-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--color-primary);
+      font-size: 1.5rem;
+      line-height: 1;
+      top: 0.1rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="presentation">
+    <div class="deck">
+      <section class="slide align-top active">
+        <div class="slide-header">목차 — 섹션 1</div>
+        <h2 style="margin-bottom: 3rem;">Windows 10에서 Ollama 및 Llama 3.1을 활용한 내부 임베딩 구축 방법</h2>
+        <ul class="toc-list">
+          <li>Ollama 설치 및 설정 — Windows 10에서의 데몬 설치, Docker/WSL 대안, 권한 및 환경변수 설정 체크리스트</li>
+          <li>Llama 3.1 설치 및 설정 — 모델 다운로드·로컬 배포, 하드웨어 요구사항, 양자화 옵션과 호환성 가이드</li>
+          <li>내부 임베딩 구축 방법 — 문서 전처리(토크나이징·청소), 배치 임베딩 생성, 임베딩 품질 검증 절차</li>
+          <li>환경 결합과 최적화 전략 — GPU 활용·CPU 최적화, 양자화·프루닝, 캐싱·인덱스 튜닝 실전 팁</li>
+          <li>문제 해결 및 주의사항 — 권한 오류, 메모리 부족, 버전 호환성 이슈와 빠른 대응 체크리스트</li>
+          <li>실제 적용 사례 분석 — PoC 구성 예시, 성능 지표 해석, 확장 시 고려해야 할 운영 방안</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tech Horizon — Nexus 작동 방식 슬라이드</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root{
+      --font-heading:'Noto Sans KR',sans-serif;
+      --font-body:'Noto Sans KR',sans-serif;
+      --color-primary:#0ea5e9;
+      --color-dark-text:#1e293b;
+      --color-subtle-text:#64748b;
+      --bg-color:#f1f5f9;
+      --slide-bg:#ffffff;
+      --border-color:#e2e8f0;
+    }
+
+    body{
+      font-family:var(--font-body);
+      background-color:var(--bg-color);
+      margin:0;
+      padding:3rem;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      color:var(--color-dark-text);
+      word-break:keep-all;
+    }
+
+    .presentation{width:100%;max-width:1200px;}
+
+    .deck{
+      position:relative;
+      width:100%;
+      max-width:1200px;
+      aspect-ratio:16 / 9;
+      overflow:hidden;
+      border-radius:16px;
+      border:1px solid var(--border-color);
+      background:var(--slide-bg);
+      box-shadow:0 10px 25px -5px rgba(0,0,0,0.07);
+      margin:0 auto;
+    }
+
+    .slide{
+      position:absolute;
+      inset:0;
+      padding:4rem 5rem;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+      overflow:hidden;
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition:opacity .5s ease;
+    }
+    .slide.active{opacity:1;visibility:visible;pointer-events:auto;z-index:10;}
+
+    h1,h2,h3{font-family:var(--font-heading);font-weight:700;line-height:1.4;margin:0;}
+    h2{font-size:2.8rem;margin-bottom:1.6rem;color:var(--color-dark-text);}    
+    p{font-size:1.1rem;line-height:1.8;margin:1rem 0 0 0;}
+
+    /* "Nexus 작동 방식" 전용 여백 조정 */
+    .slide-how-works{padding-top:3rem;}
+    /* 상단 캡션(제품 시연) */
+    .slide-how-works .caption{
+      font-weight:600;font-size:1rem;color:var(--color-subtle-text);
+      text-transform:uppercase;letter-spacing:.1em;margin:0 0 1rem 0;
+    }
+
+    /* 순서형 프로세스 리스트 */
+    .process-list{list-style:none;padding-left:0;counter-reset:process-counter;}
+    .process-list li{
+      display:flex;align-items:flex-start;gap:2rem;margin-bottom:2rem;padding-left:0;
+    }
+    .process-list li:last-child{margin-bottom:0;}
+    .process-list li::before{
+      content:'0' counter(process-counter);
+      counter-increment:process-counter;
+      font-family:var(--font-heading);
+      font-size:3rem;font-weight:700;line-height:1;min-width:60px;
+      color:var(--border-color);
+    }
+    .process-content h3{font-size:1.5rem;margin:0 0 .5rem 0;color:var(--color-dark-text);}    
+    .process-content p{margin-top:0;}
+
+    .slide-footer{
+      position:absolute;bottom:2rem;right:5rem;
+      font-weight:600;font-size:1rem;color:var(--color-primary);
+    }
+  </style>
+</head>
+<body>
+  <main class="presentation">
+    <div class="deck">
+      <!-- Nexus 작동 방식 단일 슬라이드 -->
+      <section class="slide align-top slide-how-works active">
+        <p class="caption">섹션 2 · Ollama 설치 및 설정</p>
+        <h2>Windows 10에서 Ollama 설치 및 설정</h2>
+        <ul class="process-list">
+          <li>
+            <div class="process-content">
+              <h3>설치 전 필수 확인 (사전 준비)</h3>
+              <p>Windows 10 버전 확인(권장: 22H2 이상), 가상화(VT-x/AMD‑V) 활성화, 모델 저장을 위한 충분한 디스크 여유를 먼저 검증하세요. Ollama 설치파일은 공식 사이트에서 Windows용 'OllamaSetup.exe'를 다운로드합니다(공식 다운로드 페이지에서 최신 릴리스 확인).</p>
+            </div>
+          </li>
+          <li>
+            <div class="process-content">
+              <h3>설치 방법 — 네이티브 설치와 WSL2(권장)</h3>
+              <p>네이티브: 다운로드한 'OllamaSetup.exe'을 더블클릭해 설치 마법사를 따라가면 간단히 설치 완료됩니다. WSL2 권장 흐름: 관리자 권한 PowerShell에서 'wsl --install'로 WSL2를 활성화하고 기본 배포판으로 Ubuntu 선택 후, Ubuntu 세션에서 Ollama의 Linux 설치 가이드를 따라 패키지를 설치하세요. WSL2는 Linux 라이브러리 호환성과 GPU 드라이버 연결(특히 CUDA) 면에서 안정적입니다.</p>
+            </div>
+          </li>
+          <li>
+            <div class="process-content">
+              <h3>설치 후 설정 및 동작 확인</h3>
+              <p>설치 완료 뒤 시작메뉴 또는 커맨드라인에서 'ollama' 명령이 동작하는지 확인하고, 로컬 웹 UI/서버는 'open-webui serve'로 기동해 서비스 정상 여부를 점검하세요. 모델 다운로드나 서비스 실행 시 디스크 사용량과 GPU 드라이버(CUDA) 호환성을 확인해야 하며, 네이티브 설치는 간단하지만 GPU 가속 사용 시 드라이버 문제 가능성이 있습니다. 요약: WSL2 권장은 호환성·성능 측면에서 우수, 네이티브는 빠른 설치와 간편 운영에 적합합니다.</p>
+            </div>
+          </li>
+        </ul>
+        <div class="slide-footer">핵심: 설치 전 환경 체크 → WSL2 권장 → 'open-webui serve'로 동작 확인</div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

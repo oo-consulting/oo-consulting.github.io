@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tech Horizon — Nexus 작동 방식 슬라이드</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root{
+      --font-heading:'Noto Sans KR',sans-serif;
+      --font-body:'Noto Sans KR',sans-serif;
+      --color-primary:#0ea5e9;
+      --color-dark-text:#1e293b;
+      --color-subtle-text:#64748b;
+      --bg-color:#f1f5f9;
+      --slide-bg:#ffffff;
+      --border-color:#e2e8f0;
+    }
+
+    body{
+      font-family:var(--font-body);
+      background-color:var(--bg-color);
+      margin:0;
+      padding:3rem;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      color:var(--color-dark-text);
+      word-break:keep-all;
+    }
+
+    .presentation{width:100%;max-width:1200px;}
+
+    .deck{
+      position:relative;
+      width:100%;
+      max-width:1200px;
+      aspect-ratio:16 / 9;
+      overflow:hidden;
+      border-radius:16px;
+      border:1px solid var(--border-color);
+      background:var(--slide-bg);
+      box-shadow:0 10px 25px -5px rgba(0,0,0,0.07);
+      margin:0 auto;
+    }
+
+    .slide{
+      position:absolute;
+      inset:0;
+      padding:4rem 5rem;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+      overflow:hidden;
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition:opacity .5s ease;
+    }
+    .slide.active{opacity:1;visibility:visible;pointer-events:auto;z-index:10;}
+
+    h1,h2,h3{font-family:var(--font-heading);font-weight:700;line-height:1.4;margin:0;}
+    h2{font-size:2.8rem;margin-bottom:1.6rem;color:var(--color-dark-text);}    
+    p{font-size:1.1rem;line-height:1.8;margin:1rem 0 0 0;}
+
+    /* "Nexus 작동 방식" 전용 여백 조정 */
+    .slide-how-works{padding-top:3rem;}
+    /* 상단 캡션(제품 시연) */
+    .slide-how-works .caption{
+      font-weight:600;font-size:1rem;color:var(--color-subtle-text);
+      text-transform:uppercase;letter-spacing:.1em;margin:0 0 1rem 0;
+    }
+
+    /* 순서형 프로세스 리스트 */
+    .process-list{list-style:none;padding-left:0;counter-reset:process-counter;}
+    .process-list li{
+      display:flex;align-items:flex-start;gap:2rem;margin-bottom:2rem;padding-left:0;
+    }
+    .process-list li:last-child{margin-bottom:0;}
+    .process-list li::before{
+      content:'0' counter(process-counter);
+      counter-increment:process-counter;
+      font-family:var(--font-heading);
+      font-size:3rem;font-weight:700;line-height:1;min-width:60px;
+      color:var(--border-color);
+    }
+    .process-content h3{font-size:1.5rem;margin:0 0 .5rem 0;color:var(--color-dark-text);}
+    .process-content p{margin-top:0;}
+
+    .slide-footer{
+      position:absolute;bottom:2rem;right:5rem;
+      font-weight:600;font-size:1rem;color:var(--color-primary);
+    }
+  </style>
+</head>
+<body>
+  <main class="presentation">
+    <div class="deck">
+      <!-- Nexus 작동 방식 단일 슬라이드 -->
+      <section class="slide align-top slide-how-works active">
+        <p class="caption">섹션 3 — Llama 3.1 설치 및 설정</p>
+        <h2>Windows 10에서 Llama 3.1 설치 및 초기 설정</h2>
+        <ul class="process-list">
+          <li>
+            <div class="process-content">
+              <h3>설치 전 준비 및 필수 파일</h3>
+              <p>
+                사전 준비: 관리자 권한의 PowerShell/CMD 실행(또는 WSL2 선택 설치). 필수 설치 파일 예시:
+                - Ollama 설치 프로그램(예: ollama-installer.exe)
+                - 운영체제 기본 터미널(PowerShell/CMD, 관리자 권한)
+                - (GPU 사용 시) NVIDIA 드라이버 설치 파일 및 CUDA Toolkit 설치 파일(예: cuda-xxx-installer.exe)
+                - 충분한 디스크 여유(모델 크기별 상이)와 최소 16GB RAM 권장
+                모델 파일 자체는 Ollama가 CLI로 자동 내려받습니다(예: llama3.1 8B는 약 4~5GB).
+              </p>
+            </div>
+          </li>
+          <li>
+            <div class="process-content">
+              <h3>Ollama 설치 및 모델 다운로드 절차</h3>
+              <p>
+                1) Ollama 설치 프로그램(ollama-installer.exe)을 관리자 권한으로 실행하여 설치.
+                2) 설치 완료 후 터미널에서 모델을 실행·다운로드: ollama run llama3.1 8B — 이 명령은 8B 모델을 내려받고 바로 실행합니다(약 4~5GB).
+                3) 설치된 모델 확인: ollama list 로 정상 설치 여부와 모델 목록을 검토.
+                4) 다운로드 실패 시: 네트워크 상태 확인, 디스크 여유 확보 후 재시도하거나 WSL 환경에서 재시도하여 안정성 향상.
+              </p>
+            </div>
+          </li>
+          <li>
+            <div class="process-content">
+              <h3>운영 권장사항 및 문제 해결 포인트</h3>
+              <p>
+                - 모델 크기 선택: PoC는 8B 권장(디스크·메모리 부담 적음). 대형 모델(예: 70B)은 더 높은 RAM/GPU 요구.
+                - GPU 활용 시: NVIDIA 드라이버와 CUDA 버전 호환성 사전 점검(불일치는 성능·안정성 문제를 야기).
+                - 권한·환경: 관리자 권한으로 설치·실행, 안정적 네트워크(대용량 다운로드 대비), 충분한 디스크 여유 확보.
+                - 점검 명령: ollama list(설치 확인), 로그 및 오류 메시지 확인 후 재시도 또는 WSL로 전환하여 다운로드 안정화.
+              </p>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
