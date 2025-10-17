@@ -75,6 +75,64 @@
     .cursor.-lg { width: 42px; height: 42px; opacity: .55; }
     @media (prefers-reduced-motion: reduce) { .cursor { display: none; } }
 
+    /* 모바일 최적화 */
+    @media (max-width: 767px) {
+      html { font-size: 16px; } /* iOS Safari에서 줌 방지 */
+      body { font-size: 1rem; padding: 0 1rem; }
+      .container-max { max-width: 100%; padding: 0 1rem; }
+
+      /* 헤더 크기 조정 */
+      header { padding: 1rem 0 2rem; }
+      header h1 { font-size: 2rem; line-height: 1.2; }
+
+      /* 내비게이션 최적화 */
+      .topbar { display: none; } /* 모바일에서는 간소화 */
+
+      /* 섹션 패딩 조정 */
+      section { padding: 2rem 0; }
+      section h2 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+      section p { font-size: 1rem; line-height: 1.6; }
+
+      /* 버튼 크기 확대 */
+      a.rounded-full { padding: 0.75rem 1.5rem; font-size: 1rem; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+
+      /* 글래스 패널 조정 */
+      .glass { padding: 1.5rem 1rem; border-radius: 1.5rem; }
+      .glass h2 { font-size: 1.5rem; }
+      .glass p { font-size: 0.95rem; }
+
+      /* 코드 블록 조정 */
+      pre { font-size: 0.85rem; padding: 1rem; }
+
+      /* 그리드 조정 */
+      .grid.md\:grid-cols-2 { grid-template-columns: 1fr; gap: 1.5rem; }
+      .grid.md\:grid-cols-3 { grid-template-columns: 1fr; gap: 1.5rem; }
+      .grid.lg\:grid-cols-2 { grid-template-columns: 1fr; gap: 1.5rem; }
+      .grid.lg\:grid-cols-[1.1fr,0.9fr] { grid-template-columns: 1fr; }
+
+      /* 리스트 항목 간격 조정 */
+      ol.space-y-6 > li, ul.space-y-3 > li { margin-bottom: 1.5rem; }
+
+      /* 이미지 반응형 */
+      img { max-width: 100%; height: auto; }
+
+      /* 터치 쇠사례 버튼 */
+      button, input, select, textarea { min-height: 44px; padding: 0.75rem; }
+
+      /* 스크롤 팁 */
+      .policy-content { max-height: 300px; }
+
+      /* 백그라운드 스타 효과 감소 (성능) */
+      #bg-stars { opacity: 0.5; }
+    }
+
+    /* 중간 크기 장치 */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .container-max { padding: 0 1.5rem; }
+      header h1 { font-size: 2.5rem; }
+      section { padding: 2.5rem 0; }
+    }
+
     .brand .logo { filter: drop-shadow(0 4px 12px rgba(88,196,255,.35)); }
     .brand > span { display: none; }
     .brand svg[viewBox="0 0 64 64"] { display: none; }
