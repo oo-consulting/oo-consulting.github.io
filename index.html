@@ -9,6 +9,210 @@
 
   <script src="bg-stars.js" defer></script>
   <script>
+    (function() {
+      const componentData = {
+        "A": {
+          title: "Web App Interface (사용자)",
+          role: "사용자 인터페이스",
+          tech: "전자정부프레임워크, JSP/Servlet, HTML/CSS/JS",
+          description: "일반 사용자가 내일채움공제 업무를 처리하는 웹 화면입니다. 사용자가 특정 메뉴나 입력 필드에서 도움을 요청하면, 해당 메뉴 ID와 질문을 RAG 시스템으로 전송합니다."
+        },
+        "C": {
+          title: "개발 운영자",
+          role: "기술 질의 인터페이스",
+          tech: "내부 관리 시스템, IDE 연동",
+          description: "개발자나 운영자가 시스템 유지보수 중 발생하는 기술적인 질문이나 소스코드 관련 문의를 하는 인터페이스입니다. 분석이 필요한 파일 ID나 코드 조각을 RAG 시스템으로 보냅니다."
+        },
+        "B": {
+          title: "FastAPI RAG Gateway",
+          role: "API 게이트웨이",
+          tech: "Python, FastAPI",
+          description: "JAVA 기반 클라이언트와 Python 기반 RAG 시스템을 잇는 관문입니다. 요청을 수신하고 캐시·파이프라인·LLM 호출을 조합해 최종 결과를 JSON으로 응답합니다."
+        },
+        "D": {
+          title: "Redis Cache",
+          role: "캐싱 엔진",
+          tech: "Redis",
+          description: "자주 묻는 질문과 LLM 응답을 메모리에 저장해 반복 요청을 빠르게 처리합니다. TTL과 네임스페이스 정책으로 캐시 오염을 방지하며 서버 부하를 줄입니다."
+        },
+        "E": {
+          title: "LlamaIndex Orchestrator",
+          role: "RAG 파이프라인 관리",
+          tech: "Python, LlamaIndex",
+          description: "질문을 입력받아 벡터 검색, 프롬프트 구성, 후처리를 조율합니다. KorBERT 임베딩과 Llama 3.1 생성 모델을 결합해 고품질 답변을 생성합니다."
+        },
+        "F": {
+          title: "ChromaDB Vector Store",
+          role: "벡터 데이터베이스",
+          tech: "ChromaDB",
+          description: "매뉴얼과 소스코드를 임베딩 벡터로 저장하는 장기 기억 장치입니다. 의미 기반 유사도 검색을 제공하여 LlamaIndex가 빠르게 적합한 문맥을 확보하도록 돕습니다."
+        },
+        "G": {
+          title: "Ollama · Llama 3.1",
+          role: "대규모 언어 모델 (LLM)",
+          tech: "Ollama, Llama 3.1",
+          description: "ChromaDB에서 반환된 문맥과 사용자의 질문을 기반으로 자연스러운 답변을 생성합니다. 로컬 GPU 자원을 활용하며, 양자화·LoRA 등 최적화 옵션을 지원합니다."
+        },
+        "H1": {
+          title: "매뉴얼 / 코드 원본",
+          role: "원본 데이터",
+          tech: "PDF, Word, Java, SQL 파일",
+          description: "AI가 학습하고 참조하는 모든 지식의 원천입니다. 사용자·관리자 매뉴얼, 시스템 전체 소스코드, DB 스키마 등 실제 운영 데이터를 포함합니다."
+        },
+        "J": {
+          title: "원본 데이터 리포지토리",
+          role: "데이터 버전 관리",
+          tech: "DVC, Git",
+          description: "문서와 코드의 변경 이력을 관리합니다. 모델 성능 변화 시 학습 데이터 버전을 추적하고, 필요할 경우 특정 버전으로 롤백하는 근거를 제공합니다."
+        },
+        "H2": {
+          title: "Tree-Sitter / Parser",
+          role: "소스코드 구조 분석",
+          tech: "Tree-Sitter",
+          description: "Java, SQL 등 소스코드를 문법 구조 단위로 파싱하고 청크화합니다. 코드 전용 질문의 정확도를 높이고, 임베딩 품질을 일정하게 유지합니다."
+        },
+        "I": {
+          title: "KorBERT Embedding Model",
+          role: "임베딩 모델",
+          tech: "KorBERT, PyTorch",
+          description: "한국어 텍스트를 컴퓨터가 이해할 수 있는 벡터로 변환합니다. RAG 검색 정확도를 결정하는 핵심 요소로, Celery 워커에서 배치 임베딩을 수행합니다."
+        }
+      };
+
+      const flowSequence = ["A", "B", "D", "E", "F", "G"];
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const nav = document.getElementById("component-nav");
+        const diagram = document.getElementById("diagram-root");
+        const infoPanel = document.getElementById("info-panel");
+        const infoTitle = document.getElementById("info-title");
+        const infoContent = document.getElementById("info-content");
+        const simulateBtn = document.getElementById("simulate-btn");
+
+        if (!nav || !diagram || !infoPanel || !infoTitle || !infoContent || !simulateBtn) {
+          return;
+        }
+
+        const components = Array.from(diagram.querySelectorAll(".rag-component"));
+        if (!components.length) return;
+
+        let navItems = [];
+
+        const fragment = document.createDocumentFragment();
+        Object.entries(componentData).forEach(([id, data]) => {
+          const navItem = document.createElement("a");
+          navItem.href = "#architecture";
+          navItem.dataset.id = id;
+          navItem.textContent = data.title;
+          navItem.className = "transition-colors duration-150";
+          fragment.appendChild(navItem);
+        });
+        nav.appendChild(fragment);
+        navItems = Array.from(nav.querySelectorAll("a[data-id]"));
+
+        const clearHighlights = () => {
+          components.forEach(el => el.classList.remove("highlight"));
+        };
+
+        const updateInfoPanel = (id) => {
+          const data = componentData[id];
+          if (!data) return;
+          infoTitle.textContent = data.title;
+          infoContent.innerHTML = `
+            <p><strong class="font-semibold text-slate-800 dark:text-slate-100">역할:</strong> ${data.role}</p>
+            <p><strong class="font-semibold text-slate-800 dark:text-slate-100">주요 기술:</strong> ${data.tech}</p>
+            <p class="mt-4 pt-4 border-t border-slate-200/70 dark:border-slate-700/60">${data.description}</p>
+          `;
+          components.forEach(el => el.classList.toggle("selected", el.dataset.id === id));
+          navItems.forEach(item => item.classList.toggle("active", item.dataset.id === id));
+        };
+
+        const scrollInfoIntoView = () => {
+          if (window.matchMedia("(max-width: 1023px)").matches) {
+            infoPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        };
+
+        const selectComponent = (id, { scroll = true } = {}) => {
+          updateInfoPanel(id);
+          if (scroll) scrollInfoIntoView();
+        };
+
+        diagram.addEventListener("click", (event) => {
+          const target = event.target.closest(".rag-component");
+          if (!target || !target.dataset.id) return;
+          if (isSimulating) stopSimulation();
+          clearHighlights();
+          selectComponent(target.dataset.id);
+        });
+
+        nav.addEventListener("click", (event) => {
+          event.preventDefault();
+          const target = event.target.closest("a[data-id]");
+          if (!target) return;
+          if (isSimulating) stopSimulation();
+          clearHighlights();
+          selectComponent(target.dataset.id);
+        });
+
+        let isSimulating = false;
+        let timer = null;
+
+        const setSimulateButtonState = (running) => {
+          simulateBtn.textContent = running ? "시뮬레이션 중지" : "데이터 흐름 시뮬레이션 시작";
+          simulateBtn.classList.toggle("bg-blue-600", !running);
+          simulateBtn.classList.toggle("hover:bg-blue-700", !running);
+          simulateBtn.classList.toggle("bg-red-600", running);
+          simulateBtn.classList.toggle("hover:bg-red-700", running);
+          simulateBtn.classList.toggle("stop", running);
+        };
+
+        const stopSimulation = () => {
+          if (timer) {
+            clearTimeout(timer);
+            timer = null;
+          }
+          isSimulating = false;
+          clearHighlights();
+          setSimulateButtonState(false);
+        };
+
+        simulateBtn.addEventListener("click", () => {
+          if (isSimulating) {
+            stopSimulation();
+            return;
+          }
+          if (!flowSequence.length) return;
+
+          isSimulating = true;
+          let step = 0;
+          setSimulateButtonState(true);
+
+          const runStep = () => {
+            clearHighlights();
+            if (step >= flowSequence.length) {
+              stopSimulation();
+              return;
+            }
+            const currentId = flowSequence[step];
+            const el = diagram.querySelector(`.rag-component[data-id="${currentId}"]`);
+            if (el) {
+              el.classList.add("highlight");
+              selectComponent(currentId, { scroll: false });
+            }
+            step += 1;
+            timer = setTimeout(runStep, 1500);
+          };
+
+          runStep();
+        });
+
+        selectComponent("A", { scroll: false });
+      });
+    })();
+  </script>
+
+  <script>
     // Early theme boot to avoid FOUC
     try {
       const saved = localStorage.getItem('theme');
@@ -181,6 +385,54 @@
 
     .magnetic { will-change: transform; display: inline-flex; align-items: center; gap: .6rem; }
 
+    .architecture-explorer { position: relative; overflow: hidden; }
+    .architecture-explorer .rag-tier { border: 2px dashed rgba(148,163,184,0.35); border-radius: 1.25rem; padding: clamp(1.5rem, 3vw, 2.6rem); background: rgba(255,255,255,0.78); backdrop-filter: blur(6px); }
+    .architecture-explorer .rag-tier + .rag-tier { margin-top: clamp(1.5rem, 2.3vw, 2.8rem); }
+    .architecture-explorer .rag-tier-title { text-align: center; font-size: 0.95rem; letter-spacing: 0.08em; text-transform: uppercase; color: #475569; margin-bottom: 1.1rem; font-weight: 600; }
+    .architecture-explorer .rag-component { border: 2px solid rgba(30,64,175,0.15); border-radius: 1rem; padding: 1rem 1.25rem; text-align: center; font-weight: 600; transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease, color .25s ease; cursor: pointer; min-width: 10.5rem; background: rgba(241,245,249,0.8); color: #1e293b; box-shadow: 0 6px 16px rgba(15,23,42,0.06); }
+    .architecture-explorer .rag-component:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(15,23,42,0.12); }
+    .architecture-explorer .rag-component.selected { box-shadow: 0 0 0 3px rgba(59,130,246,0.6), 0 18px 32px rgba(59,130,246,0.25); transform: translateY(-4px); }
+    .architecture-explorer .rag-component.highlight { background: #2563eb; color: #ffffff; box-shadow: 0 0 0 3px rgba(37,99,235,0.4), 0 18px 40px rgba(37,99,235,0.35); border-color: rgba(37,99,235,0.5); }
+    .architecture-explorer .rag-component small { display: block; font-weight: 500; margin-top: 0.35rem; opacity: 0.75; }
+    .architecture-explorer .rag-component-neutral { background: #f1f5f9; border-color: rgba(148,163,184,0.45); color: #1f2937; }
+    .architecture-explorer .rag-subtier { border: 1.6px solid rgba(148,163,184,0.35); border-radius: 1rem; padding: 1.25rem 1.5rem; background: rgba(248,250,252,0.85); }
+    .architecture-explorer .rag-subtier-title { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; text-align: center; margin-bottom: 1rem; color: #64748b; font-weight: 600; }
+    .architecture-explorer .rag-nav a { display: block; padding: 0.65rem 0.85rem; border-radius: 0.75rem; color: #334155; font-size: 0.92rem; font-weight: 500; transition: background-color .2s ease, color .2s ease, transform .2s ease; }
+    .architecture-explorer .rag-nav a:hover { background: rgba(59,130,246,0.08); color: #1d4ed8; transform: translateX(4px); }
+    .architecture-explorer .rag-nav a.active { background: rgba(59,130,246,0.12); color: #1d4ed8; font-weight: 600; box-shadow: inset 0 0 0 1px rgba(59,130,246,0.2); }
+    .architecture-explorer .rag-info-panel { background: rgba(248,250,252,0.92); border-radius: 1.5rem; box-shadow: 0 18px 40px rgba(15,23,42,0.16); border: 1px solid rgba(148,163,184,0.25); }
+    .architecture-explorer .rag-tip { background: rgba(37,99,235,0.08); border-left: 4px solid rgba(37,99,235,0.45); border-radius: 0 1rem 1rem 0; }
+    .architecture-explorer .rag-simulate-btn { box-shadow: 0 18px 35px rgba(37,99,235,0.25); }
+    .architecture-explorer .rag-simulate-btn.stop { box-shadow: 0 18px 35px rgba(220,38,38,0.25); }
+    .architecture-explorer .client-app { background: #dceffb; border-color: #a6cde4; }
+    .architecture-explorer .dev-ops { background: #ffe0b2; border-color: #e6b980; }
+    .architecture-explorer .gateway { background: #c8e6c9; border-color: #97c299; }
+    .architecture-explorer .cache { background: #fffde7; border-color: #e6e4b3; }
+    .architecture-explorer .orchestrator { background: #fff3e0; border-color: #e6d3b0; }
+    .architecture-explorer .vector-store { background: #f3e5f5; border-color: #d3bde0; }
+    .architecture-explorer .llm { background: #e1f5fe; border-color: #b0d9e6; }
+    .architecture-explorer .embedding { background: #e0f7fa; border-color: #b0dfe6; }
+    .architecture-explorer .parser { background: #e6ee9c; border-color: #c2cc70; }
+    .architecture-explorer .rag-tier .rag-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem; }
+    .architecture-explorer .rag-tier .rag-grid-justify-between { justify-content: space-between; }
+    .architecture-explorer .rag-tier .rag-grid-col { display: flex; flex-direction: column; gap: 0.75rem; align-items: center; }
+    :root[data-theme="dark"] .architecture-explorer .rag-tier { background: rgba(15,23,42,0.55); border-color: rgba(148,163,184,0.45); }
+    :root[data-theme="dark"] .architecture-explorer .rag-tier-title { color: #cbd5f5; }
+    :root[data-theme="dark"] .architecture-explorer .rag-component { background: rgba(15,23,42,0.7); color: #e2e8f0; border-color: rgba(148,163,184,0.35); box-shadow: 0 8px 18px rgba(15,23,42,0.4); }
+    :root[data-theme="dark"] .architecture-explorer .rag-component.highlight { color: #ffffff; }
+    :root[data-theme="dark"] .architecture-explorer .rag-component-neutral { background: rgba(30,41,59,0.7); border-color: rgba(148,163,184,0.45); color: #e2e8f0; }
+    :root[data-theme="dark"] .architecture-explorer .rag-subtier { background: rgba(30,41,59,0.65); border-color: rgba(148,163,184,0.35); }
+    :root[data-theme="dark"] .architecture-explorer .rag-subtier-title { color: #a5b4fc; }
+    :root[data-theme="dark"] .architecture-explorer .rag-nav a { color: #cbd5f5; }
+    :root[data-theme="dark"] .architecture-explorer .rag-nav a:hover { background: rgba(59,130,246,0.18); color: #93c5fd; }
+    :root[data-theme="dark"] .architecture-explorer .rag-nav a.active { background: rgba(59,130,246,0.25); color: #bfdbfe; }
+    :root[data-theme="dark"] .architecture-explorer .rag-info-panel { background: rgba(15,23,42,0.75); border-color: rgba(148,163,184,0.35); box-shadow: 0 22px 45px rgba(8,10,26,0.65); }
+    :root[data-theme="dark"] .architecture-explorer .rag-tip { background: rgba(37,99,235,0.2); border-left-color: rgba(96,165,250,0.6); }
+    @media (min-width: 1024px) {
+      .architecture-explorer .rag-tier .rag-grid { justify-content: space-evenly; }
+      .architecture-explorer .rag-tier .rag-grid-justify-between { justify-content: space-around; }
+    }
+
     #themeToggle.active { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 40%, transparent); }
   </style>
 </head>
@@ -311,162 +563,85 @@
     </section>
 
     <section id="architecture" class="container-max mx-auto px-6 py-10 sm:py-16 lg:py-20">
-      <div class="rounded-3xl border border-white/10 bg-white text-slate-900 shadow-2xl dark:bg-slate-900/95 dark:text-slate-100">
+      <div class="architecture-explorer rounded-3xl border border-white/10 bg-white text-slate-900 shadow-2xl dark:bg-slate-900/95 dark:text-slate-100">
         <div class="px-6 sm:px-10 pt-8 pb-6">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
+          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div class="max-w-2xl">
               <p class="text-sm uppercase tracking-[0.32em] text-slate-500 dark:text-slate-400 mb-2">섹션 2.5</p>
               <h2 class="text-2xl sm:text-3xl font-bold">통합 아키텍처 다이어그램</h2>
-              <p class="mt-4 text-base sm:text-lg leading-7 text-slate-600 dark:text-slate-300">Windows 10 · WSL2 기반 온프레미스 환경에서 Ollama, KorBERT, ChromaDB, LlamaIndex, FastAPI, Celery, Redis, RabbitMQ, Prometheus, Grafana, DVC가 어떻게 연결되는지 데이터 흐름과 실시간 추론 경로를 한 화면에 정리했습니다.</p>
+              <p class="mt-4 text-base sm:text-lg leading-7 text-slate-600 dark:text-slate-300">Windows 10 · WSL2 기반 온프레미스 환경에서 Ollama, KorBERT, ChromaDB, LlamaIndex, FastAPI, Celery, Redis, RabbitMQ, Prometheus, Grafana, DVC가 상호작용하며 RAG 서비스를 제공하는 전체 구조를 탐색형 인터페이스로 정리했습니다.</p>
             </div>
-            <div class="text-sm text-slate-500 dark:text-slate-400 lg:text-right leading-6">
+            <div class="text-sm text-slate-500 dark:text-slate-400 leading-6 space-y-2">
               <p><span class="inline-block w-3 h-3 rounded-full bg-sky-400 mr-2 align-middle"></span>실시간 서비스 경로</p>
               <p><span class="inline-block w-3 h-3 rounded-full bg-emerald-400 mr-2 align-middle"></span>데이터 · 임베딩 파이프라인</p>
               <p><span class="inline-block w-3 h-3 rounded-full bg-indigo-400 mr-2 align-middle"></span>관측 &amp; 거버넌스</p>
             </div>
           </div>
         </div>
-        <svg class="w-full h-auto" viewBox="0 0 1200 880" role="img" aria-labelledby="archTitle archDesc">
-          <title id="archTitle">Ollama · KorBERT 기반 온프레미스 RAG 레퍼런스 아키텍처</title>
-          <desc id="archDesc">엔드유저가 FastAPI 게이트웨이를 통해 LlamaIndex를 호출하고, LlamaIndex가 Redis 캐시, ChromaDB, Ollama Llama 3.1, Celery 파이프라인, KorBERT 학습, DVC, Prometheus와 연계되는 과정을 표현한 다이어그램.</desc>
-          <defs>
-            <pattern id="archGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M40 0H0V40" fill="none" stroke="#f8fafc" stroke-width="1" />
-            </pattern>
-            <marker id="arrowSky" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="8" markerHeight="8" orient="auto">
-              <path d="M0 0L8 4L0 8Z" fill="#0ea5e9" />
-            </marker>
-            <marker id="arrowGreen" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="8" markerHeight="8" orient="auto">
-              <path d="M0 0L8 4L0 8Z" fill="#10b981" />
-            </marker>
-            <marker id="arrowIndigo" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="8" markerHeight="8" orient="auto">
-              <path d="M0 0L8 4L0 8Z" fill="#6366f1" />
-            </marker>
-            <style>
-              .arch-box { stroke-width:1.8; }
-              .arch-process { fill:#e0f2fe; stroke:#0ea5e9; }
-              .arch-storage { fill:#dcfce7; stroke:#059669; }
-              .arch-ops { fill:#eef2ff; stroke:#6366f1; }
-              .arch-layer { fill:#f8fafc; fill-opacity:0.9; stroke:#cbd5f5; stroke-width:1.4; stroke-dasharray:12 9; }
-              .arch-layer-label { font-size:16px; font-weight:600; fill:#1e293b; }
-              .arch-label { font-family:'Inter','Noto Sans KR','Malgun Gothic',sans-serif; }
-            </style>
-          </defs>
-          <rect x="20" y="20" width="1160" height="820" rx="28" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" />
-          <rect x="20" y="20" width="1160" height="820" rx="28" fill="url(#archGrid)" opacity="0.5" />
-          <!-- Layer backgrounds -->
-          <g>
-            <rect class="arch-layer" x="60" y="70" width="1080" height="260" rx="24" />
-            <text class="arch-label arch-layer-label" x="80" y="110">레이어 1 · 경험 &amp; 오케스트레이션</text>
-          </g>
-          <g>
-            <rect class="arch-layer" x="60" y="340" width="1080" height="220" rx="24" />
-            <text class="arch-label arch-layer-label" x="80" y="380">레이어 2 · 데이터 수집 &amp; 스토리지</text>
-          </g>
-          <g>
-            <rect class="arch-layer" x="60" y="580" width="1080" height="240" rx="24" />
-            <text class="arch-label arch-layer-label" x="80" y="620">레이어 3 · 파이프라인 &amp; 운영</text>
-          </g>
-          <!-- Presentation & Orchestration -->
-          <g>
-            <rect class="arch-box arch-process" x="360" y="90" width="480" height="90" rx="22" />
-            <text class="arch-label" x="600" y="130" text-anchor="middle" font-size="22" font-weight="700" fill="#0f172a">엔드유저 · 사내 애플리케이션</text>
-            <text class="arch-label" x="600" y="155" text-anchor="middle" font-size="14" fill="#1f2937">포털 UI · 챗봇 · 업무 자동화 · BI 시스템</text>
-          </g>
-          <g>
-            <rect class="arch-box arch-process" x="300" y="220" width="230" height="110" rx="20" />
-            <text class="arch-label" x="415" y="260" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">FastAPI 게이트웨이</text>
-            <text class="arch-label" x="415" y="284" text-anchor="middle" font-size="13" fill="#1f2937">JWT 인증 · 감사 로깅 · 스트리밍 응답</text>
-          </g>
-          <g>
-            <rect class="arch-box arch-process" x="560" y="220" width="230" height="110" rx="20" />
-            <text class="arch-label" x="675" y="260" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">LlamaIndex 오케스트레이터</text>
-            <text class="arch-label" x="675" y="284" text-anchor="middle" font-size="13" fill="#1f2937">쿼리 라우터 · 정책 필터 · 메트릭 훅</text>
-          </g>
-          <g>
-            <rect class="arch-box arch-process" x="820" y="220" width="230" height="110" rx="20" />
-            <text class="arch-label" x="935" y="260" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Ollama Llama 3.1 런타임</text>
-            <text class="arch-label" x="935" y="284" text-anchor="middle" font-size="13" fill="#1f2937">GPU 추론 · 모델 샤딩 · Keepalive 서버</text>
-          </g>
-          <!-- Data & Storage -->
-          <g>
-            <rect class="arch-box arch-storage" x="70" y="350" width="220" height="110" rx="20" />
-            <text class="arch-label" x="180" y="392" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">사내 데이터 자산</text>
-            <text class="arch-label" x="180" y="416" text-anchor="middle" font-size="13" fill="#036548">문서 · 코드 · 로그 · DB · 위키</text>
-          </g>
-          <g>
-            <rect class="arch-box arch-process" x="70" y="480" width="220" height="100" rx="20" />
-            <text class="arch-label" x="180" y="518" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Tree-Sitter 파싱 레이어</text>
-            <text class="arch-label" x="180" y="542" text-anchor="middle" font-size="13" fill="#1f2937">청크화 · 민감정보 필터링 · DVC stage</text>
-          </g>
-          <g>
-            <ellipse cx="470" cy="370" rx="90" ry="18" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
-            <rect x="380" y="370" width="180" height="60" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
-            <ellipse cx="470" cy="430" rx="90" ry="18" fill="#bdecd7" stroke="#059669" stroke-width="1.8" />
-            <text class="arch-label" x="470" y="364" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">Redis / memcached 캐시</text>
-            <text class="arch-label" x="470" y="388" text-anchor="middle" font-size="13" fill="#036548">세션 · Top-K 결과 · TTL 정책</text>
-          </g>
-          <g>
-            <ellipse cx="780" cy="370" rx="90" ry="18" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
-            <rect x="690" y="370" width="180" height="60" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
-            <ellipse cx="780" cy="430" rx="90" ry="18" fill="#bdecd7" stroke="#059669" stroke-width="1.8" />
-            <text class="arch-label" x="780" y="364" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">ChromaDB 벡터 스토어</text>
-            <text class="arch-label" x="780" y="388" text-anchor="middle" font-size="13" fill="#036548">KorBERT 임베딩 · HNSW 파라미터 · 메타데이터</text>
-          </g>
-          <!-- Pipelines & Ops -->
-          <g>
-            <rect class="arch-box arch-process" x="70" y="610" width="220" height="110" rx="20" />
-            <text class="arch-label" x="180" y="650" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">DVC 파이프라인</text>
-            <text class="arch-label" x="180" y="674" text-anchor="middle" font-size="13" fill="#1f2937">원천 → 정제 → 임베딩 · 모델 데이터 추적</text>
-          </g>
-          <g>
-            <rect class="arch-box arch-process" x="320" y="610" width="220" height="110" rx="20" />
-            <text class="arch-label" x="430" y="650" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Celery 워커 풀</text>
-            <text class="arch-label" x="430" y="674" text-anchor="middle" font-size="13" fill="#1f2937">배치 임베딩 · 재지표 · 장애 자동 복구</text>
-          </g>
-          <g>
-            <rect class="arch-box arch-process" x="570" y="610" width="220" height="110" rx="20" />
-            <text class="arch-label" x="680" y="650" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">RabbitMQ / Redis 브로커</text>
-            <text class="arch-label" x="680" y="674" text-anchor="middle" font-size="13" fill="#1f2937">큐 분리 · QoS · 지연/재시도 · DLX</text>
-          </g>
-          <g>
-            <rect class="arch-box arch-ops" x="820" y="610" width="260" height="110" rx="20" />
-            <text class="arch-label" x="950" y="648" text-anchor="middle" font-size="18" font-weight="700" fill="#312e81">Ops &amp; Governance 스택</text>
-            <text class="arch-label" x="950" y="672" text-anchor="middle" font-size="13" fill="#3730a3">Prometheus · Grafana · Alertmanager</text>
-            <text class="arch-label" x="950" y="694" text-anchor="middle" font-size="13" fill="#3730a3">Vault / AD / OIDC · 배포 승인 · 감시</text>
-          </g>
-          <g>
-            <rect class="arch-box arch-process" x="320" y="740" width="220" height="110" rx="20" />
-            <text class="arch-label" x="430" y="780" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">PyTorch · KorBERT 파인튜닝</text>
-            <text class="arch-label" x="430" y="804" text-anchor="middle" font-size="13" fill="#1f2937">Mixed Precision · 체크포인트 · 평가 지표</text>
-          </g>
-          <g>
-            <ellipse cx="700" cy="760" rx="90" ry="18" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
-            <rect x="610" y="760" width="180" height="60" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
-            <ellipse cx="700" cy="820" rx="90" ry="18" fill="#bdecd7" stroke="#059669" stroke-width="1.8" />
-            <text class="arch-label" x="700" y="754" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">DVC Remote · 모델 레지스트리</text>
-            <text class="arch-label" x="700" y="778" text-anchor="middle" font-size="13" fill="#036548">S3/MinIO · GitLab · 버전 태깅 · 롤백</text>
-          </g>
-          <!-- Real-time service flow -->
-          <path d="M600 180L600 220" stroke="#0ea5e9" stroke-width="2.4" fill="none" marker-end="url(#arrowSky)" />
-          <path d="M530 275H560" stroke="#0ea5e9" stroke-width="2.4" fill="none" marker-end="url(#arrowSky)" />
-          <path d="M790 275H820" stroke="#0ea5e9" stroke-width="2.4" fill="none" marker-end="url(#arrowSky)" />
-          <path d="M710 330V352H780V370" stroke="#0ea5e9" stroke-width="2.4" fill="none" marker-end="url(#arrowSky)" />
-          <path d="M710 330V352H470V370" stroke="#0ea5e9" stroke-width="2.4" fill="none" marker-end="url(#arrowSky)" />
-          <!-- Data & embedding pipeline -->
-          <path d="M180 440L180 480" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
-          <path d="M180 570L180 610" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
-          <path d="M290 665H320" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
-          <path d="M430 610V450H780" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
-          <path d="M180 720H320" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
-          <path d="M540 795H610" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
-          <path d="M700 760V640H430" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
-          <path d="M570 665H540" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
-          <!-- Observability & governance -->
-          <path d="M950 610V250H820" stroke="#6366f1" stroke-width="2" stroke-dasharray="10 8" fill="none" marker-end="url(#arrowIndigo)" />
-          <path d="M950 610V670H540" stroke="#6366f1" stroke-width="2" stroke-dasharray="10 8" fill="none" marker-end="url(#arrowIndigo)" />
-          <path d="M950 610V300H600" stroke="#6366f1" stroke-width="2" stroke-dasharray="10 8" fill="none" marker-end="url(#arrowIndigo)" />
-        </svg>
+        <div class="px-6 sm:px-10 pb-10 space-y-8">
+          <div class="flex justify-center">
+            <button id="simulate-btn" class="rag-simulate-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl transition-colors">데이터 흐름 시뮬레이션 시작</button>
+          </div>
+          <div class="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(220px,0.9fr),minmax(480px,1.6fr),minmax(260px,1fr)] lg:items-start lg:gap-10">
+            <aside class="rag-nav bg-white/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg p-4 sticky top-6">
+              <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-100 mb-3 border-b border-slate-200/70 dark:border-slate-700/70 pb-2">구성 요소</h3>
+              <nav id="component-nav" class="space-y-1"></nav>
+            </aside>
+            <div id="diagram-root" class="space-y-6">
+              <div class="rag-tier">
+                <p class="rag-tier-title">Client Application · 전자정부프레임워크 / WebLogic</p>
+                <div class="rag-grid">
+                  <div id="A" data-id="A" class="rag-component client-app">Web App (사용자)</div>
+                  <div id="C" data-id="C" class="rag-component dev-ops">개발 운영자 (소스 질의)</div>
+                </div>
+              </div>
+              <div class="rag-tier">
+                <p class="rag-tier-title">RAG System · Python Runtime</p>
+                <div class="rag-grid">
+                  <div id="B" data-id="B" class="rag-component gateway">FastAPI RAG Gateway</div>
+                </div>
+                <div class="rag-grid">
+                  <div id="D" data-id="D" class="rag-component cache">Redis Cache</div>
+                  <div id="E" data-id="E" class="rag-component orchestrator">LlamaIndex Orchestrator</div>
+                </div>
+                <div class="rag-subtier mt-6">
+                  <p class="rag-subtier-title">Core RAG Pipeline</p>
+                  <div class="rag-grid rag-grid-justify-between">
+                    <div id="F" data-id="F" class="rag-component vector-store">ChromaDB Vector Store</div>
+                    <div id="G" data-id="G" class="rag-component llm">Ollama · Llama 3.1</div>
+                  </div>
+                </div>
+              </div>
+              <div class="rag-tier">
+                <p class="rag-tier-title">Data Management &amp; Preprocessing</p>
+                <div class="rag-grid rag-grid-justify-between">
+                  <div class="rag-grid-col">
+                    <div id="J" data-id="J" class="rag-component rag-component-neutral">원본 데이터 리포지토리</div>
+                    <div id="H1" data-id="H1" class="rag-component rag-component-neutral">매뉴얼 / 코드 원본</div>
+                  </div>
+                  <div class="rag-subtier">
+                    <p class="rag-subtier-title">Embedding Process · Celery Task</p>
+                    <div class="rag-grid">
+                      <div id="H2" data-id="H2" class="rag-component parser">Tree-Sitter / Parser</div>
+                      <div id="I" data-id="I" class="rag-component embedding">KorBERT Embedding Model</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <aside class="rag-info-panel p-6 lg:p-7 sticky top-6" id="info-panel">
+              <h3 id="info-title" class="text-2xl font-bold text-slate-800 dark:text-white mb-3">아키텍처 개요</h3>
+              <div id="info-content" class="text-slate-700 dark:text-slate-200 space-y-4">
+                <p>이 다이어그램은 내일채움공제 AI 헬퍼 시스템의 전체 구조를 탐색형으로 제공합니다. 각 구성 요소는 특정 역할을 수행하며 유기적으로 연결되어 사용자와 운영자의 질문에 대한 정밀한 답변을 생성합니다.</p>
+                <p>좌측 메뉴 또는 다이어그램 요소를 클릭해 역할과 기술 스택을 살펴보거나, 시뮬레이션을 실행해 데이터 흐름을 따라가 보세요.</p>
+                <div class="rag-tip mt-4 p-4">
+                  <h4 class="font-semibold text-blue-800 dark:text-blue-200">💡 사용 팁</h4>
+                  <p class="text-sm text-blue-700 dark:text-blue-100 mt-1">‘데이터 흐름 시뮬레이션’을 누르면 사용자 요청이 시스템 내에서 처리되는 순서를 하이라이트로 확인할 수 있습니다.</p>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
       </div>
     </section>
     <section id="setup" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
