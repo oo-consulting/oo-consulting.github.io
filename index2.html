@@ -14,12 +14,12 @@
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #f8f9fa;
-            /* 수정: 세로 스크롤 허용 */
-            overflow-x: auto;
+            overflow-x: hidden;
         }
         .component {
             transition: all 0.3s ease-in-out;
             cursor: pointer;
+            touch-action: manipulation;
         }
         .component.selected {
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.7);
@@ -30,42 +30,25 @@
             color: white !important;
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
         }
-        .arrow {
-            position: absolute;
-            opacity: 0.3;
-            transition: all 0.5s ease-in-out;
-            color: #6b7280;
-        }
-        .arrow.highlight {
-            opacity: 1;
-            color: #2563eb;
-            transform: scale(1.2);
-        }
-        .arrow-line {
-            width: 100%;
-            height: 2px;
-            background-color: currentColor;
-        }
-        .arrow-head {
-            width: 0;
-            height: 0;
-            border-top: 6px solid transparent;
-            border-bottom: 6px solid transparent;
-            border-left: 8px solid currentColor;
-        }
-        /* 수정: 다이어그램 레이아웃 개선 - 높이 자동 조정 및 스크롤 허용 */
         .diagram-container {
             position: relative;
-            /* 수정: min-h-[700px] -> h-auto min-h-screen으로 변경하여 화면 전체 높이 맞춤 */
             height: auto;
-            min-height: 100vh;
-            overflow-y: auto; /* 세로 스크롤 허용 */
+            min-height: calc(100vh - 200px);
+            overflow-y: auto;
         }
         #diagram-root {
-            /* 수정: min-h-full 추가로 부모 컨테이너에 맞춤 */
             min-height: 100%;
             position: relative;
-            padding-bottom: 2rem; /* 아래쪽 여백 추가 */
+            padding: 1rem;
+        }
+        .component {
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.875rem;
+            padding: 0.5rem;
         }
         .client-app { background-color: #DCEFFB; border-color: #a6cde4; }
         .dev-ops { background-color: #FFE0B2; border-color: #e6b980; }
@@ -76,21 +59,54 @@
         .llm { background-color: #E1F5FE; border-color: #b0d9e6; }
         .embedding { background-color: #E0F7FA; border-color: #b0dfe6; }
         .parser { background-color: #E6EE9C; border-color: #c2cc70; }
-        /* 수정: 작은 화면에서 top 값 조정 (모바일 친화적) - 겹침 방지를 위해 top 값을 더 크게 증가 */
-        @media (max-width: 1024px) {
-            .client-section { top: 1rem !important; }
-            .rag-section { top: 12rem !important; } /* RAG 섹션 top 증가로 공간 확보 */
-            .data-section { top: 45rem !important; } /* 35rem -> 45rem (720px)으로 증가하여 Core RAG (top-[310px] ~ 400px 정도)와 충분한 간격 */
+
+        /* Mobile-first responsive design */
+        @media (max-width: 1023px) {
+            .client-section, .rag-section, .data-section {
+                position: static !important;
+                margin-bottom: 2rem !important;
+                transform: none !important;
+                top: auto !important;
+                left: auto !important;
+            }
+            .rag-section .absolute {
+                position: static !important;
+                margin-top: 1rem !important;
+            }
+            #diagram-root {
+                padding: 0.5rem;
+            }
         }
-        /* 추가: 더 작은 화면 (모바일)에서 추가 조정 - top 값을 rem 단위로 더 유연하게 */
-        @media (max-width: 768px) {
-            .rag-section { top: 15rem !important; }
-            .data-section { top: 55rem !important; } /* 880px 정도로 더 큰 간격 */
-            /* 모바일에서 Core RAG 내부 요소도 조정 */
-            .rag-section .absolute { top: 25rem !important; } /* Core RAG top-[310px] -> 25rem (400px)으로 증가 */
+
+        /* Touch-friendly for mobile */
+        @media (hover: none) and (pointer: coarse) {
+            .component {
+                min-height: 3.5rem;
+                font-size: 1rem;
+                padding: 0.75rem;
+            }
+            .component.selected {
+                transform: scale(1.05);
+            }
         }
-        @media (max-width: 480px) {
-            .data-section { top: 65rem !important; } /* 매우 작은 화면에서 극대화 */
+
+        /* Accessibility improvements */
+        .component:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        /* Reduced motion preferences */
+        @media (prefers-reduced-motion: reduce) {
+            .component {
+                transition: none;
+            }
+            .component.selected {
+                transform: none;
+            }
+            .component.highlight {
+                box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+            }
         }
     </style>
 </head>
@@ -108,79 +124,81 @@
             </button>
         </div>
 
-        <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <!-- Left Navigation -->
-            <aside class="lg:col-span-2 bg-white p-4 rounded-xl shadow-lg">
-                <h2 class="text-xl font-bold mb-4 border-b pb-2">구성 요소</h2>
-                <nav id="component-nav" class="space-y-2">
+        <main class="space-y-8 lg:grid lg:grid-cols-12 lg:gap-8">
+            <!-- Mobile: order components for better flow -->
+            <aside class="order-1 lg:col-span-3 lg:order-1 bg-white p-4 rounded-xl shadow-lg">
+                <h2 class="text-lg sm:text-xl font-bold mb-4 border-b pb-2">구성 요소</h2>
+                <nav id="component-nav" class="space-y-2 text-sm">
                     <!-- Navigation items will be injected by JS -->
                 </nav>
             </aside>
 
-            <!-- Center Diagram -->
-            <div class="lg:col-span-7 diagram-container bg-white p-6 rounded-xl shadow-lg">
-                <div class="relative w-full h-full" id="diagram-root">
-                    <!-- Client Application -->
-                    <div class="client-section absolute top-4 left-1/2 -translate-x-1/2 w-[90%] p-4 border-2 border-dashed border-gray-300 rounded-lg">
-                        <h3 class="text-center font-semibold text-gray-500 mb-2 text-sm">Client Application (전자정부프레임워크 / WebLogic)</h3>
-                        <div class="flex justify-around">
-                            <div id="A" data-id="A" class="component client-app border-2 p-3 rounded-lg text-center w-48">Web App (사용자)</div>
-                            <div id="C" data-id="C" class="component dev-ops border-2 p-3 rounded-lg text-center w-48">개발 운영자 (소스 질의)</div>
+            <div class="order-2 lg:col-span-6 lg:order-2 diagram-container bg-white p-4 rounded-xl shadow-lg">
+                <div id="diagram-root" class="space-y-8">
+                    <!-- Client Application Section -->
+                    <section class="client-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+                        <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">Client Application (전자정부프레임워크 / WebLogic)</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div id="A" data-id="A" class="component client-app border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">Web App (사용자)</div>
+                            <div id="C" data-id="C" class="component dev-ops border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">개발 운영자 (소스 질의)</div>
                         </div>
-                    </div>
-                    
-                    <!-- RAG System -->
-                    <div class="rag-section absolute top-[160px] left-1/2 -translate-x-1/2 w-full p-4 border-2 border-dashed border-gray-300 rounded-lg">
-                         <h3 class="text-center font-semibold text-gray-500 mb-4 text-sm">RAG System (Python 환경)</h3>
-                        <div id="B" data-id="B" class="component gateway border-2 p-3 rounded-lg text-center w-56 mx-auto">FastAPI RAG Gateway</div>
-                        <!-- 수정: mt-12 -> mt-2로 변경하여 Data Management 섹션의 작은 간격(mb-2)과 유사하게 통일 -->
-                        <div id="D" data-id="D" class="component cache border-2 p-3 rounded-lg text-center w-56 mx-auto mt-2">Redis Cache</div>
-                        <!-- 수정: mt-12 -> mt-2로 변경하여 일관된 간격 유지 -->
-                        <div id="E" data-id="E" class="component orchestrator border-2 p-3 rounded-lg text-center w-56 mx-auto mt-2">LlamaIndex Orchestrator</div>
-                        
-                        <div class="absolute top-[310px] left-1/2 -translate-x-1/2 w-[95%] p-4 border border-gray-300 rounded-lg mt-4">
-                             <h3 class="text-center font-semibold text-gray-400 mb-2 text-xs">Core RAG Pipeline</h3>
-                            <div class="flex justify-between items-center">
-                                <div id="F" data-id="F" class="component vector-store border-2 p-3 rounded-lg text-center w-48">ChromaDB Vector Store</div>
-                                <div id="G" data-id="G" class="component llm border-2 p-3 rounded-lg text-center w-48">Ollama - Llama 3.1</div>
-                            </div>
-                        </div>
-                    </div>
+                    </section>
 
-                    <!-- Data Management -->
-                     <div class="data-section absolute top-[650px] left-1/2 -translate-x-1/2 w-[90%] p-4 border-2 border-dashed border-gray-300 rounded-lg">
-                        <h3 class="text-center font-semibold text-gray-500 mb-2 text-sm">Data Management & Preprocessing</h3>
-                        <div class="flex justify-around items-start">
-                            <div class="text-center">
-                                <div id="J" data-id="J" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center mb-2">원본 데이터 리포지토리</div>
-                                <div id="H1" data-id="H1" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center">매뉴얼/코드 원본</div>
-                            </div>
-                            <div class="p-4 border border-gray-300 rounded-lg mt-8">
-                                <h4 class="text-center font-semibold text-gray-400 mb-2 text-xs">Embedding Process (Celery)</h4>
-                                <div id="H2" data-id="H2" class="component parser border-2 p-3 rounded-lg text-center mb-2">Tree-Sitter/Parser</div>
-                                <div id="I" data-id="I" class="component embedding border-2 p-3 rounded-lg text-center">KorBERT Embedding Model</div>
+                    <!-- RAG System Section -->
+                    <section class="rag-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+                        <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">RAG System (Python 환경)</h3>
+                        <div class="grid grid-cols-1 gap-3">
+                            <div id="B" data-id="B" class="component gateway border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">FastAPI RAG Gateway</div>
+                            <div id="D" data-id="D" class="component cache border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">Redis Cache</div>
+                            <div id="E" data-id="E" class="component orchestrator border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">LlamaIndex Orchestrator</div>
+                        </div>
+
+                        <!-- Core RAG Pipeline Sub-section -->
+                        <div class="mt-6 p-3 border border-gray-300 rounded-lg bg-white">
+                            <h4 class="text-center font-semibold text-gray-500 mb-3 text-sm">Core RAG Pipeline</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div id="F" data-id="F" class="component vector-store border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">ChromaDB Vector Store</div>
+                                <div id="G" data-id="G" class="component llm border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">Ollama - Llama 3.1</div>
                             </div>
                         </div>
-                    </div>
+                    </section>
+
+                    <!-- Data Management Section -->
+                    <section class="data-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+                        <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">Data Management & Preprocessing</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-3">
+                                <div id="J" data-id="J" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">원본 데이터 리포지토리</div>
+                                <div id="H1" data-id="H1" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">매뉴얼/코드 원본</div>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="p-3 border border-gray-300 rounded-lg bg-white">
+                                    <h4 class="text-center font-semibold text-gray-500 mb-3 text-sm">Embedding Process (Celery)</h4>
+                                    <div class="space-y-2">
+                                        <div id="H2" data-id="H2" class="component parser border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center text-xs">Tree-Sitter/Parser</div>
+                                        <div id="I" data-id="I" class="component embedding border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center text-xs">KorBERT Embedding</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
 
-            <!-- Right Information Panel -->
-            <div class="lg:col-span-3">
-                <div id="info-panel" class="sticky top-8 bg-white p-6 rounded-xl shadow-lg">
-                    <h2 id="info-title" class="text-2xl font-bold mb-3">아키텍처 개요</h2>
-                    <div id="info-content" class="text-gray-700 space-y-4">
-                        <p>이 다이어그램은 내일채움공제 AI 헬퍼 시스템의 전체 구조를 보여줍니다. 각 구성 요소는 특정 역할을 수행하며 유기적으로 연결되어 사용자 및 개발자의 질문에 대한 정확한 답변을 생성합니다.</p>
-                        <p>왼쪽 목록 또는 다이어그램의 각 부분을 클릭하여 더 자세한 정보를 확인하세요.</p>
-                        <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
-                            <h4 class="font-semibold text-blue-800">💡 사용 팁</h4>
-                            <p class="text-blue-700 text-sm mt-1">'데이터 흐름 시뮬레이션' 버튼을 클릭하면 사용자 요청이 시스템 내에서 어떻게 처리되는지 시각적으로 따라갈 수 있습니다.</p>
+            <!-- Information Panel -->
+            <aside class="order-3 lg:col-span-3 lg:order-3">
+                <div id="info-panel" class="bg-white p-4 sm:p-6 rounded-xl shadow-lg lg:sticky lg:top-8">
+                    <h2 id="info-title" class="text-xl sm:text-2xl font-bold mb-3">아키텍처 개요</h2>
+                    <div id="info-content" class="text-gray-700 space-y-3">
+                        <p class="text-sm sm:text-base">이 다이어그램은 내일채움공제 AI 헬퍼 시스템의 전체 구조를 보여줍니다. 각 구성 요소는 특정 역할을 수행하며 유기적으로 연결되어 사용자 및 개발자의 질문에 대한 정확한 답변을 생성합니다.</p>
+                        <p class="text-sm sm:text-base">왼쪽 목록 또는 다이어그램의 각 부분을 클릭하여 더 자세한 정보를 확인하세요.</p>
+                        <div class="mt-4 p-3 sm:p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+                            <h4 class="font-semibold text-blue-800 text-sm">💡 사용 팁</h4>
+                            <p class="text-blue-700 text-xs sm:text-sm mt-1">'데이터 흐름 시뮬레이션' 버튼을 클릭하면 사용자 요청이 시스템 내에서 어떻게 처리되는지 시각적으로 따라갈 수 있습니다.</p>
                         </div>
                     </div>
                 </div>
-            </div>
-
+            </aside>
         </main>
     </div>
 
@@ -240,6 +258,7 @@
                 document.getElementById('info-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
             };
 
+            // Click handlers for components
             document.getElementById('diagram-root').addEventListener('click', (e) => {
                 const component = e.target.closest('.component');
                 if (component && component.dataset.id) {
@@ -253,6 +272,42 @@
                 if (navItem && navItem.dataset.id) {
                     selectComponent(navItem.dataset.id);
                 }
+            });
+
+            // Keyboard navigation support
+            nav.addEventListener('keydown', (e) => {
+                const navItems = Array.from(nav.querySelectorAll('a[data-id]'));
+                const currentIndex = navItems.findIndex(item => item === document.activeElement);
+
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (document.activeElement.dataset.id) {
+                        selectComponent(document.activeElement.dataset.id);
+                    }
+                } else if (e.key === 'ArrowDown' && currentIndex < navItems.length - 1) {
+                    e.preventDefault();
+                    navItems[currentIndex + 1].focus();
+                } else if (e.key === 'ArrowUp' && currentIndex > 0) {
+                    e.preventDefault();
+                    navItems[currentIndex - 1].focus();
+                }
+            });
+
+            // Add ARIA attributes to components
+            components.forEach(component => {
+                component.setAttribute('role', 'button');
+                component.setAttribute('tabindex', '0');
+                component.setAttribute('aria-label', componentData[component.dataset.id]?.title || '');
+            });
+
+            // Focus management
+            components.forEach(component => {
+                component.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        selectComponent(component.dataset.id);
+                    }
+                });
             });
 
             let isSimulating = false;

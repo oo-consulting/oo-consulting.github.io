@@ -11,269 +11,154 @@
   <script>
     (function() {
       const componentData = {
-        "A": {
-          title: "Web App (사용자)",
-          role: "사용자 인터페이스",
-          tech: "전자정부프레임워크, JSP/Servlet, HTML/CSS/JS",
-          description: "일반 사용자가 내일채움공제 업무를 처리하는 웹 화면입니다. 사용자가 특정 메뉴나 입력 필드에서 도움을 요청하면, 해당 메뉴 ID와 질문을 RAG 시스템으로 전송합니다."
-        },
-        "C": {
-          title: "개발 운영자 (소스 질의)",
-          role: "기술 질의 인터페이스",
-          tech: "내부 관리 시스템, IDE 연동",
-          description: "개발자나 운영자가 시스템 유지보수 중 발생하는 기술적인 질문이나 소스코드 관련 문의를 하는 인터페이스입니다. 분석이 필요한 파일 ID나 코드 조각을 RAG 시스템으로 보냅니다."
-        },
-        "B": {
-          title: "FastAPI RAG Gateway",
-          role: "API 게이트웨이",
-          tech: "Python, FastAPI",
-          description: "JAVA 기반 클라이언트와 Python 기반 RAG 시스템을 잇는 관문입니다. 요청을 수신하고 캐시·파이프라인·LLM 호출을 조합해 최종 결과를 JSON으로 응답합니다."
-        },
-        "D": {
-          title: "Redis Cache",
-          role: "캐싱 엔진",
-          tech: "Redis",
-          description: "자주 묻는 질문과 LLM 응답을 메모리에 저장해 반복 요청을 빠르게 처리합니다. TTL과 네임스페이스 정책으로 캐시 오염을 방지하며 서버 부하를 줄입니다."
-        },
-        "E": {
-          title: "LlamaIndex Orchestrator",
-          role: "RAG 파이프라인 관리",
-          tech: "Python, LlamaIndex",
-          description: "질문을 입력받아 벡터 검색, 프롬프트 구성, 후처리를 조율합니다. KorBERT 임베딩과 Llama 3.1 생성 모델을 결합해 고품질 답변을 생성합니다."
-        },
-        "F": {
-          title: "ChromaDB Vector Store",
-          role: "벡터 데이터베이스",
-          tech: "ChromaDB",
-          description: "매뉴얼과 소스코드를 임베딩 벡터로 저장하는 장기 기억 장치입니다. 의미 기반 유사도 검색을 제공하여 LlamaIndex가 빠르게 적합한 문맥을 확보하도록 돕습니다."
-        },
-        "G": {
-          title: "Ollama · Llama 3.1",
-          role: "대규모 언어 모델 (LLM)",
-          tech: "Ollama, Llama 3.1",
-          description: "ChromaDB에서 반환된 문맥과 사용자의 질문을 기반으로 자연스러운 답변을 생성합니다. 로컬 GPU 자원을 활용하며, 양자화·LoRA 등 최적화 옵션을 지원합니다."
-        },
-        "H1": {
-          title: "매뉴얼 / 코드 원본",
-          role: "원본 데이터",
-          tech: "PDF, Word, Java, SQL 파일",
-          description: "AI가 학습하고 참조하는 모든 지식의 원천입니다. 사용자·관리자 매뉴얼, 시스템 전체 소스코드, DB 스키마 등 실제 운영 데이터를 포함합니다."
-        },
-        "J": {
-          title: "원본 데이터 리포지토리",
-          role: "데이터 버전 관리",
-          tech: "DVC, Git",
-          description: "문서와 코드의 변경 이력을 관리합니다. 모델 성능 변화 시 학습 데이터 버전을 추적하고, 필요할 경우 특정 버전으로 롤백하는 근거를 제공합니다."
-        },
-        "H2": {
-          title: "Tree-Sitter / Parser",
-          role: "소스코드 구조 분석",
-          tech: "Tree-Sitter",
-          description: "Java, SQL 등 소스코드를 문법 구조 단위로 파싱하고 청크화합니다. 코드 전용 질문의 정확도를 높이고, 임베딩 품질을 일정하게 유지합니다."
-        },
-        "I": {
-          title: "KorBERT Embedding Model",
-          role: "임베딩 모델",
-          tech: "KorBERT, PyTorch",
-          description: "한국어 텍스트를 컴퓨터가 이해할 수 있는 벡터로 변환합니다. RAG 검색 정확도를 결정하는 핵심 요소로, Celery 워커에서 배치 임베딩을 수행합니다."
-        }
+        'A': { title: 'Web App Interface (사용자)', role: '사용자 인터페이스', tech: '전자정부프레임워크, JSP/Servlet, HTML/CSS/JS', description: '일반 사용자가 내일채움공제 업무를 처리하는 웹 화면입니다. 사용자가 특정 메뉴나 입력 필드에서 도움을 요청하면, 해당 메뉴 ID와 질문을 RAG 시스템으로 전송합니다.' },
+        'C': { title: '개발 운영자', role: '기술 질의 인터페이스', tech: '내부 관리 시스템, IDE 연동', description: '개발자나 운영자가 시스템 유지보수 중 발생하는 기술적인 질문이나 소스코드 관련 문의를 하는 인터페이스입니다. 분석이 필요한 파일 ID나 코드 조각을 RAG 시스템으로 보냅니다.' },
+        'B': { title: 'FastAPI RAG Gateway', role: 'API 게이트웨이', tech: 'Python, FastAPI', description: 'JAVA 기반의 클라이언트 애플리케이션과 Python 기반 RAG 시스템을 연결하는 관문입니다. 모든 요청을 받아 처리하고, 캐시를 확인하며, 최종 결과를 JSON 형식으로 응답합니다.' },
+        'D': { title: 'Redis Cache', role: '캐싱 엔진', tech: 'Redis', description: '자주 묻는 질문과 그에 대한 LLM의 답변을 메모리에 저장하는 단기 기억 장치입니다. 동일한 질문이 반복될 경우, LLM을 호출하지 않고 캐시에서 즉시 답변을 제공하여 응답 속도를 극대화하고 서버 부하를 줄입니다.' },
+        'E': { title: 'LlamaIndex Orchestrator', role: 'RAG 파이프라인 관리', tech: 'Python, LlamaIndex', description: 'RAG의 전체 흐름을 지휘하는 핵심 컨트롤러입니다. 사용자 질문을 받아 벡터 DB에서 관련 문서를 검색하고, 이 정보를 LLM에 전달하여 최종 답변을 생성하도록 요청하는 모든 과정을 관리합니다.' },
+        'F': { title: 'ChromaDB Vector Store', role: '벡터 데이터베이스', tech: 'ChromaDB', description: '매뉴얼과 소스코드가 벡터 형태로 변환되어 저장되는 AI의 장기 기억 장치입니다. 사용자 질문과 의미적으로 가장 유사한 정보를 초고속으로 검색하여 LlamaIndex에 제공합니다.' },
+        'G': { title: 'Ollama - Llama 3.1', role: '대규모 언어 모델 (LLM)', tech: 'Ollama, Llama 3.1', description: 'RAG 시스템의 두뇌 역할을 합니다. ChromaDB에서 검색된 관련 정보를 바탕으로, 사용자가 이해하기 쉬운 자연스러운 문장 형태의 최종 답변을 생성합니다.' },
+        'H1': { title: '매뉴얼/코드 원본', role: '원본 데이터', tech: 'PDF, Word, Java, SQL 파일', description: 'AI가 학습하고 참조하는 모든 지식의 원천입니다. 사용자 및 관리자 매뉴얼, 시스템의 전체 소스코드, DB 스키마 등이 포함됩니다.' },
+        'J': { title: '원본 데이터 리포지토리', role: '데이터 버전 관리', tech: 'DVC (Data Version Control), Git', description: '매뉴얼이나 소스코드의 변경 이력을 관리합니다. AI 모델의 성능이 달라졌을 때, 어떤 버전의 데이터로 학습했는지 추적하고 필요시 이전 버전으로 롤백하기 위해 사용됩니다.' },
+        'H2': { title: 'Tree-Sitter/Parser', role: '소스코드 구조 분석', tech: 'Tree-Sitter', description: 'Java, SQL과 같은 소스코드를 단순 텍스트가 아닌 문법적 구조(클래스, 메서드 단위)로 분석하고 분할합니다. 이를 통해 코드 관련 질문의 정확도를 높입니다.' },
+        'I': { title: 'KorBERT Embedding Model', role: '임베딩 모델', tech: 'KorBERT, PyTorch', description: '한국어 텍스트(매뉴얼, 코드 주석 등)의 의미를 컴퓨터가 이해할 수 있는 숫자 벡터로 변환하는 역할을 합니다. RAG 시스템의 검색 정확도를 결정하는 핵심 요소입니다.' }
       };
 
-      const flowSequence = ["A", "B", "D", "E", "F", "G"];
+      const flowSequence = ['A', 'B', 'D', 'E', 'F', 'G'];
 
-      document.addEventListener("DOMContentLoaded", () => {
-        const nav = document.getElementById("component-nav");
-        const diagram = document.getElementById("architecture-svg");
-        const infoPanel = document.getElementById("info-panel");
-        const infoTitle = document.getElementById("info-title");
-        const infoContent = document.getElementById("info-content");
-        const simulateBtn = document.getElementById("simulate-btn");
+      document.addEventListener('DOMContentLoaded', () => {
+        const nav = document.getElementById('component-nav');
+        const components = document.querySelectorAll('.component');
+        const infoTitle = document.getElementById('info-title');
+        const infoContent = document.getElementById('info-content');
+        const simulateBtn = document.getElementById('simulate-btn');
 
-        if (!nav || !diagram || !infoPanel || !infoTitle || !infoContent || !simulateBtn) {
-          return;
-        }
-
-        const components = Array.from(diagram.querySelectorAll(".rag-component"));
-        if (!components.length) return;
-
-        let navItems = [];
-
-        const fragment = document.createDocumentFragment();
-        Object.entries(componentData).forEach(([id, data]) => {
-          const navItem = document.createElement("a");
-          navItem.href = "#architecture";
-          navItem.dataset.id = id;
+        // Populate navigation
+        Object.keys(componentData).forEach(id => {
+          const data = componentData[id];
+          const navItem = document.createElement('a');
+          navItem.href = '#';
+          navItem.className = 'block p-2 rounded-md hover:bg-gray-100 transition-colors';
           navItem.textContent = data.title;
-          navItem.className = "transition-all duration-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-2 py-1 rounded-lg block";
-          navItem.style.fontFamily = "'Noto Sans KR', sans-serif";
-          navItem.style.fontSize = "14px";
-          fragment.appendChild(navItem);
+          navItem.dataset.id = id;
+          navItem.setAttribute('style', 'font-family: \'Noto Sans KR\', sans-serif; font-size: 14px;');
+          nav.appendChild(navItem);
         });
-        nav.appendChild(fragment);
-        navItems = Array.from(nav.querySelectorAll("a[data-id]"));
-
-        const clearHighlights = () => {
-          components.forEach(el => {
-            el.classList.remove("highlight");
-            const rect = el.querySelector("rect");
-            if (rect) {
-              rect.style.filter = rect.style.filter.replace(" url(#glow)", "");
-            }
-          });
-          // Clear flow arrows
-          const flowArrows = diagram.querySelectorAll(".flow-arrow");
-          flowArrows.forEach(arrow => {
-            arrow.style.opacity = "0";
-          });
-        };
 
         const updateInfoPanel = (id) => {
           const data = componentData[id];
           if (!data) return;
-          infoTitle.innerHTML = `<span class="text-2xl mr-2">⚡</span>${data.title}`;
+
+          infoTitle.textContent = data.title;
           infoContent.innerHTML = `
-            <p><strong class="font-bold text-blue-600 dark:text-blue-400">역할:</strong> ${data.role}</p>
-            <p><strong class="font-bold text-green-600 dark:text-green-400">주요 기술:</strong> ${data.tech}</p>
-            <p class="mt-4 pt-4 border-t border-slate-200/70 dark:border-slate-700/60 leading-relaxed">${data.description}</p>
+            <p><strong class="font-semibold text-gray-800">역할:</strong> ${data.role}</p>
+            <p><strong class="font-semibold text-gray-800">주요 기술:</strong> ${data.tech}</p>
+            <p class="mt-4 pt-4 border-t">${data.description}</p>
           `;
-          components.forEach(el => {
-            el.classList.toggle("selected", el.dataset.id === id);
-            const rect = el.querySelector("rect");
-            if (rect) {
-              if (el.dataset.id === id) {
-                rect.style.strokeWidth = "3";
-                rect.style.filter = "url(#glow)";
-              } else {
-                rect.style.strokeWidth = rect.classList.contains("component-rect") ? "2" : "1";
-                rect.style.filter = rect.style.filter.replace(" url(#glow)", "");
-              }
-            }
-          });
-          navItems.forEach(item => {
-            item.classList.toggle("active", item.dataset.id === id);
-            item.classList.toggle("bg-blue-100", item.dataset.id === id);
-            item.classList.toggle("dark:bg-blue-800", item.dataset.id === id);
-            item.classList.toggle("font-bold", item.dataset.id === id);
+
+          components.forEach(comp => {
+            comp.classList.toggle('selected', comp.dataset.id === id);
           });
         };
 
-        const scrollInfoIntoView = () => {
-          if (window.matchMedia("(max-width: 1023px)").matches) {
-            infoPanel.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        };
-
-        const selectComponent = (id, { scroll = true } = {}) => {
+        const selectComponent = (id) => {
           updateInfoPanel(id);
-          if (scroll) scrollInfoIntoView();
+          document.getElementById('info-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
         };
 
-        diagram.addEventListener("click", (event) => {
-          const target = event.target.closest(".rag-component");
-          if (!target || !target.dataset.id) return;
-          if (isSimulating) stopSimulation();
-          clearHighlights();
-          selectComponent(target.dataset.id);
+        document.getElementById('diagram-root').addEventListener('click', (e) => {
+          const component = e.target.closest('.component');
+          if (component && component.dataset.id) {
+            selectComponent(component.dataset.id);
+          }
         });
 
-        nav.addEventListener("click", (event) => {
-          event.preventDefault();
-          const target = event.target.closest("a[data-id]");
-          if (!target) return;
-          if (isSimulating) stopSimulation();
-          clearHighlights();
-          selectComponent(target.dataset.id);
+        nav.addEventListener('click', (e) => {
+          e.preventDefault();
+          const navItem = e.target.closest('a');
+          if (navItem && navItem.dataset.id) {
+            selectComponent(navItem.dataset.id);
+          }
+        });
+
+        // Keyboard navigation support
+        nav.addEventListener('keydown', (e) => {
+          const navItems = Array.from(nav.querySelectorAll('a[data-id]'));
+          const currentIndex = navItems.findIndex(item => item === document.activeElement);
+
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (document.activeElement.dataset.id) {
+              selectComponent(document.activeElement.dataset.id);
+            }
+          } else if (e.key === 'ArrowDown' && currentIndex < navItems.length - 1) {
+            e.preventDefault();
+            navItems[currentIndex + 1].focus();
+          } else if (e.key === 'ArrowUp' && currentIndex > 0) {
+            e.preventDefault();
+            navItems[currentIndex - 1].focus();
+          }
+        });
+
+        // Add ARIA attributes to components
+        components.forEach(component => {
+          component.setAttribute('role', 'button');
+          component.setAttribute('tabindex', '0');
+          component.setAttribute('aria-label', componentData[component.dataset.id]?.title || '');
+        });
+
+        // Focus management
+        components.forEach(component => {
+          component.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              selectComponent(component.dataset.id);
+            }
+          });
         });
 
         let isSimulating = false;
-        let timer = null;
+        let timeoutId;
 
-        const setSimulateButtonState = (running) => {
-          simulateBtn.textContent = running ? "⏹️ 시뮬레이션 중지" : "🚀 데이터 흐름 시뮬레이션 시작";
-          simulateBtn.classList.toggle("bg-gradient-to-r", !running);
-          simulateBtn.classList.toggle("from-blue-600", !running);
-          simulateBtn.classList.toggle("to-blue-700", !running);
-          simulateBtn.classList.toggle("hover:from-blue-700", !running);
-          simulateBtn.classList.toggle("hover:to-blue-800", !running);
-          simulateBtn.classList.toggle("bg-gradient-to-r", running);
-          simulateBtn.classList.toggle("from-red-600", running);
-          simulateBtn.classList.toggle("to-red-700", running);
-          simulateBtn.classList.toggle("hover:from-red-700", running);
-          simulateBtn.classList.toggle("hover:to-red-800", running);
-          simulateBtn.classList.toggle("stop", running);
-        };
-
-        const stopSimulation = () => {
-          if (timer) {
-            clearTimeout(timer);
-            timer = null;
-          }
-          isSimulating = false;
-          clearHighlights();
-          setSimulateButtonState(false);
-        };
-
-        simulateBtn.addEventListener("click", () => {
+        simulateBtn.addEventListener('click', () => {
           if (isSimulating) {
-            stopSimulation();
+            clearTimeout(timeoutId);
+            isSimulating = false;
+            simulateBtn.textContent = '데이터 흐름 시뮬레이션 시작';
+            simulateBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+            simulateBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            components.forEach(c => c.classList.remove('highlight'));
             return;
           }
-          if (!flowSequence.length) return;
 
           isSimulating = true;
-          let step = 0;
-          setSimulateButtonState(true);
+          simulateBtn.textContent = '시뮬레이션 중지';
+          simulateBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+          simulateBtn.classList.add('bg-red-600', 'hover:bg-red-700');
 
+          let step = 0;
           const runStep = () => {
+            components.forEach(c => c.classList.remove('highlight'));
+
             if (step >= flowSequence.length) {
-              stopSimulation();
+              isSimulating = false;
+              simulateBtn.click(); // Reset button
               return;
             }
+
             const currentId = flowSequence[step];
-            clearHighlights();
-
-            // Highlight current component
-            const el = diagram.querySelector(`.rag-component[data-id="${currentId}"]`);
-            if (el) {
-              const rect = el.querySelector("rect");
-              if (rect) {
-                rect.style.filter = "url(#glow)";
-              }
-              el.classList.add("highlight");
-
-              // Show flow arrow for current step
-              if (step < flowSequence.length - 1) {
-                const flowArrow = diagram.querySelector(`#flow-path-${step + 1}`);
-                if (flowArrow) {
-                  flowArrow.style.opacity = "1";
-                  // Animate arrow
-                  flowArrow.style.strokeDasharray = "10,5";
-                  flowArrow.style.animation = "flowAnimate 1.5s linear infinite";
-                }
-              }
-
-              selectComponent(currentId, { scroll: false });
+            const currentElement = document.getElementById(currentId);
+            if (currentElement) {
+              currentElement.classList.add('highlight');
+              updateInfoPanel(currentId);
             }
-            step += 1;
-            timer = setTimeout(runStep, 2000);
+
+            step++;
+            timeoutId = setTimeout(runStep, 1500);
           };
 
           runStep();
         });
-
-        // Add CSS animation for flow arrows
-        const style = document.createElement("style");
-        style.textContent = `
-          @keyframes flowAnimate {
-            to {
-              stroke-dashoffset: -15;
-            }
-          }
-        `;
-        document.head.appendChild(style);
-
-        // Initialize with component A
-        selectComponent("A", { scroll: false });
       });
     })();
   </script>
@@ -628,149 +513,232 @@
       </div>
     </section>
 
-    <!-- New Korean-friendly fonts and enhanced architecture section -->
+    <!-- Enhanced fully responsive RAG architecture section with night sky background -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <section id="architecture" class="container-max mx-auto px-6 py-10 sm:py-16 lg:py-20">
-      <div class="architecture-explorer rounded-3xl border border-white/10 text-slate-900 shadow-2xl dark:text-slate-100 min-h-screen overflow-hidden">
-        <div class="px-6 sm:px-10 pt-8 pb-6">
-          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div class="max-w-2xl">
-              <p class="text-sm uppercase tracking-[0.32em] text-slate-500 dark:text-slate-400 mb-2 font-semibold">섹션 2.5</p>
-              <h2 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">통합 아키텍처 다이어그램</h2>
-              <p class="mt-4 text-base sm:text-lg leading-7 text-slate-600 dark:text-slate-300 font-medium" style="font-family: 'Noto Sans KR', sans-serif;">Windows 10 · WSL2 기반 온프레미스 환경에서 Ollama, KorBERT, ChromaDB, LlamaIndex, FastAPI, Celery, Redis, RabbitMQ, Prometheus, Grafana, DVC가 상호작용하며 RAG 서비스를 제공하는 전체 구조를 혁신적인 인터랙티브 다이어그램으로 재설계했습니다.</p>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        .component {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .component.selected {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.7);
+            transform: scale(1.03);
+        }
+        .component.highlight {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        .diagram-container {
+            position: relative;
+            height: auto;
+            min-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        #diagram-root {
+            min-height: 100%;
+            position: relative;
+            padding: 1rem;
+        }
+        .component {
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.875rem;
+            padding: 0.5rem;
+        }
+        .client-app { background-color: #DCEFFB; border-color: #a6cde4; }
+        .dev-ops { background-color: #FFE0B2; border-color: #e6b980; }
+        .gateway { background-color: #C8E6C9; border-color: #97c299; }
+        .cache { background-color: #FFFDE7; border-color: #e6e4b3; }
+        .orchestrator { background-color: #FFF3E0; border-color: #e6d3b0; }
+        .vector-store { background-color: #F3E5F5; border-color: #d3bde0; }
+        .llm { background-color: #E1F5FE; border-color: #b0d9e6; }
+        .embedding { background-color: #E0F7FA; border-color: #b0dfe6; }
+        .parser { background-color: #E6EE9C; border-color: #c2cc70; }
+
+        /* Mobile-first responsive design */
+        @media (max-width: 1023px) {
+            .client-section, .rag-section, .data-section {
+                position: static !important;
+                margin-bottom: 2rem !important;
+                transform: none !important;
+                top: auto !important;
+                left: auto !important;
+            }
+            .rag-section .absolute {
+                position: static !important;
+                margin-top: 1rem !important;
+            }
+            #diagram-root {
+                padding: 0.5rem;
+            }
+        }
+
+        /* Touch-friendly for mobile */
+        @media (hover: none) and (pointer: coarse) {
+            .component {
+                min-height: 3.5rem;
+                font-size: 1rem;
+                padding: 0.75rem;
+            }
+            .component.selected {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Accessibility improvements */
+        .component:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        /* Reduced motion preferences */
+        @media (prefers-reduced-motion: reduce) {
+            .component {
+                transition: none;
+            }
+            .component.selected {
+                transform: none;
+            }
+            .component.highlight {
+                box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+            }
+        }
+
+        /* Glass effect overrides for architecture explorer */
+        .architecture-explorer {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            position: relative;
+        }
+        .architecture-explorer::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+            pointer-events: none;
+        }
+        .architecture-explorer .rag-nav,
+        .architecture-explorer .diagram-container,
+        .architecture-explorer .rag-info-panel {
+            background: rgba(248, 250, 252, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+        :root[data-theme="dark"] .architecture-explorer {
+            background: rgba(15, 23, 42, 0.7);
+            border-color: rgba(148, 163, 184, 0.3);
+        }
+        :root[data-theme="dark"] .architecture-explorer .rag-nav,
+        :root[data-theme="dark"] .architecture-explorer .diagram-container,
+        :root[data-theme="dark"] .architecture-explorer .rag-info-panel {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: rgba(148, 163, 184, 0.4);
+        }
+    </style>
+
+    <section id="architecture" class="container-max mx-auto px-6 py-10 sm:py-16 lg:py-20 relative">
+        <div class="architecture-explorer rounded-3xl text-slate-900 shadow-2xl dark:text-slate-100 min-h-screen overflow-hidden px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+            <div class="mb-8 text-center">
+                <h2 class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">통합 아키텍처 탐색기</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">내일채움공제 AI 헬퍼 시스템의 구성 요소를 인터랙티브하게 탐색하고 데이터 흐름을 시뮬레이션 해보세요.</p>
             </div>
-            <div class="text-sm text-slate-500 dark:text-slate-400 leading-6 space-y-2 font-semibold">
-              <p class="flex items-center"><span class="inline-block w-4 h-4 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 mr-2 animate-pulse"></span>실시간 서비스 경로</p>
-              <p class="flex items-center"><span class="inline-block w-4 h-4 rounded-full bg-gradient-to-r from-emerald-400 to-green-500 mr-2 animate-pulse"></span>데이터 · 임베딩 파이프라인</p>
-              <p class="flex items-center"><span class="inline-block w-4 h-4 rounded-full bg-gradient-to-r from-indigo-400 to-purple-500 mr-2 animate-pulse"></span>관측 & 거버넌스</p>
+
+            <div class="flex justify-center mb-8">
+                <button id="simulate-btn" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg shadow-md transform transition-all duration-300 hover:scale-105">🚀 데이터 흐름 시뮬레이션 시작</button>
             </div>
-          </div>
-        </div>
-        <div class="px-6 sm:px-10 pb-10 space-y-8">
-          <div class="flex justify-center">
-            <button id="simulate-btn" class="rag-simulate-btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">🚀 데이터 흐름 시뮬레이션 시작</button>
-          </div>
-          <div class="flex flex-col gap-8 xl:flex xl:flex-row xl:items-start xl:gap-10">
-            <aside class="rag-nav bg-white/90 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg backdrop-blur-sm p-5 sticky top-6 transform transition-all duration-300 hover:shadow-xl xl:flex-shrink-0" style="width: 250px;">
-              <h3 class="text-lg font-bold text-slate-700 dark:text-slate-100 mb-4 border-b border-slate-200/70 dark:border-slate-700/70 pb-2 flex items-center"><span class="text-2xl mr-2">📋</span>구성 요소 탐색</h3>
-              <nav id="component-nav" class="space-y-1"></nav>
-            </aside>
-            <div class="flex-1 flex flex-col gap-6">
-              <div id="diagram-root">
-                <svg id="architecture-svg" class="w-full h-full" viewBox="0 0 1200 800" style="min-height: 650px;" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <filter id="glow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                  <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#3b82f6"/>
-                    <stop offset="100%" style="stop-color:#8b5cf6"/>
-                  </linearGradient>
-                </defs>
 
-                <!-- Flow arrows -->
-                <path id="flow-path-1" d="M 350 200 Q 400 230 550 260" stroke="url(#flowGradient)" stroke-width="3" fill="none" opacity="0" marker-end="url(#arrowhead)" class="flow-arrow"/>
-                <path id="flow-path-2" d="M 550 260 Q 600 290 700 320" stroke="url(#flowGradient)" stroke-width="3" fill="none" opacity="0" marker-end="url(#arrowhead)" class="flow-arrow"/>
-                <path id="flow-path-3" d="M 700 320 Q 800 380 900 400" stroke="url(#flowGradient)" stroke-width="3" fill="none" opacity="0" marker-end="url(#arrowhead)" class="flow-arrow"/>
-                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                  <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6"/>
-                </marker>
+        <main class="space-y-8 lg:grid lg:grid-cols-12 lg:gap-8">
+                <!-- Left Navigation -->
+                <aside class="order-1 lg:col-span-3 lg:order-1 bg-white/90 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg backdrop-blur-sm p-4 sm:p-5">
+                    <h3 class="text-xl font-bold mb-4 border-b pb-2 flex items-center"><span class="text-2xl mr-2">📋</span>구성 요소 탐색</h3>
+                    <nav id="component-nav" class="space-y-2 text-sm" aria-label="아키텍처 구성 요소 네비게이션"></nav>
+                </aside>
 
-                <!-- Tiers -->
-                <rect x="200" y="150" width="800" height="100" rx="15" fill="rgba(59, 130, 246, 0.1)" stroke="rgba(59, 130, 246, 0.3)" stroke-width="2"/>
-                <rect x="200" y="300" width="800" height="200" rx="15" fill="rgba(16, 185, 129, 0.1)" stroke="rgba(16, 185, 129, 0.3)" stroke-width="2"/>
-                <rect x="200" y="550" width="800" height="150" rx="15" fill="rgba(139, 92, 246, 0.1)" stroke="rgba(139, 92, 246, 0.3)" stroke-width="2"/>
+                <!-- Diagram Container -->
+                <div class="order-2 lg:col-span-6 lg:order-2 diagram-container bg-white/90 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg backdrop-blur-sm p-4 sm:p-6">
+                    <div id="diagram-root" class="space-y-8">
+                        <!-- Client Application -->
+                        <section class="client-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50" aria-label="클라이언트 애플리케이션 계층">
+                            <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">Client Application (전자정부프레임워크 / WebLogic)</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div id="A" data-id="A" class="component client-app border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">Web App (사용자)</div>
+                                <div id="C" data-id="C" class="component dev-ops border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">개발 운영자 (소스 질의)</div>
+                            </div>
+                        </section>
 
-                <!-- Components -->
-                <g class="rag-component" data-id="A">
-                  <rect x="250" y="170" width="120" height="60" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" class="component-rect" style="filter: url(#glow);"/>
-                  <text x="310" y="195" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 600; fill: #1e40af;">Web App</text>
-                  <text x="310" y="210" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 10px; fill: #64748b;">(사용자)</text>
-                </g>
-                <g class="rag-component" data-id="C">
-                  <rect x="400" y="170" width="140" height="60" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" class="component-rect"/>
-                  <text x="470" y="190" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #92400e;">개발 운영자</text>
-                  <text x="470" y="205" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 10px; fill: #a16207;">(소스 질의)</text>
-                </g>
+                        <!-- RAG System -->
+                        <section class="rag-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50" aria-label="RAG 시스템 계층">
+                            <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">RAG System (Python Runtime)</h3>
+                            <div class="grid grid-cols-1 gap-3">
+                                <div id="B" data-id="B" class="component gateway border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">FastAPI RAG Gateway</div>
+                                <div id="D" data-id="D" class="component cache border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">Redis Cache</div>
+                                <div id="E" data-id="E" class="component orchestrator border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">LlamaIndex Orchestrator</div>
+                            </div>
 
-                <g class="rag-component" data-id="B">
-                  <rect x="350" y="330" width="140" height="40" rx="8" fill="#c7f0dd" stroke="#065f46" stroke-width="2" class="component-rect"/>
-                  <text x="420" y="350" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #065f46;">FastAPI RAG Gateway</text>
-                </g>
-                <g class="rag-component" data-id="D">
-                  <rect x="300" y="390" width="120" height="40" rx="8" fill="#fef7ed" stroke="#ea580c" stroke-width="2" class="component-rect"/>
-                  <text x="360" y="410" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #9a3412;">Redis Cache</text>
-                </g>
-                <g class="rag-component" data-id="E">
-                  <rect x="500" y="390" width="140" height="40" rx="8" fill="#fef0f5" stroke="#be185d" stroke-width="2" class="component-rect"/>
-                  <text x="570" y="410" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #be185d;">LlamaIndex Orchestrator</text>
-                </g>
+                            <!-- Core RAG Pipeline -->
+                            <div class="mt-6 p-3 border border-gray-300 rounded-lg bg-white">
+                                <h4 class="text-center font-semibold text-gray-500 mb-3 text-sm">Core RAG Pipeline</h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div id="F" data-id="F" class="component vector-store border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">ChromaDB Vector Store</div>
+                                    <div id="G" data-id="G" class="component llm border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">Ollama · Llama 3.1</div>
+                                </div>
+                            </div>
+                        </section>
 
-                <rect x="300" y="450" width="400" height="80" rx="10" fill="rgba(0,0,0,0.05)" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
-                <text x="500" y="470" text-anchor="middle" class="tier-label" style="font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; fill: #374151;">Core RAG Pipeline</text>
-                <g class="rag-component" data-id="F">
-                  <rect x="320" y="480" width="130" height="40" rx="8" fill="#f3e8ff" stroke="#7c3aed" stroke-width="2" class="component-rect"/>
-                  <text x="385" y="500" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #7c3aed;">ChromaDB Vector Store</text>
-                </g>
-                <g class="rag-component" data-id="G">
-                  <rect x="530" y="480" width="140" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2" class="component-rect"/>
-                  <text x="600" y="500" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #1d4ed8;">Ollama · Llama 3.1</text>
-                </g>
-
-                <g class="rag-component" data-id="J">
-                  <rect x="250" y="570" width="140" height="40" rx="8" fill="rgba(148,163,184,0.2)" stroke="rgba(148,163,184,0.5)" stroke-width="2" class="component-rect"/>
-                  <text x="320" y="590" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #475569;">원본 데이터 리포지토리</text>
-                </g>
-                <g class="rag-component" data-id="H1">
-                  <rect x="250" y="620" width="120" height="40" rx="8" fill="rgba(148,163,184,0.2)" stroke="rgba(148,163,184,0.5)" stroke-width="2" class="component-rect"/>
-                  <text x="310" y="640" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 10px; font-weight: 600; fill: #475569;">매뉴얼 / 코드 원본</text>
-                </g>
-
-                <rect x="500" y="570" width="250" height="90" rx="10" fill="rgba(0,0,0,0.05)" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
-                <text x="625" y="585" text-anchor="middle" class="tier-label" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 700; fill: #374151;">Embedding Process · Celery Task</text>
-                <g class="rag-component" data-id="H2">
-                  <rect x="520" y="600" width="110" height="35" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" class="component-rect"/>
-                  <text x="575" y="620" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 10px; font-weight: 600; fill: #166534;">Tree-Sitter / Parser</text>
-                </g>
-                <g class="rag-component" data-id="I">
-                  <rect x="640" y="600" width="120" height="35" rx="8" fill="#fdf4ff" stroke="#c026d3" stroke-width="2" class="component-rect"/>
-                  <text x="700" y="620" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 10px; font-weight: 600; fill: #831843;">KorBERT Embedding</text>
-                </g>
-
-                <!-- Tier labels -->
-                <text x="600" y="135" text-anchor="middle" class="tier-title" style="font-family: 'Noto Sans KR', sans-serif; font-size: 18px; font-weight: 800; fill: #1e40af;">Client Application · 전자정부프레임워크 / WebLogic</text>
-                <text x="600" y="285" text-anchor="middle" class="tier-title" style="font-family: 'Noto Sans KR', sans-serif; font-size: 18px; font-weight: 800; fill: #065f46;">RAG System · Python Runtime</text>
-                <text x="600" y="535" text-anchor="middle" class="tier-title" style="font-family: 'Noto Sans KR', sans-serif; font-size: 18px; font-weight: 800; fill: #5b21b6;">Data Management & Preprocessing</text>
-              </svg>
-            </div>
-            <aside class="rag-info-panel p-4 xl:p-5 bg-white/90 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg backdrop-blur-sm transform transition-all duration-300 hover:shadow-xl max-h-60 overflow-auto" id="info-panel">
-              <h3 id="info-title" class="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center"><span class="text-xl mr-2">🔍</span>아키텍처 상세 정보</h3>
-              <div id="info-content" class="text-slate-700 dark:text-slate-200 space-y-3 text-sm" style="font-family: 'Noto Sans KR', sans-serif;">
-                <p>이 대화형 아키텍처 다이어그램은 AI 헬퍼 시스템의 모든 구성 요소를 시각적으로 표현합니다. 각 블록을 클릭하여 세부 역할과 기술 스택을 확인하세요.</p>
-                <p class="font-semibold">시뮬레이션 모드로 데이터 흐름을 따라가며 시스템 작동 원리를 체험해보시거나, 구성 요소 탐색 메뉴에서 관심 있는 부분을 선택하세요.</p>
-                <div class="rag-tip mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <h4 class="font-bold text-blue-800 dark:text-blue-200 flex items-center"><span class="text-sm mr-2">💡</span>사용 팁</h4>
-                  <p class="text-xs text-blue-700 dark:text-blue-100 mt-1 font-medium">‘데이터 흐름 시뮬레이션’ 버튼을 클릭하면 애니메이션으로 사용자 요청이 시스템을 통과하는 과정을 확인할 수 있습니다.</p>
+                        <!-- Data Management -->
+                        <section class="data-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50" aria-label="데이터 관리 계층">
+                            <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">Data Management & Preprocessing</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-3">
+                                    <div id="J" data-id="J" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">원본 데이터 리포지토리</div>
+                                    <div id="H1" data-id="H1" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">매뉴얼/코드 원본</div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="p-3 border border-gray-300 rounded-lg bg-white">
+                                        <h4 class="text-center font-semibold text-gray-500 mb-3 text-sm">Embedding Process (Celery)</h4>
+                                        <div class="space-y-2">
+                                            <div id="H2" data-id="H2" class="component parser border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center text-xs" role="button" tabindex="0">Tree-Sitter/Parser</div>
+                                            <div id="I" data-id="I" class="component embedding border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center text-xs" role="button" tabindex="0">KorBERT Embedding</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
                 </div>
-              </div>
-            </aside>
-          </div>
+
+                <!-- Information Panel -->
+                <aside class="order-3 lg:col-span-3 lg:order-3 p-4 sm:p-6 rounded-2xl shadow-lg lg:sticky lg:top-8">
+                    <h3 id="info-title" class="text-xl sm:text-2xl font-bold mb-3" aria-live="polite"><span class="text-2xl mr-2">🔍</span>아키텍처 상세 정보</h3>
+                    <div id="info-content" class="text-gray-700 dark:text-gray-200 space-y-3 text-sm sm:text-base" aria-live="polite">
+                        <p>이 대화형 아키텍처 다이어그램은 AI 헬퍼 시스템의 모든 구성 요소를 시각적으로 표현합니다. 각 블록을 클릭하여 세부 역할과 기술 스택을 확인하세요.</p>
+                        <p>시뮬레이션 모드로 데이터 흐름을 따라가며 시스템 작동 원리를 체험해보세요.</p>
+                        <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 rounded-r-lg">
+                            <h4 class="font-semibold text-blue-800 dark:text-blue-200 text-sm"><span class="text-lg mr-1">💡</span>사용 팁</h4>
+                            <p class="text-blue-700 dark:text-blue-100 text-xs sm:text-sm mt-1">'데이터 흐름 시뮬레이션' 버튼을 클릭하면 애니메이션으로 데이터 경로를 확인할 수 있습니다.</p>
+                        </div>
+                    </div>
+                </aside>
+            </main>
         </div>
-      </div>
     </section>
             
-    <section id="setup" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
-      <p>섹션 2.5 아키텍처 다이어그램을 요구사항대로 수정했습니다. 왼쪽에 구성 요소 탐색 메뉴 유지, 가운데 다이어그램 크게, 오른쪽 아래에 보조 설명 패널 작게. 섹션을 투명으로 만들어 밤하늘 별 바탕 보이도록 하고 전반적인 가독성을 높입니다. 별 배경이 아름답네.</p>
-        </div>
-      </div>
-    </section>
     <section id="setup" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
       <div class="grid lg:grid-cols-[1.1fr,0.9fr] gap-10 items-start">
         <article class="glass rounded-2xl p-6 sm:p-10 tilt-card relative">
