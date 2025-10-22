@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내부망 RAG 시스템 아키텍처 탐색기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Soothing Neutrals -->
+    <!-- Application Structure Plan: 이 애플리케이션은 복잡한 RAG 아키텍처를 사용자가 단계별로 쉽게 이해할 수 있도록 설계되었습니다. 중앙에는 인터랙티브 다이어그램을 배치하고, 좌측에는 네비게이션, 우측에는 상세 정보 패널을 두는 3단 구조를 채택했습니다. 사용자는 다이어그램의 각 요소를 직접 클릭하여 해당 구성 요소의 역할과 기술 스택을 즉시 확인할 수 있습니다. 또한, '흐름 시뮬레이션' 기능을 통해 요청부터 응답까지 데이터의 전체 이동 경로를 시각적으로 추적할 수 있어, 정적인 다이어그램보다 훨씬 깊은 이해를 돕습니다. 이 구조는 정보를 탐색하고 학습하는 과정을 능동적으로 만들어 시스템 전체에 대한 직관적인 정신 모델을 구축하는 데 최적화되었습니다. -->
+    <!-- Visualization & Content Choices: Report Info: 시스템 아키텍처 순서도 -> Goal: 아키텍처의 각 구성 요소와 전체 데이터 흐름을 쉽게 이해하도록 지원 -> Viz/Presentation Method: Tailwind CSS를 이용한 반응형 HTML 다이어그램, 클릭 시 동적으로 변경되는 정보 패널 -> Interaction: 각 구성 요소 클릭 시 상세 정보 표시, 버튼 클릭 시 데이터 흐름 애니메이션 시뮬레이션 -> Justification: 정적인 순서도를 동적이고 탐색 가능한 경험으로 전환하여 복잡한 시스템의 이해도를 높임. -> Library/Method: Vanilla JavaScript, Tailwind CSS. 다이어그램은 순수 HTML/CSS로 구현. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fa;
+            /* 수정: 세로 스크롤 허용 */
+            overflow-x: auto;
+        }
+        .component {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .component.selected {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.7);
+            transform: scale(1.03);
+        }
+        .component.highlight {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        .arrow {
+            position: absolute;
+            opacity: 0.3;
+            transition: all 0.5s ease-in-out;
+            color: #6b7280;
+        }
+        .arrow.highlight {
+            opacity: 1;
+            color: #2563eb;
+            transform: scale(1.2);
+        }
+        .arrow-line {
+            width: 100%;
+            height: 2px;
+            background-color: currentColor;
+        }
+        .arrow-head {
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-left: 8px solid currentColor;
+        }
+        /* 수정: 다이어그램 레이아웃 개선 - 높이 자동 조정 및 스크롤 허용 */
+        .diagram-container {
+            position: relative;
+            /* 수정: min-h-[700px] -> h-auto min-h-screen으로 변경하여 화면 전체 높이 맞춤 */
+            height: auto;
+            min-height: 100vh;
+            overflow-y: auto; /* 세로 스크롤 허용 */
+        }
+        #diagram-root {
+            /* 수정: min-h-full 추가로 부모 컨테이너에 맞춤 */
+            min-height: 100%;
+            position: relative;
+            padding-bottom: 2rem; /* 아래쪽 여백 추가 */
+        }
+        .client-app { background-color: #DCEFFB; border-color: #a6cde4; }
+        .dev-ops { background-color: #FFE0B2; border-color: #e6b980; }
+        .gateway { background-color: #C8E6C9; border-color: #97c299; }
+        .cache { background-color: #FFFDE7; border-color: #e6e4b3; }
+        .orchestrator { background-color: #FFF3E0; border-color: #e6d3b0; }
+        .vector-store { background-color: #F3E5F5; border-color: #d3bde0; }
+        .llm { background-color: #E1F5FE; border-color: #b0d9e6; }
+        .embedding { background-color: #E0F7FA; border-color: #b0dfe6; }
+        .parser { background-color: #E6EE9C; border-color: #c2cc70; }
+        /* 수정: 작은 화면에서 top 값 조정 (모바일 친화적) - 겹침 방지를 위해 top 값을 더 크게 증가 */
+        @media (max-width: 1024px) {
+            .client-section { top: 1rem !important; }
+            .rag-section { top: 12rem !important; } /* RAG 섹션 top 증가로 공간 확보 */
+            .data-section { top: 45rem !important; } /* 35rem -> 45rem (720px)으로 증가하여 Core RAG (top-[310px] ~ 400px 정도)와 충분한 간격 */
+        }
+        /* 추가: 더 작은 화면 (모바일)에서 추가 조정 - top 값을 rem 단위로 더 유연하게 */
+        @media (max-width: 768px) {
+            .rag-section { top: 15rem !important; }
+            .data-section { top: 55rem !important; } /* 880px 정도로 더 큰 간격 */
+            /* 모바일에서 Core RAG 내부 요소도 조정 */
+            .rag-section .absolute { top: 25rem !important; } /* Core RAG top-[310px] -> 25rem (400px)으로 증가 */
+        }
+        @media (max-width: 480px) {
+            .data-section { top: 65rem !important; } /* 매우 작은 화면에서 극대화 */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">내부망 RAG 시스템 아키텍처 탐색기</h1>
+            <p class="mt-2 text-lg text-gray-600">내일채움공제 AI 헬퍼 시스템의 구성 요소를 클릭하여 상세 정보를 확인하고 데이터 흐름을 시뮬레이션 해보세요.</p>
+        </header>
+
+        <div class="flex justify-center mb-8">
+            <button id="simulate-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+                데이터 흐름 시뮬레이션 시작
+            </button>
+        </div>
+
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Navigation -->
+            <aside class="lg:col-span-2 bg-white p-4 rounded-xl shadow-lg">
+                <h2 class="text-xl font-bold mb-4 border-b pb-2">구성 요소</h2>
+                <nav id="component-nav" class="space-y-2">
+                    <!-- Navigation items will be injected by JS -->
+                </nav>
+            </aside>
+
+            <!-- Center Diagram -->
+            <div class="lg:col-span-7 diagram-container bg-white p-6 rounded-xl shadow-lg">
+                <div class="relative w-full h-full" id="diagram-root">
+                    <!-- Client Application -->
+                    <div class="client-section absolute top-4 left-1/2 -translate-x-1/2 w-[90%] p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                        <h3 class="text-center font-semibold text-gray-500 mb-2 text-sm">Client Application (전자정부프레임워크 / WebLogic)</h3>
+                        <div class="flex justify-around">
+                            <div id="A" data-id="A" class="component client-app border-2 p-3 rounded-lg text-center w-48">Web App (사용자)</div>
+                            <div id="C" data-id="C" class="component dev-ops border-2 p-3 rounded-lg text-center w-48">개발 운영자 (소스 질의)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- RAG System -->
+                    <div class="rag-section absolute top-[160px] left-1/2 -translate-x-1/2 w-full p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                         <h3 class="text-center font-semibold text-gray-500 mb-4 text-sm">RAG System (Python 환경)</h3>
+                        <div id="B" data-id="B" class="component gateway border-2 p-3 rounded-lg text-center w-56 mx-auto">FastAPI RAG Gateway</div>
+                        <!-- 수정: mt-12 -> mt-2로 변경하여 Data Management 섹션의 작은 간격(mb-2)과 유사하게 통일 -->
+                        <div id="D" data-id="D" class="component cache border-2 p-3 rounded-lg text-center w-56 mx-auto mt-2">Redis Cache</div>
+                        <!-- 수정: mt-12 -> mt-2로 변경하여 일관된 간격 유지 -->
+                        <div id="E" data-id="E" class="component orchestrator border-2 p-3 rounded-lg text-center w-56 mx-auto mt-2">LlamaIndex Orchestrator</div>
+                        
+                        <div class="absolute top-[310px] left-1/2 -translate-x-1/2 w-[95%] p-4 border border-gray-300 rounded-lg mt-4">
+                             <h3 class="text-center font-semibold text-gray-400 mb-2 text-xs">Core RAG Pipeline</h3>
+                            <div class="flex justify-between items-center">
+                                <div id="F" data-id="F" class="component vector-store border-2 p-3 rounded-lg text-center w-48">ChromaDB Vector Store</div>
+                                <div id="G" data-id="G" class="component llm border-2 p-3 rounded-lg text-center w-48">Ollama - Llama 3.1</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Management -->
+                     <div class="data-section absolute top-[650px] left-1/2 -translate-x-1/2 w-[90%] p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                        <h3 class="text-center font-semibold text-gray-500 mb-2 text-sm">Data Management & Preprocessing</h3>
+                        <div class="flex justify-around items-start">
+                            <div class="text-center">
+                                <div id="J" data-id="J" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center mb-2">원본 데이터 리포지토리</div>
+                                <div id="H1" data-id="H1" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center">매뉴얼/코드 원본</div>
+                            </div>
+                            <div class="p-4 border border-gray-300 rounded-lg mt-8">
+                                <h4 class="text-center font-semibold text-gray-400 mb-2 text-xs">Embedding Process (Celery)</h4>
+                                <div id="H2" data-id="H2" class="component parser border-2 p-3 rounded-lg text-center mb-2">Tree-Sitter/Parser</div>
+                                <div id="I" data-id="I" class="component embedding border-2 p-3 rounded-lg text-center">KorBERT Embedding Model</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Information Panel -->
+            <div class="lg:col-span-3">
+                <div id="info-panel" class="sticky top-8 bg-white p-6 rounded-xl shadow-lg">
+                    <h2 id="info-title" class="text-2xl font-bold mb-3">아키텍처 개요</h2>
+                    <div id="info-content" class="text-gray-700 space-y-4">
+                        <p>이 다이어그램은 내일채움공제 AI 헬퍼 시스템의 전체 구조를 보여줍니다. 각 구성 요소는 특정 역할을 수행하며 유기적으로 연결되어 사용자 및 개발자의 질문에 대한 정확한 답변을 생성합니다.</p>
+                        <p>왼쪽 목록 또는 다이어그램의 각 부분을 클릭하여 더 자세한 정보를 확인하세요.</p>
+                        <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+                            <h4 class="font-semibold text-blue-800">💡 사용 팁</h4>
+                            <p class="text-blue-700 text-sm mt-1">'데이터 흐름 시뮬레이션' 버튼을 클릭하면 사용자 요청이 시스템 내에서 어떻게 처리되는지 시각적으로 따라갈 수 있습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const componentData = {
+            'A': { title: 'Web App Interface (사용자)', role: '사용자 인터페이스', tech: '전자정부프레임워크, JSP/Servlet, HTML/CSS/JS', description: '일반 사용자가 내일채움공제 업무를 처리하는 웹 화면입니다. 사용자가 특정 메뉴나 입력 필드에서 도움을 요청하면, 해당 메뉴 ID와 질문을 RAG 시스템으로 전송합니다.' },
+            'C': { title: '개발 운영자', role: '기술 질의 인터페이스', tech: '내부 관리 시스템, IDE 연동', description: '개발자나 운영자가 시스템 유지보수 중 발생하는 기술적인 질문이나 소스코드 관련 문의를 하는 인터페이스입니다. 분석이 필요한 파일 ID나 코드 조각을 RAG 시스템으로 보냅니다.' },
+            'B': { title: 'FastAPI RAG Gateway', role: 'API 게이트웨이', tech: 'Python, FastAPI', description: 'JAVA 기반의 클라이언트 애플리케이션과 Python 기반 RAG 시스템을 연결하는 관문입니다. 모든 요청을 받아 처리하고, 캐시를 확인하며, 최종 결과를 JSON 형식으로 응답합니다.' },
+            'D': { title: 'Redis Cache', role: '캐싱 엔진', tech: 'Redis', description: '자주 묻는 질문과 그에 대한 LLM의 답변을 메모리에 저장하는 단기 기억 장치입니다. 동일한 질문이 반복될 경우, LLM을 호출하지 않고 캐시에서 즉시 답변을 제공하여 응답 속도를 극대화하고 서버 부하를 줄입니다.' },
+            'E': { title: 'LlamaIndex Orchestrator', role: 'RAG 파이프라인 관리', tech: 'Python, LlamaIndex', description: 'RAG의 전체 흐름을 지휘하는 핵심 컨트롤러입니다. 사용자 질문을 받아 벡터 DB에서 관련 문서를 검색하고, 이 정보를 LLM에 전달하여 최종 답변을 생성하도록 요청하는 모든 과정을 관리합니다.' },
+            'F': { title: 'ChromaDB Vector Store', role: '벡터 데이터베이스', tech: 'ChromaDB', description: '매뉴얼과 소스코드가 벡터 형태로 변환되어 저장되는 AI의 장기 기억 장치입니다. 사용자 질문과 의미적으로 가장 유사한 정보를 초고속으로 검색하여 LlamaIndex에 제공합니다.' },
+            'G': { title: 'Ollama - Llama 3.1', role: '대규모 언어 모델 (LLM)', tech: 'Ollama, Llama 3.1', description: 'RAG 시스템의 두뇌 역할을 합니다. ChromaDB에서 검색된 관련 정보를 바탕으로, 사용자가 이해하기 쉬운 자연스러운 문장 형태의 최종 답변을 생성합니다.' },
+            'H1': { title: '매뉴얼/코드 원본', role: '원본 데이터', tech: 'PDF, Word, Java, SQL 파일', description: 'AI가 학습하고 참조하는 모든 지식의 원천입니다. 사용자 및 관리자 매뉴얼, 시스템의 전체 소스코드, DB 스키마 등이 포함됩니다.' },
+            'J': { title: '원본 데이터 리포지토리', role: '데이터 버전 관리', tech: 'DVC (Data Version Control), Git', description: '매뉴얼이나 소스코드의 변경 이력을 관리합니다. AI 모델의 성능이 달라졌을 때, 어떤 버전의 데이터로 학습했는지 추적하고 필요시 이전 버전으로 롤백하기 위해 사용됩니다.' },
+            'H2': { title: 'Tree-Sitter/Parser', role: '소스코드 구조 분석', tech: 'Tree-Sitter', description: 'Java, SQL과 같은 소스코드를 단순 텍스트가 아닌 문법적 구조(클래스, 메서드 단위)로 분석하고 분할합니다. 이를 통해 코드 관련 질문의 정확도를 높입니다.' },
+            'I': { title: 'KorBERT Embedding Model', role: '임베딩 모델', tech: 'KorBERT, PyTorch', description: '한국어 텍스트(매뉴얼, 코드 주석 등)의 의미를 컴퓨터가 이해할 수 있는 숫자 벡터로 변환하는 역할을 합니다. RAG 시스템의 검색 정확도를 결정하는 핵심 요소입니다.' }
+        };
+
+        const flowSequence = ['A', 'B', 'D', 'E', 'F', 'G'];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const nav = document.getElementById('component-nav');
+            const components = document.querySelectorAll('.component');
+            const infoTitle = document.getElementById('info-title');
+            const infoContent = document.getElementById('info-content');
+            const simulateBtn = document.getElementById('simulate-btn');
+
+            // Populate navigation
+            Object.keys(componentData).forEach(id => {
+                const data = componentData[id];
+                const navItem = document.createElement('a');
+                navItem.href = '#';
+                navItem.className = 'block p-2 rounded-md hover:bg-gray-100 transition-colors';
+                navItem.textContent = data.title;
+                navItem.dataset.id = id;
+                nav.appendChild(navItem);
+            });
+
+            const updateInfoPanel = (id) => {
+                const data = componentData[id];
+                if (!data) return;
+
+                infoTitle.textContent = data.title;
+                infoContent.innerHTML = `
+                    <p><strong class="font-semibold text-gray-800">역할:</strong> ${data.role}</p>
+                    <p><strong class="font-semibold text-gray-800">주요 기술:</strong> ${data.tech}</p>
+                    <p class="mt-4 pt-4 border-t">${data.description}</p>
+                `;
+                
+                components.forEach(comp => {
+                    comp.classList.toggle('selected', comp.dataset.id === id);
+                });
+            };
+
+            const selectComponent = (id) => {
+                updateInfoPanel(id);
+                document.getElementById('info-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+
+            document.getElementById('diagram-root').addEventListener('click', (e) => {
+                const component = e.target.closest('.component');
+                if (component && component.dataset.id) {
+                    selectComponent(component.dataset.id);
+                }
+            });
+
+            nav.addEventListener('click', (e) => {
+                e.preventDefault();
+                const navItem = e.target.closest('a');
+                if (navItem && navItem.dataset.id) {
+                    selectComponent(navItem.dataset.id);
+                }
+            });
+
+            let isSimulating = false;
+            let timeoutId;
+
+            simulateBtn.addEventListener('click', () => {
+                if (isSimulating) {
+                    clearTimeout(timeoutId);
+                    isSimulating = false;
+                    simulateBtn.textContent = '데이터 흐름 시뮬레이션 시작';
+                    simulateBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    simulateBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    components.forEach(c => c.classList.remove('highlight'));
+                    return;
+                }
+
+                isSimulating = true;
+                simulateBtn.textContent = '시뮬레이션 중지';
+                simulateBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                simulateBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                
+                let step = 0;
+                const runStep = () => {
+                    components.forEach(c => c.classList.remove('highlight'));
+                    
+                    if (step >= flowSequence.length) {
+                        isSimulating = false;
+                        simulateBtn.click(); // Reset button
+                        return;
+                    }
+
+                    const currentId = flowSequence[step];
+                    const currentElement = document.getElementById(currentId);
+                    if (currentElement) {
+                        currentElement.classList.add('highlight');
+                        updateInfoPanel(currentId);
+                    }
+                    
+                    step++;
+                    timeoutId = setTimeout(runStep, 1500);
+                };
+
+                runStep();
+            });
+
+        });
+    </script>
+</body>
+</html>
