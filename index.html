@@ -82,7 +82,7 @@
         body .bg-white,
         body .bg-gray-100,
         body .bg-blue-50 {
-            background-color: transparent !important;
+            background: transparent !important;
             border-color: transparent !important;
         }
         body .border-gray-300 {
@@ -90,12 +90,12 @@
         }
         .glass-panel {
             position: relative;
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(148, 163, 184, 0.06));
-            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(148, 163, 184, 0.03));
+            border: 1px solid rgba(255, 255, 255, 0.18);
             border-radius: inherit;
-            box-shadow: 0 35px 65px rgba(2, 6, 23, 0.45);
-            backdrop-filter: blur(28px) saturate(185%);
-            -webkit-backdrop-filter: blur(28px) saturate(185%);
+            box-shadow: 0 32px 70px rgba(3, 7, 18, 0.55);
+            backdrop-filter: blur(24px) saturate(185%);
+            -webkit-backdrop-filter: blur(24px) saturate(185%);
             overflow: hidden;
         }
         .glass-panel::before {
@@ -104,7 +104,7 @@
             inset: 0;
             border-radius: inherit;
             pointer-events: none;
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.03));
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06) 45%, transparent 70%);
             opacity: 0.9;
         }
         .glass-panel::after {
@@ -113,9 +113,10 @@
             inset-inline: 0;
             top: 0;
             height: 1px;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0));
             pointer-events: none;
-            opacity: 0.75;
+            opacity: 0.85;
         }
         .glass-panel > * {
             position: relative;
@@ -140,21 +141,13 @@
         body .text-gray-400 {
             color: #a5b4fc !important;
         }
-        .component:not(.highlight) {
-            color: #0f172a;
-            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
-        }
-        .component:not(.highlight) .text-gray-500,
-        .component:not(.highlight) .text-gray-600,
-        .component:not(.highlight) .text-gray-700 {
-            color: #1f2937 !important;
-        }
         .component {
-            background: linear-gradient(160deg, rgba(255, 255, 255, 0.38), rgba(241, 245, 249, 0.12));
-            border: 1px solid rgba(255, 255, 255, 0.32);
-            box-shadow: 0 18px 38px rgba(2, 6, 23, 0.25);
-            backdrop-filter: blur(20px) saturate(165%);
-            -webkit-backdrop-filter: blur(20px) saturate(165%);
+            color: #0a1325;
+            background: linear-gradient(165deg, rgba(255, 255, 255, 0.52), rgba(231, 235, 255, 0.14));
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            box-shadow: 0 18px 42px rgba(3, 7, 18, 0.25);
+            backdrop-filter: blur(18px) saturate(170%);
+            -webkit-backdrop-filter: blur(18px) saturate(170%);
         }
         .client-app { background: linear-gradient(155deg, rgba(220, 239, 251, 0.55), rgba(220, 239, 251, 0.1)); border-color: rgba(166, 205, 228, 0.45); }
         .dev-ops { background: linear-gradient(155deg, rgba(255, 224, 178, 0.52), rgba(255, 224, 178, 0.08)); border-color: rgba(230, 185, 128, 0.44); }
