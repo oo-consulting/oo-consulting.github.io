@@ -4,113 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>내부망 RAG 시스템 아키텍처 탐색기</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="compact.css" rel="stylesheet" media="screen">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Soothing Neutrals -->
     <!-- Application Structure Plan: 이 애플리케이션은 복잡한 RAG 아키텍처를 사용자가 단계별로 쉽게 이해할 수 있도록 설계되었습니다. 중앙에는 인터랙티브 다이어그램을 배치하고, 좌측에는 네비게이션, 우측에는 상세 정보 패널을 두는 3단 구조를 채택했습니다. 사용자는 다이어그램의 각 요소를 직접 클릭하여 해당 구성 요소의 역할과 기술 스택을 즉시 확인할 수 있습니다. 또한, '흐름 시뮬레이션' 기능을 통해 요청부터 응답까지 데이터의 전체 이동 경로를 시각적으로 추적할 수 있어, 정적인 다이어그램보다 훨씬 깊은 이해를 돕습니다. 이 구조는 정보를 탐색하고 학습하는 과정을 능동적으로 만들어 시스템 전체에 대한 직관적인 정신 모델을 구축하는 데 최적화되었습니다. -->
     <!-- Visualization & Content Choices: Report Info: 시스템 아키텍처 순서도 -> Goal: 아키텍처의 각 구성 요소와 전체 데이터 흐름을 쉽게 이해하도록 지원 -> Viz/Presentation Method: Tailwind CSS를 이용한 반응형 HTML 다이어그램, 클릭 시 동적으로 변경되는 정보 패널 -> Interaction: 각 구성 요소 클릭 시 상세 정보 표시, 버튼 클릭 시 데이터 흐름 애니메이션 시뮬레이션 -> Justification: 정적인 순서도를 동적이고 탐색 가능한 경험으로 전환하여 복잡한 시스템의 이해도를 높임. -> Library/Method: Vanilla JavaScript, Tailwind CSS. 다이어그램은 순수 HTML/CSS로 구현. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-    <style>
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f8f9fa;
-            overflow-x: hidden;
-        }
-        .component {
-            transition: all 0.3s ease-in-out;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-        .component.selected {
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.7);
-            transform: scale(1.03);
-        }
-        .component.highlight {
-            background-color: #3b82f6 !important;
-            color: white !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-        }
-        .diagram-container {
-            position: relative;
-            height: auto;
-            min-height: calc(100vh - 200px);
-            overflow-y: auto;
-        }
-        #diagram-root {
-            min-height: 100%;
-            position: relative;
-            padding: 1rem;
-        }
-        .component {
-            min-height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: 0.875rem;
-            padding: 0.5rem;
-        }
-        .client-app { background-color: #DCEFFB; border-color: #a6cde4; }
-        .dev-ops { background-color: #FFE0B2; border-color: #e6b980; }
-        .gateway { background-color: #C8E6C9; border-color: #97c299; }
-        .cache { background-color: #FFFDE7; border-color: #e6e4b3; }
-        .orchestrator { background-color: #FFF3E0; border-color: #e6d3b0; }
-        .vector-store { background-color: #F3E5F5; border-color: #d3bde0; }
-        .llm { background-color: #E1F5FE; border-color: #b0d9e6; }
-        .embedding { background-color: #E0F7FA; border-color: #b0dfe6; }
-        .parser { background-color: #E6EE9C; border-color: #c2cc70; }
-
-        /* Mobile-first responsive design */
-        @media (max-width: 1023px) {
-            .client-section, .rag-section, .data-section {
-                position: static !important;
-                margin-bottom: 2rem !important;
-                transform: none !important;
-                top: auto !important;
-                left: auto !important;
-            }
-            .rag-section .absolute {
-                position: static !important;
-                margin-top: 1rem !important;
-            }
-            #diagram-root {
-                padding: 0.5rem;
-            }
-        }
-
-        /* Touch-friendly for mobile */
-        @media (hover: none) and (pointer: coarse) {
-            .component {
-                min-height: 3.5rem;
-                font-size: 1rem;
-                padding: 0.75rem;
-            }
-            .component.selected {
-                transform: scale(1.05);
-            }
-        }
-
-        /* Accessibility improvements */
-        .component:focus {
-            outline: 2px solid #3b82f6;
-            outline-offset: 2px;
-        }
-
-        /* Reduced motion preferences */
-        @media (prefers-reduced-motion: reduce) {
-            .component {
-                transition: none;
-            }
-            .component.selected {
-                transform: none;
-            }
-            .component.highlight {
-                box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-            }
-        }
-    </style>
 </head>
-<body class="text-gray-800">
+<body>
+  <canvas id="bg-stars"></canvas>
+
+  <div id="controls" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+    <button id="starBoostBtn" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); color: #e5e7eb; padding: 8px 12px; border-radius: 5px; cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">별 강화</button>
+  </div>
 
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         <header class="text-center mb-8">
@@ -353,7 +259,19 @@
                 runStep();
             });
 
+            // Star boost button
+            const starBoostBtn = document.getElementById('starBoostBtn');
+            if (starBoostBtn) {
+                let boosted = false;
+                starBoostBtn.addEventListener('click', () => {
+                    boosted = !boosted;
+                    starBoostBtn.textContent = boosted ? '별 정상화' : '별 강화';
+                    document.dispatchEvent(new CustomEvent('starboost', { detail: boosted }));
+                });
+            }
+
         });
     </script>
+    <script src="bg-stars.js"></script>
 </body>
 </html>

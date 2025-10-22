@@ -243,18 +243,50 @@ label[for="fileInput"] {
   body {
     padding: 1.2rem 0.9rem 1.6rem;
   }
-  pre#responseBox {
+pre#responseBox {
     min-height: 120px;
-  }
 }
 
+/* Interactive components for the diagram */
+.component {
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    touch-action: manipulation;
+    min-height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.875rem;
+    padding: 0.5rem;
+    border: 2px solid;
+    border-radius: 6px;
+}
 
+.component:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
 
+.component.selected {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.7);
+    transform: scale(1.03);
+}
 
+.component.highlight {
+    background-color: rgba(59, 130, 246, 0.8) !important;
+    color: white !important;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
 
-
-
-
-
-
-
+/* Component colors */
+.client-app { background: rgba(206, 237, 255, 0.7); border-color: #a6cde4; color: #1e293b; }
+.dev-ops { background: rgba(255, 224, 178, 0.7); border-color: #e6b980; color: #1e293b; }
+.gateway { background: rgba(200, 230, 201, 0.7); border-color: #97c299; color: #1e293b; }
+.cache { background: rgba(255, 253, 231, 0.7); border-color: #e6e4b3; color: #1e293b; }
+.orchestrator { background: rgba(255, 243, 224, 0.7); border-color: #e6d3b0; color: #1e293b; }
+.vector-store { background: rgba(243, 229, 245, 0.7); border-color: #d3bde0; color: #1e293b; }
+.llm { background: rgba(225, 245, 254, 0.7); border-color: #b0d9e6; color: #1e293b; }
+.embedding { background: rgba(224, 247, 250, 0.7); border-color: #b0dfe6; color: #1e293b; }
+.parser { background: rgba(230, 238, 156, 0.7); border-color: #c2cc70; color: #1e293b; }
+}
