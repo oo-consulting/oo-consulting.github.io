@@ -3,10 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ollama(Llama 3.1) + PyTorch + KorBERT + ChromaDB + Tree-Sitter(Parser 엔진) + Llamaindex + Fast API(웹<->RAG연동)
-+ Redis(or memcached)(캐싱엔진) + Celery(python)+RabbitMQ/Redis(블로커)(비동기 작업관리엔진) + Prometheus&Grafana(사내 APM솔루션) 
-+ DVC(Data Version Control) (데이터 및 모델버전관리) 내부 임베딩 구축 가이드</title>
-  <meta name="description" content="Windows 10 환경에서 Ollama와 Llama 3.1을 활용해 내부 임베딩·RAG 파이프라인을 구축하는 단계별 기술 가이드" />
+  <title>Ollama·PyTorch·KorBERT·ChromaDB 통합 RAG 구축 가이드</title>
+  <meta name="description" content="Windows 10/WSL2 환경에서 Ollama, PyTorch, KorBERT, ChromaDB, Tree-Sitter, LlamaIndex, FastAPI, Redis, Celery, Prometheus, DVC를 결합해 온프레미스 RAG 플랫폼을 구축하는 단계별 안내" />
   <meta name="google-site-verification" content="google9c3f444d05c1610b" />
 
   <script src="bg-stars.js" defer></script>
@@ -196,7 +194,7 @@
       <div class="bar rounded-2xl px-5 py-3 flex items-center justify-between">
         <a href="#top" class="brand inline-flex items-center gap-3" aria-label="Ollama · Llama 3.1 가이드 홈">
           <svg class="wordmark h-7 sm:h-8" viewBox="0 0 260 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ollama Llama Guide">
-            <title>Ollama Llama Guide</title>
+            <title>Ollama·PyTorch·KorBERT·ChromaDB 통합 RAG 구축 가이드</title>
             <defs>
               <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stop-color="var(--accent)"/>
@@ -213,7 +211,7 @@
             <text x="16" y="27" font-size="22" font-weight="800" font-family="'Noto Sans KR','Malgun Gothic','Inter',system-ui,sans-serif" fill="url(#brandGrad)" filter="url(#softGlow)">Ollama · Llama 가이드</text>
           </svg>
           <svg width="36" height="36" viewBox="0 0 64 64" role="img" aria-hidden="true">
-            <title>Guide Logo</title>
+            <title>Ollama·PyTorch·KorBERT·ChromaDB 통합 RAG 구축 가이드</title>
             <defs>
               <linearGradient id="gOO" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" style="stop-color: var(--accent)"/>
@@ -254,18 +252,18 @@
       <div class="hero-gradient rounded-3xl p-8 sm:p-12 lg:p-16">
         <div class="flex flex-col items-center text-center gap-6">
           <span class="inline-flex items-center gap-2 text-sm text-muted">
-            Windows 10 · 내부 데이터 프라이버시 · RAG 파이프라인
+            Windows 10 · 온프레미스 RAG · 엔터프라이즈 AI 오케스트레이션
           </span>
           <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight">
-            <span class="block">Windows 10에서 Ollama &amp; Llama 3.1</span>
-            <span class="block text-2xl sm:text-3xl mt-2 text-soft">내부 임베딩 구축 기술 가이드</span>
+            <span class="block">Ollama · Llama 3.1 · PyTorch · KorBERT · ChromaDB · Tree-Sitter · LlamaIndex · FastAPI</span>
+            <span class="block text-2xl sm:text-3xl mt-2 text-soft">Redis/memcached 캐싱 · Celery &amp; RabbitMQ/Redis · Prometheus &amp; Grafana 모니터링 · DVC 기반 데이터/모델 버전 관리</span>
           </h1>
           <p class="type-cycle text-base sm:text-lg text-muted">
-            <span class="cycle-item active">설치 → 임베딩 생성 → 벡터 DB → RAG 운영</span>
-            <span class="cycle-item hidden">프라이버시 중심 로컬 환경</span>
-            <span class="cycle-item hidden">GPU·WSL2 최적화 전략</span>
-            <span class="cycle-item hidden">실제 사례와 문제 해결 노하우</span>
-            <span class="cycle-item hidden">소스코드를 위한 Tree-Sitter 기반 청킹 </span>
+            <span class="cycle-item active">온프레미스 LLM + KorBERT 하이브리드 RAG 아키텍처</span>
+            <span class="cycle-item hidden">Tree-Sitter 문서 파싱과 ChromaDB 임베딩 동기화</span>
+            <span class="cycle-item hidden">LlamaIndex + FastAPI 실시간 질의 파이프라인</span>
+            <span class="cycle-item hidden">Celery 워커와 Redis 캐시 최적화 전략</span>
+            <span class="cycle-item hidden">Prometheus·Grafana·DVC 기반 운영 거버넌스</span>
           </p>
           <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-2">
             <a href="#pipeline" class="magnetic rounded-full px-5 py-3 text-sm font-semibold text-black bg-white hover:opacity-90 transition">
@@ -285,10 +283,10 @@
         <div class="shine" aria-hidden="true"></div>
         <h2 class="text-2xl sm:text-3xl font-bold mb-4">프로젝트 개요</h2>
         <p class="text-soft leading-7">
-          Windows 10(WSL2 권장) 환경에서 Ollama를 통해 Llama 3.1을 로컬에 배포하고, 사내 문서(또는 Tree-Sitter 기반)를 임베딩하여 벡터 DB와 결합하는 전 과정을 다룹니다. 준비 단계에서 운영 체제 버전과 가상화, GPU/CPU, 디스크 여유 공간을 확인하고, 설치 이후에는 Ollama와 Llama 3.1을 통한 모델 실행·관리, 임베딩 파이프라인 구성, 성능 최적화 및 트러블슈팅, 실제 적용 사례까지 한 번에 파악할 수 있습니다. 만약 일반 문서나 소스가 아닌 로그기반의 청킹이라면 다른 전략으로 구축해야 하므로 전문가 상담이 필요합니다.^^ 
+          Windows 10 또는 WSL2 환경에서 Ollama로 Llama 3.1을 구동하고, PyTorch 기반 KorBERT 임베딩을 학습하며, Tree-Sitter로 사내 코드·문서를 정규화해 ChromaDB에 적재하는 온프레미스 RAG 아키텍처를 설계합니다. LlamaIndex와 FastAPI가 검색과 추론을 조합해 실시간 응답 품질을 보장하고, 데이터셋과 모델 전파는 DVC로 추적합니다.
         </p>
         <p class="text-soft leading-7 mt-4">
-          목표는 로컬 환경에서 데이터 프라이버시를 보장하면서도 고성능 검색·질의응답(RAG) 경험을 제공하는 것입니다. 단계별 체크리스트와 실행 가능한 명령어, 하드웨어·소프트웨어 최적화 포인트를 함께 제공하여 실무에 즉시 적용할 수 있도록 구성했습니다.
+          본 가이드는 환경 준비, 모델·임베딩 학습, 비동기 파이프라인, API 연동, 관제·운영까지 한 번에 정리합니다. Redis/memcached 캐시, Celery 워커 + RabbitMQ/Redis 브로커, Prometheus·Grafana 모니터링을 활용해 안정적인 서비스 운영과 반복 가능한 배포 전략을 제시합니다.
         </p>
       </div>
     </section>
@@ -299,14 +297,14 @@
         <h2 class="text-2xl sm:text-3xl font-bold mb-6">구축 여정 한눈에 보기</h2>
         <div class="grid md:grid-cols-2 gap-6 text-soft">
           <ul class="space-y-3 list-none pl-0">
-            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>Ollama 설치 및 설정 — Windows 10에서의 데몬 설치, WSL2 대안, 권한·환경 변수 체크리스트</span></li>
-            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>Llama 3.1 설치 및 설정 — 모델 다운로드와 로컬 배포, 하드웨어 요구사항, 양자화 옵션 가이드</span></li>
-            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>내부 임베딩 구축 — 문서, 코드 전처리, 배치 임베딩 생성, 품질 검증 절차</span></li>
+            <li class="flex gap-3"><span class="text-accent text-xl">01</span><span>Windows 10/WSL2, GPU 드라이버, Python·Poetry 개발 환경 및 필수 CLI 점검</span></li>
+            <li class="flex gap-3"><span class="text-accent text-xl">02</span><span>Ollama 설치와 Llama 3.1 풀링, KorBERT 가중치 다운로드 및 PyTorch 런타임 구성</span></li>
+            <li class="flex gap-3"><span class="text-accent text-xl">03</span><span>Tree-Sitter 파서 구축, 사내 문서·코드 정제, DVC 기반 데이터셋 버전 관리</span></li>
           </ul>
           <ul class="space-y-3 list-none pl-0">
-            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>환경 결합과 최적화 — GPU 활용, CPU 최적화, 양자화·캐싱·인덱스 튜닝 팁</span></li>
-            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>문제 해결 및 주의사항 — 권한 오류, 메모리 부족, 버전 호환성 이슈 대응</span></li>
-            <li class="flex gap-3"><span class="text-accent text-xl">✓</span><span>실제 적용 사례 — PoC 구성, 성능 지표, 확장 전략</span></li>
+            <li class="flex gap-3"><span class="text-accent text-xl">04</span><span>ChromaDB 인덱스 설계와 LlamaIndex 그래프 구성, FastAPI 게이트웨이 연동</span></li>
+            <li class="flex gap-3"><span class="text-accent text-xl">05</span><span>Celery 워커 풀 및 RabbitMQ/Redis 브로커 구성, Redis/memcached 캐시 정책 수립</span></li>
+            <li class="flex gap-3"><span class="text-accent text-xl">06</span><span>Prometheus &amp; Grafana APM, 모델·데이터 모니터링, 배포 자동화와 운영 KPI 정립</span></li>
           </ul>
         </div>
       </div>
@@ -317,29 +315,30 @@
         <article class="glass rounded-2xl p-6 sm:p-10 tilt-card relative">
           <div class="shine" aria-hidden="true"></div>
           <p class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 2</p>
-          <h2 class="text-2xl sm:text-3xl font-bold mb-6">Ollama 설치 및 환경 준비</h2>
+          <h2 class="text-2xl sm:text-3xl font-bold mb-6">설치 및 환경 준비</h2>
           <ol class="space-y-6 text-soft">
             <li>
-              <h3 class="text-lg font-semibold text-fg mb-2">설치 전 필수 점검</h3>
-              <p>Windows 10 버전(권장 22H2 이상)과 가상화(VT-x/AMD-V) 활성화 여부를 확인하고, 모델 저장을 위한 충분한 디스크 여유 공간을 확보합니다. Ollama 설치 파일은 공식 사이트에서 Windows용 최신 릴리스를 내려받습니다.</p>
+              <h3 class="text-lg font-semibold text-fg mb-2">기본 OS · GPU · Python 설정</h3>
+              <p>Windows 10 22H2 이상 또는 동일 수준의 WSL2 배포판에서 Hyper-V/가상화와 WSL2 기능을 활성화합니다. NVIDIA GPU 사용 시 최신 스튜디오 드라이버와 CUDA 12.x, cuDNN을 설치하고, Python 3.10+와 Poetry(또는 pipx)로 프로젝트 전용 가상환경을 구성합니다.</p>
             </li>
             <li>
-              <h3 class="text-lg font-semibold text-fg mb-2">설치 경로 선택 — 네이티브 vs WSL2</h3>
-              <p>네이티브 설치는 <code>OllamaSetup.exe</code> 실행으로 간단히 완료됩니다. WSL2를 권장하며, <code>PowerShell(관리자)</code>에서 <code>wsl --install</code>로 WSL2를 활성화한 뒤 Ubuntu 환경에서 Linux 설치 가이드를 따라가면 GPU·라이브러리 호환성이 안정적입니다.</p>
+              <h3 class="text-lg font-semibold text-fg mb-2">Ollama · PyTorch · KorBERT 스택 구성</h3>
+              <p>관리자 PowerShell에서 Ollama를 설치한 뒤 <code>ollama pull llama3.1:8b</code>로 베이스 모델을 내려받습니다. PyTorch는 GPU 사양에 맞는 휠을 설치하고, KorBERT 프리트레인 가중치를 다운로드해 <code>torchrun</code> 기반 파인튜닝 스크립트와 DVC 데이터 리모트를 연동합니다.</p>
             </li>
             <li>
-              <h3 class="text-lg font-semibold text-fg mb-2">설치 후 동작 확인</h3>
-              <p><code>ollama</code> 명령 실행 여부를 점검하고, <code>open-webui serve</code>로 로컬 UI를 기동해 정상 동작을 확인합니다. 모델 다운로드나 서비스 실행 중에는 디스크 사용량과 GPU 드라이버(CUDA) 호환성을 수시로 확인합니다. 요약: 설치 전 환경 체크 → WSL2 권장 → <code>open-webui serve</code>로 서비스 검증.</p>
+              <h3 class="text-lg font-semibold text-fg mb-2">브로커 · 캐시 · 모니터링 배치</h3>
+              <p>Celery 워커가 사용할 RabbitMQ 또는 Redis 브로커를 설치해 접근 계정과 vhost를 분리하고, Redis/memcached 캐시 서버를 구성해 세션·임베딩 데이터를 저장합니다. Prometheus 노드 익스포터와 Grafana를 함께 설치해 추론 메트릭과 시스템 지표를 수집합니다.</p>
             </li>
           </ol>
         </article>
         <aside class="glass rounded-2xl p-6 sm:p-8 space-y-5">
           <h3 class="text-xl font-semibold text-fg">빠른 체크리스트</h3>
           <ul class="space-y-3 text-soft text-sm">
-            <li class="flex items-start gap-3"><span class="mt-1 text-accent">■</span><span>Windows 업데이트로 22H2 이상 유지</span></li>
-            <li class="flex items-start gap-3"><span class="mt-1 text-accent">■</span><span>BIOS/Hyper-V에서 가상화 활성화</span></li>
-            <li class="flex items-start gap-3"><span class="mt-1 text-accent">■</span><span>GPU 드라이버·CUDA 버전 호환성 사전 확인</span></li>
-            <li class="flex items-start gap-3"><span class="mt-1 text-accent">■</span><span>모델 저장용 디스크 여유(8B 기준 4~5GB 이상)</span></li>
+            <li class="flex items-start gap-3"><span class="mt-1 text-accent">✔</span><span>Windows Update, WSL2, 가상화(VT-x/AMD-V) 활성화 완료</span></li>
+            <li class="flex items-start gap-3"><span class="mt-1 text-accent">✔</span><span>CUDA/ROCm 및 GPU 드라이버 설치, <code>nvidia-smi</code> 정상 응답</span></li>
+            <li class="flex items-start gap-3"><span class="mt-1 text-accent">✔</span><span>Python 3.10+, Poetry/pipx, 필수 패키지(<code>torch</code>, <code>dvc</code>, <code>llama-index</code>) 설치</span></li>
+            <li class="flex items-start gap-3"><span class="mt-1 text-accent">✔</span><span>Redis 또는 memcached 캐시 서비스 포트 및 보안 설정</span></li>
+            <li class="flex items-start gap-3"><span class="mt-1 text-accent">✔</span><span>RabbitMQ/Redis 브로커 사용자 권한, Prometheus 익스포터 배포</span></li>
           </ul>
         </aside>
       </div>
@@ -349,19 +348,19 @@
       <div class="glass rounded-2xl p-6 sm:p-10 tilt-card relative">
         <div class="shine" aria-hidden="true"></div>
         <p class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 3</p>
-        <h2 class="text-2xl sm:text-3xl font-bold mb-6">Llama 3.1 설치 및 초기 설정</h2>
+        <h2 class="text-2xl sm:text-3xl font-bold mb-6">설치 및 초기 설정</h2>
         <div class="grid md:grid-cols-3 gap-8 text-soft">
           <div>
-            <h3 class="text-lg font-semibold text-fg mb-2">1. 준비 및 필수 파일</h3>
-            <p>관리자 권한 PowerShell/CMD 또는 WSL2 터미널을 사용합니다. 필요한 항목은 Ollama 설치 프로그램, (GPU 사용 시) NVIDIA 드라이버와 CUDA Toolkit, 충분한 디스크와 16GB 이상 RAM입니다. 모델 파일은 Ollama가 자동으로 내려받습니다.</p>
+            <h3 class="text-lg font-semibold text-fg mb-2">1. Ollama &amp; Llama 3.1 런타임</h3>
+            <p><code>ollama serve</code>로 백그라운드 서비스를 기동하고, <code>ollama pull llama3.1:8b</code> 또는 사내 정책에 맞는 모델을 다운로드합니다. <code>OLLAMA_HOST</code>를 FastAPI 게이트웨이에서 접근 가능한 주소로 노출하고, <code>--keepalive</code> 설정으로 초기 응답 지연을 줄입니다.</p>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-fg mb-2">2. 모델 다운로드</h3>
-            <p><code>ollama-installer.exe</code>를 실행한 뒤 <code>ollama run llama3.1:8b</code>로 모델을 내려받고 즉시 실행합니다. <code>ollama list</code>로 설치된 모델을 확인하고, 다운로드 실패 시 네트워크와 디스크 여유를 점검하거나 WSL 환경에서 재시도합니다.</p>
+            <h3 class="text-lg font-semibold text-fg mb-2">2. KorBERT 임베딩 · PyTorch 파이프라인</h3>
+            <p>KorBERT 파인튜닝 스크립트를 PyTorch Lightning/Accelerate로 실행하고, Tree-Sitter가 생성한 청크 데이터를 DVC 스테이지로 관리합니다. 학습된 체크포인트는 <code>torch.jit</code> 또는 safetensors 형식으로 내보내 Celery 임베딩 워커에서 즉시 로드합니다.</p>
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-fg mb-2">3. 운영 권장사항</h3>
-            <p>PoC에는 8B 모델이 적합하며, 대형 모델은 더 많은 RAM/GPU 자원을 요구합니다. NVIDIA 드라이버·CUDA 버전을 일치시키고, 관리자 권한으로 명령을 실행합니다. <code>ollama list</code>와 로그를 확인해 오류를 빠르게 파악합니다.</p>
+            <h3 class="text-lg font-semibold text-fg mb-2">3. LlamaIndex · FastAPI · ChromaDB 연계</h3>
+            <p>LlamaIndex 노드 그래프를 ChromaDB 벡터스토어와 KorBERT 임베딩에 연결하여 검색 정확도를 확보합니다. FastAPI에서는 의존성 주입 패턴으로 쿼리 엔진을 구성하고, Redis 캐시 키를 활용해 자주 조회되는 질의를 재사용하며 Celery 태스크로 배치 업데이트를 예약합니다.</p>
           </div>
         </div>
       </div>
@@ -373,32 +372,38 @@
         <h2 class="text-2xl sm:text-3xl font-bold mb-6">내부 임베딩 파이프라인</h2>
         <div class="grid lg:grid-cols-2 gap-8">
           <div class="space-y-5 text-soft leading-7">
-            <p><strong class="text-fg">전체 워크플로우</strong> — ① 문서 수집 및 전처리: PDF/Word/로그 등에서 텍스트를 추출하고 500~1000 토큰 단위로 청크화하며 메타데이터(문서 ID, 청크 ID, 출처, 타임스탬프)를 부여합니다. ② 임베딩 생성: Ollama 로컬 API 또는 전용 임베딩 모델을 호출해 텍스트 청크를 고정 길이 벡터로 변환합니다. ③ 벡터 DB 저장 및 인덱싱: Milvus/FAISS에 (벡터, 메타데이터) 형태로 저장하고 IVF, PQ, HNSW 등 인덱스를 구성·튜닝합니다. ④ 검색: 쿼리 임베딩을 생성해 k-NN 유사도 검색으로 관련 청크를 조회합니다. ⑤ RAG 결합: 검색 결과 청크를 컨텍스트로 Llama 3.1에 제공해 최종 응답을 생성합니다.</p>
-            <p><strong class="text-fg">운영 팁</strong> — 배치 처리로 호출 오버헤드를 줄이고, Redis 등으로 임베딩 캐시(키는 텍스트의 SHA-256)를 적용해 중복 계산을 방지합니다. 문서 변경 시 전체 재처리 대신 변경 청크만 재임베딩하고, 인덱스 파라미터(예: HNSW의 <code>ef</code>, <code>M</code>)와 검색 <code>k</code> 값을 조정해 정확도와 성능의 균형을 맞춥니다. 임베딩 버전을 태깅하고 재인덱싱 로그를 남겨 이력 관리에 활용합니다.</p>
+            <p><strong class="text-fg">문서 파싱 &amp; 임베딩 학습</strong> Tree-Sitter 파서를 통해 코드·문서를 토큰 단위로 정규화하고 KorBERT 토크나이저로 512 토큰 청크를 생성합니다. 생성된 데이터셋은 DVC 파이프라인 스테이지에 등록되어 버전별로 재현 가능한 PyTorch 학습을 보장합니다.</p>
+            <p><strong class="text-fg">벡터 스토어 &amp; 쿼리 그래프</strong> KorBERT 임베딩 벡터는 ChromaDB 컬렉션에 저장하고, HNSW/IVF 파라미터를 업무 도메인에 맞춰 튜닝합니다. LlamaIndex는 KorBERT 벡터를 1차 검색으로, Ollama Llama 3.1을 생성 모델로 조합해 컨텍스트 기반 답변을 제공합니다.</p>
+            <p><strong class="text-fg">비동기 파이프라인 &amp; 버전 관리</strong> Celery 워커는 Tree-Sitter 결과와 KorBERT 임베딩을 배치로 재생성하고, Redis/memcached 캐시는 자주 조회되는 질의를 저장합니다. 모든 데이터 변경 이력과 모델 체크포인트는 DVC 및 Git 태그로 관리해 배포와 롤백을 단순화합니다.</p>
           </div>
           <div class="glass rounded-2xl p-6 space-y-5">
-            <h3 class="text-xl font-semibold text-fg">샘플 명령 &amp; 코드</h3>
+            <h3 class="text-xl font-semibold text-fg">샘플 구성</h3>
             <div class="space-y-3 text-sm text-soft">
               <div>
-                <div class="font-semibold text-fg mb-1">Ollama API 호출</div>
-                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>curl -X POST http://localhost:11434/embed \
-  -H "Content-Type: application/json" \
-  -d '{"model":"llama3.1","text":"문서 청크 본문"}'</code></pre>
+                <div class="font-semibold text-fg mb-1">DVC 파이프라인</div>
+                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>dvc stage add -n parse \
+  -d data/raw -d scripts/tree_sitter.py \
+  -o data/parsed
+python scripts/tree_sitter.py</code></pre>
               </div>
               <div>
-                <div class="font-semibold text-fg mb-1">Python 요청 예시</div>
-                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>import requests
-resp = requests.post(
-    "http://localhost:11434/embed",
-    json={"model": "llama3.1", "text": chunk_text}
-)
-embedding = resp.json()["embedding"]</code></pre>
+                <div class="font-semibold text-fg mb-1">Celery 임베딩 태스크</div>
+                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>@celery.task(bind=True, retry_backoff=True)
+def build_embedding(self, doc_id):
+    text = fetch_document(doc_id)
+    emb = korbert_encoder.encode(text)
+    chroma.upsert(doc_id, emb)</code></pre>
               </div>
               <div>
-                <div class="font-semibold text-fg mb-1">벡터 DB 적재 &amp; 검색</div>
-                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>index.insert([(id1, emb1, meta1), (id2, emb2, meta2)])
-results = index.search(query_emb, k=5)
-answer = llama.generate(prompt_with(results))</code></pre>
+                <div class="font-semibold text-fg mb-1">FastAPI + LlamaIndex</div>
+                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>@app.post(&quot;/query&quot;)
+async def query(payload: Query):
+    cached = redis.get(payload.key)
+    if cached:
+        return cached
+    answer = index.as_query_engine().query(payload.text)
+    redis.setex(payload.key, 300, answer)
+    return answer</code></pre>
               </div>
             </div>
           </div>
@@ -412,12 +417,12 @@ answer = llama.generate(prompt_with(results))</code></pre>
         <h2 class="text-2xl sm:text-3xl font-bold mb-8">성능 최적화 &amp; 운영 전략</h2>
         <div class="grid lg:grid-cols-2 gap-8 text-soft leading-7">
           <div class="space-y-5">
-            <p><strong class="text-fg">하드웨어 진단</strong> — NVIDIA GPU와 일치하는 드라이버·CUDA가 핵심입니다. 배포 전 <code>nvidia-smi</code>로 GPU 상태와 메모리를 점검하고, 다중 GPU 환경에서는 NCCL 설정과 네트워크 토폴로지를 확인합니다.</p>
-            <p><strong class="text-fg">메모리 절감</strong> — 8bit/4bit 양자화로 메모리 요구량을 낮추되, 대표 데이터셋으로 정확도 변화를 사전 검증합니다. 필요 시 지식 증류, 프루닝, 더 작은 Llama 계열 모델이나 LoRA 등을 조합합니다.</p>
+            <p><strong class="text-fg">성능 관측 &amp; 프로파일링</strong> Ollama, FastAPI, Celery, ChromaDB 인스턴스에 Prometheus 익스포터를 부착해 지연, 처리량, GPU 메모리, 큐 적체를 수집합니다. Grafana에서는 워크로드별 대시보드를 만들고 Alertmanager로 임계치 기반 알람을 설정합니다.</p>
+            <p><strong class="text-fg">캐시 &amp; 세션 전략</strong> Redis/memcached는 질의 결과, 모델 메타데이터, 세션 토큰을 분리된 네임스페이스로 저장합니다. TTL, 버전 키, Bloom Filter를 활용해 캐시 오염을 방지하고, FastAPI 미들웨어에서 히트율을 측정해 정책을 고도화합니다.</p>
           </div>
           <div class="space-y-5">
-            <p><strong class="text-fg">대형 모델 운영</strong> — 텐서/파이프라인 병렬화 또는 모델 샤딩으로 확장하며, NVLink 또는 동일 PCIe 루트의 GPU를 우선 사용합니다. 통신-연산 중첩과 적절한 배치·마이크로배치 설정으로 처리량을 개선합니다.</p>
-            <p><strong class="text-fg">소프트웨어 튜닝</strong> — Redis 캐시로 반복 쿼리 비용을 줄이고, HNSW의 <code>efConstruction</code>·<code>efSearch</code>를 조절해 정밀도와 속도를 조율합니다. 추론 요청은 배치화하고, FP16 혼합 정밀도와 pinned memory로 메모리 대역폭을 최적화합니다.</p>
+            <p><strong class="text-fg">비동기 태스크 튜닝</strong> Celery 워커는 GPU/CPU 리소스에 맞춰 <code>--concurrency</code>와 <code>--prefetch-multiplier</code>를 조정하며, RabbitMQ/Redis 브로커의 QoS 설정으로 대기열 폭발을 방지합니다. 예약 태스크는 Beat 또는 Airflow 트리거와 연계해 야간 일괄 업데이트를 수행합니다.</p>
+            <p><strong class="text-fg">모델 최적화 &amp; 배포</strong> KorBERT 임베딩 모델은 8-bit/FP16 혼합 정밀도와 TorchScript로 경량화하고, Llama 3.1은 Ollama <code>quantize</code> 옵션이나 GPU 샤딩으로 확장합니다. DVC 스테이지를 통해 학습→검증→배포를 자동화하고, Canary/Blue-Green 전략으로 서비스 중단 없이 롤아웃합니다.</p>
           </div>
         </div>
       </div>
@@ -450,12 +455,12 @@ answer = llama.generate(prompt_with(results))</code></pre>
     <section id="cases" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
       <div class="glass rounded-2xl p-6 sm:p-10">
         <div class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 7</div>
-        <h2 class="text-2xl sm:text-3xl font-bold mb-6">실제 적용 사례</h2>
+        <h2 class="text-2xl sm:text-3xl font-bold mb-6">적용 시나리오</h2>
         <div class="grid lg:grid-cols-2 gap-8 items-start">
           <div class="space-y-5 text-soft leading-7">
-            <p><strong class="text-fg">로컬 RAG 구축</strong> — 문서 임베딩 → Milvus 인덱싱 → 쿼리 시 k-NN으로 관련 문서를 검색해 Llama 3.1에 컨텍스트로 제공하는 흐름으로 운영합니다. 사내 매뉴얼·계약서를 임베딩해 직원용 Q&amp;A 인터페이스를 구축하면 검색 정확도가 향상되고 응답 시간이 단축됩니다.</p>
-            <p><strong class="text-fg">코드 리뷰 자동화 PoC</strong> — 코드 스니펫을 청크화해 임베딩·유사도 검색 후 LLM으로 리뷰 초안을 생성합니다. 반복 검토 시간을 줄이고 리뷰 품질의 일관성을 높였으며, 외부 서비스 사용 없이 데이터 유출 위험을 최소화했습니다.</p>
-            <p><strong class="text-fg">성공 요인</strong> — 청크화 품질과 전처리, 모델 크기 적정화, 벡터 DB·캐시 튜닝, 사용자 피드백 루프가 핵심입니다. 8B급 경량 모델로 Windows 10 + Ollama에서 빠른 PoC를 수행한 뒤, 지표(정확도·응답 시간·만족도)에 따라 하드웨어와 모델을 단계적으로 확장하세요.</p>
+            <p><strong class="text-fg">사내 지식 허브</strong> KorBERT + ChromaDB 조합으로 규정, 매뉴얼, 티켓 로그를 임베딩하여 직원용 Q&amp;A 포털을 구축합니다. FastAPI는 권한 기반 라우팅을 제공하고 Redis 캐시로 반복 질의를 가속해 평균 응답 시간을 1초 이하로 유지합니다.</p>
+            <p><strong class="text-fg">코드 거버넌스 자동화</strong> Tree-Sitter로 서비스별 저장소를 파싱하고 Celery 워커가 KorBERT 임베딩을 생성해 보안 감사 용어집과 비교합니다. 비정상 패턴은 RabbitMQ 이벤트로 전송되어 LlamaIndex를 통한 자연어 요약 리포트로 전달됩니다.</p>
+            <p><strong class="text-fg">운영/모니터링 통합</strong> Prometheus·Grafana로 추론 지연, 큐 적체, GPU 활용률을 감시하고, DVC 스테이지 메타데이터를 연결해 모델 릴리스별 성능 변화를 한눈에 추적합니다. Celery Beat가 야간에 데이터를 재인덱싱해 안정적인 서비스 품질을 유지합니다.</p>
           </div>
           <div class="glass rounded-2xl overflow-hidden">
             <img src="https://milvus.io/docs/v2.2.x/assets/architecture_diagram.png" alt="Milvus 벡터 데이터베이스 아키텍처" class="w-full h-full object-cover" />
