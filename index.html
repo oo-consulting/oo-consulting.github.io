@@ -634,7 +634,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <section id="architecture" class="container-max mx-auto px-6 py-10 sm:py-16 lg:py-20">
-      <div class="architecture-explorer rounded-3xl border border-white/10 bg-gradient-to-br from-white via-slate-50 to-slate-100 text-slate-900 shadow-2xl dark:bg-gradient-to-br dark:from-slate-900/95 dark:via-slate-800/90 dark:to-slate-900/95 dark:text-slate-100 min-h-screen overflow-hidden">
+      <div class="architecture-explorer rounded-3xl border border-white/10 text-slate-900 shadow-2xl dark:text-slate-100 min-h-screen overflow-hidden">
         <div class="px-6 sm:px-10 pt-8 pb-6">
           <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div class="max-w-2xl">
@@ -653,13 +653,14 @@
           <div class="flex justify-center">
             <button id="simulate-btn" class="rag-simulate-btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">🚀 데이터 흐름 시뮬레이션 시작</button>
           </div>
-          <div class="flex flex-col gap-8 xl:grid xl:grid-cols-[0.8fr,2fr,0.9fr] xl:items-start xl:gap-12">
-            <aside class="rag-nav bg-white/80 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg backdrop-blur-sm p-5 sticky top-6 transform transition-all duration-300 hover:shadow-xl">
+          <div class="flex flex-col gap-8 xl:flex xl:flex-row xl:items-start xl:gap-10">
+            <aside class="rag-nav bg-white/90 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg backdrop-blur-sm p-5 sticky top-6 transform transition-all duration-300 hover:shadow-xl xl:flex-shrink-0" style="width: 250px;">
               <h3 class="text-lg font-bold text-slate-700 dark:text-slate-100 mb-4 border-b border-slate-200/70 dark:border-slate-700/70 pb-2 flex items-center"><span class="text-2xl mr-2">📋</span>구성 요소 탐색</h3>
               <nav id="component-nav" class="space-y-1"></nav>
             </aside>
-            <div id="diagram-root" class="space-y-8">
-              <svg id="architecture-svg" class="w-full h-full" viewBox="0 0 1200 800" style="min-height: 600px;" xmlns="http://www.w3.org/2000/svg">
+            <div class="flex-1 flex flex-col gap-6">
+              <div id="diagram-root">
+                <svg id="architecture-svg" class="w-full h-full" viewBox="0 0 1200 800" style="min-height: 650px;" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                   <filter id="glow">
                     <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -749,18 +750,24 @@
                 <text x="600" y="535" text-anchor="middle" class="tier-title" style="font-family: 'Noto Sans KR', sans-serif; font-size: 18px; font-weight: 800; fill: #5b21b6;">Data Management & Preprocessing</text>
               </svg>
             </div>
-            <aside class="rag-info-panel p-6 lg:p-7 sticky top-6 bg-white/90 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg backdrop-blur-sm transform transition-all duration-300 hover:shadow-xl" id="info-panel">
-              <h3 id="info-title" class="text-2xl font-bold text-slate-800 dark:text-white mb-4 flex items-center"><span class="text-2xl mr-3">🔍</span>아키텍처 상세 정보</h3>
-              <div id="info-content" class="text-slate-700 dark:text-slate-200 space-y-4" style="font-family: 'Noto Sans KR', sans-serif;">
+            <aside class="rag-info-panel p-4 xl:p-5 bg-white/90 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg backdrop-blur-sm transform transition-all duration-300 hover:shadow-xl max-h-60 overflow-auto" id="info-panel">
+              <h3 id="info-title" class="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center"><span class="text-xl mr-2">🔍</span>아키텍처 상세 정보</h3>
+              <div id="info-content" class="text-slate-700 dark:text-slate-200 space-y-3 text-sm" style="font-family: 'Noto Sans KR', sans-serif;">
                 <p>이 대화형 아키텍처 다이어그램은 AI 헬퍼 시스템의 모든 구성 요소를 시각적으로 표현합니다. 각 블록을 클릭하여 세부 역할과 기술 스택을 확인하세요.</p>
                 <p class="font-semibold">시뮬레이션 모드로 데이터 흐름을 따라가며 시스템 작동 원리를 체험해보시거나, 구성 요소 탐색 메뉴에서 관심 있는 부분을 선택하세요.</p>
-                <div class="rag-tip mt-6 p-5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl">
-                  <h4 class="font-bold text-blue-800 dark:text-blue-200 flex items-center"><span class="text-lg mr-2">💡</span>사용 팁</h4>
-                  <p class="text-sm text-blue-700 dark:text-blue-100 mt-2 font-medium">‘데이터 흐름 시뮬레이션’ 버튼을 클릭하면 애니메이션으로 사용자 요청이 시스템을 통과하는 과정을 확인할 수 있습니다. SVG 기반으로 선명하고 반응성 좋게 디자인되었습니다.</p>
+                <div class="rag-tip mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <h4 class="font-bold text-blue-800 dark:text-blue-200 flex items-center"><span class="text-sm mr-2">💡</span>사용 팁</h4>
+                  <p class="text-xs text-blue-700 dark:text-blue-100 mt-1 font-medium">‘데이터 흐름 시뮬레이션’ 버튼을 클릭하면 애니메이션으로 사용자 요청이 시스템을 통과하는 과정을 확인할 수 있습니다.</p>
                 </div>
               </div>
             </aside>
           </div>
+        </div>
+      </div>
+    </section>
+            
+    <section id="setup" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
+      <p>섹션 2.5 아키텍처 다이어그램을 요구사항대로 수정했습니다. 왼쪽에 구성 요소 탐색 메뉴 유지, 가운데 다이어그램 크게, 오른쪽 아래에 보조 설명 패널 작게. 섹션을 투명으로 만들어 밤하늘 별 바탕 보이도록 하고 전반적인 가독성을 높입니다. 별 배경이 아름답네.</p>
         </div>
       </div>
     </section>
