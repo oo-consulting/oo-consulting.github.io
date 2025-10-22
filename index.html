@@ -119,6 +119,27 @@
         .component:not(.highlight) .text-gray-700 {
             color: #1f2937 !important;
         }
+        #component-nav .nav-item {
+            display: block;
+            color: #dbeafe;
+            background: rgba(15, 23, 42, 0.32);
+            border: 1px solid rgba(99, 102, 241, 0.18);
+            backdrop-filter: blur(12px);
+            transition: all 0.25s ease;
+        }
+        #component-nav .nav-item:hover {
+            background: rgba(59, 130, 246, 0.28);
+            color: #ffffff;
+            border-color: rgba(59, 130, 246, 0.55);
+            transform: translateY(-1px);
+        }
+        #component-nav .nav-item.nav-active {
+            background: rgba(59, 130, 246, 0.45);
+            color: #ffffff;
+            border-color: rgba(129, 140, 248, 0.8);
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
+            transform: translateY(-2px);
+        }
         .client-app { background-color: #DCEFFB; border-color: #a6cde4; }
         .dev-ops { background-color: #FFE0B2; border-color: #e6b980; }
         .gateway { background-color: #C8E6C9; border-color: #97c299; }
@@ -329,7 +350,7 @@
                 const data = componentData[id];
                 const navItem = document.createElement('a');
                 navItem.href = '#';
-                navItem.className = 'block p-2 rounded-md hover:bg-gray-100 transition-colors';
+                navItem.className = 'nav-item px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium';
                 navItem.textContent = data.title;
                 navItem.dataset.id = id;
                 nav.appendChild(navItem);
@@ -348,6 +369,16 @@
                 
                 components.forEach(comp => {
                     comp.classList.toggle('selected', comp.dataset.id === id);
+                });
+
+                nav.querySelectorAll('.nav-item').forEach(item => {
+                    const isActive = item.dataset.id === id;
+                    item.classList.toggle('nav-active', isActive);
+                    if (isActive) {
+                        item.setAttribute('aria-current', 'true');
+                    } else {
+                        item.removeAttribute('aria-current');
+                    }
                 });
             };
 
@@ -368,6 +399,7 @@
                 const navItem = e.target.closest('a');
                 if (navItem && navItem.dataset.id) {
                     selectComponent(navItem.dataset.id);
+                    navItem.blur();
                 }
             });
 
