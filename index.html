@@ -12,13 +12,13 @@
     (function() {
       const componentData = {
         "A": {
-          title: "Web App Interface (사용자)",
+          title: "Web App (사용자)",
           role: "사용자 인터페이스",
           tech: "전자정부프레임워크, JSP/Servlet, HTML/CSS/JS",
           description: "일반 사용자가 내일채움공제 업무를 처리하는 웹 화면입니다. 사용자가 특정 메뉴나 입력 필드에서 도움을 요청하면, 해당 메뉴 ID와 질문을 RAG 시스템으로 전송합니다."
         },
         "C": {
-          title: "개발 운영자",
+          title: "개발 운영자 (소스 질의)",
           role: "기술 질의 인터페이스",
           tech: "내부 관리 시스템, IDE 연동",
           description: "개발자나 운영자가 시스템 유지보수 중 발생하는 기술적인 질문이나 소스코드 관련 문의를 하는 인터페이스입니다. 분석이 필요한 파일 ID나 코드 조각을 RAG 시스템으로 보냅니다."
@@ -83,7 +83,7 @@
 
       document.addEventListener("DOMContentLoaded", () => {
         const nav = document.getElementById("component-nav");
-        const diagram = document.getElementById("diagram-root");
+        const diagram = document.getElementById("architecture-svg");
         const infoPanel = document.getElementById("info-panel");
         const infoTitle = document.getElementById("info-title");
         const infoContent = document.getElementById("info-content");
@@ -104,27 +104,57 @@
           navItem.href = "#architecture";
           navItem.dataset.id = id;
           navItem.textContent = data.title;
-          navItem.className = "transition-colors duration-150";
+          navItem.className = "transition-all duration-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-2 py-1 rounded-lg block";
+          navItem.style.fontFamily = "'Noto Sans KR', sans-serif";
+          navItem.style.fontSize = "14px";
           fragment.appendChild(navItem);
         });
         nav.appendChild(fragment);
         navItems = Array.from(nav.querySelectorAll("a[data-id]"));
 
         const clearHighlights = () => {
-          components.forEach(el => el.classList.remove("highlight"));
+          components.forEach(el => {
+            el.classList.remove("highlight");
+            const rect = el.querySelector("rect");
+            if (rect) {
+              rect.style.filter = rect.style.filter.replace(" url(#glow)", "");
+            }
+          });
+          // Clear flow arrows
+          const flowArrows = diagram.querySelectorAll(".flow-arrow");
+          flowArrows.forEach(arrow => {
+            arrow.style.opacity = "0";
+          });
         };
 
         const updateInfoPanel = (id) => {
           const data = componentData[id];
           if (!data) return;
-          infoTitle.textContent = data.title;
+          infoTitle.innerHTML = `<span class="text-2xl mr-2">⚡</span>${data.title}`;
           infoContent.innerHTML = `
-            <p><strong class="font-semibold text-slate-800 dark:text-slate-100">역할:</strong> ${data.role}</p>
-            <p><strong class="font-semibold text-slate-800 dark:text-slate-100">주요 기술:</strong> ${data.tech}</p>
-            <p class="mt-4 pt-4 border-t border-slate-200/70 dark:border-slate-700/60">${data.description}</p>
+            <p><strong class="font-bold text-blue-600 dark:text-blue-400">역할:</strong> ${data.role}</p>
+            <p><strong class="font-bold text-green-600 dark:text-green-400">주요 기술:</strong> ${data.tech}</p>
+            <p class="mt-4 pt-4 border-t border-slate-200/70 dark:border-slate-700/60 leading-relaxed">${data.description}</p>
           `;
-          components.forEach(el => el.classList.toggle("selected", el.dataset.id === id));
-          navItems.forEach(item => item.classList.toggle("active", item.dataset.id === id));
+          components.forEach(el => {
+            el.classList.toggle("selected", el.dataset.id === id);
+            const rect = el.querySelector("rect");
+            if (rect) {
+              if (el.dataset.id === id) {
+                rect.style.strokeWidth = "3";
+                rect.style.filter = "url(#glow)";
+              } else {
+                rect.style.strokeWidth = rect.classList.contains("component-rect") ? "2" : "1";
+                rect.style.filter = rect.style.filter.replace(" url(#glow)", "");
+              }
+            }
+          });
+          navItems.forEach(item => {
+            item.classList.toggle("active", item.dataset.id === id);
+            item.classList.toggle("bg-blue-100", item.dataset.id === id);
+            item.classList.toggle("dark:bg-blue-800", item.dataset.id === id);
+            item.classList.toggle("font-bold", item.dataset.id === id);
+          });
         };
 
         const scrollInfoIntoView = () => {
@@ -159,11 +189,17 @@
         let timer = null;
 
         const setSimulateButtonState = (running) => {
-          simulateBtn.textContent = running ? "시뮬레이션 중지" : "데이터 흐름 시뮬레이션 시작";
-          simulateBtn.classList.toggle("bg-blue-600", !running);
-          simulateBtn.classList.toggle("hover:bg-blue-700", !running);
-          simulateBtn.classList.toggle("bg-red-600", running);
-          simulateBtn.classList.toggle("hover:bg-red-700", running);
+          simulateBtn.textContent = running ? "⏹️ 시뮬레이션 중지" : "🚀 데이터 흐름 시뮬레이션 시작";
+          simulateBtn.classList.toggle("bg-gradient-to-r", !running);
+          simulateBtn.classList.toggle("from-blue-600", !running);
+          simulateBtn.classList.toggle("to-blue-700", !running);
+          simulateBtn.classList.toggle("hover:from-blue-700", !running);
+          simulateBtn.classList.toggle("hover:to-blue-800", !running);
+          simulateBtn.classList.toggle("bg-gradient-to-r", running);
+          simulateBtn.classList.toggle("from-red-600", running);
+          simulateBtn.classList.toggle("to-red-700", running);
+          simulateBtn.classList.toggle("hover:from-red-700", running);
+          simulateBtn.classList.toggle("hover:to-red-800", running);
           simulateBtn.classList.toggle("stop", running);
         };
 
@@ -189,24 +225,54 @@
           setSimulateButtonState(true);
 
           const runStep = () => {
-            clearHighlights();
             if (step >= flowSequence.length) {
               stopSimulation();
               return;
             }
             const currentId = flowSequence[step];
+            clearHighlights();
+
+            // Highlight current component
             const el = diagram.querySelector(`.rag-component[data-id="${currentId}"]`);
             if (el) {
+              const rect = el.querySelector("rect");
+              if (rect) {
+                rect.style.filter = "url(#glow)";
+              }
               el.classList.add("highlight");
+
+              // Show flow arrow for current step
+              if (step < flowSequence.length - 1) {
+                const flowArrow = diagram.querySelector(`#flow-path-${step + 1}`);
+                if (flowArrow) {
+                  flowArrow.style.opacity = "1";
+                  // Animate arrow
+                  flowArrow.style.strokeDasharray = "10,5";
+                  flowArrow.style.animation = "flowAnimate 1.5s linear infinite";
+                }
+              }
+
               selectComponent(currentId, { scroll: false });
             }
             step += 1;
-            timer = setTimeout(runStep, 1500);
+            timer = setTimeout(runStep, 2000);
           };
 
           runStep();
         });
 
+        // Add CSS animation for flow arrows
+        const style = document.createElement("style");
+        style.textContent = `
+          @keyframes flowAnimate {
+            to {
+              stroke-dashoffset: -15;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize with component A
         selectComponent("A", { scroll: false });
       });
     })();
@@ -562,81 +628,135 @@
       </div>
     </section>
 
+    <!-- New Korean-friendly fonts and enhanced architecture section -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <section id="architecture" class="container-max mx-auto px-6 py-10 sm:py-16 lg:py-20">
-      <div class="architecture-explorer rounded-3xl border border-white/10 bg-white text-slate-900 shadow-2xl dark:bg-slate-900/95 dark:text-slate-100">
+      <div class="architecture-explorer rounded-3xl border border-white/10 bg-gradient-to-br from-white via-slate-50 to-slate-100 text-slate-900 shadow-2xl dark:bg-gradient-to-br dark:from-slate-900/95 dark:via-slate-800/90 dark:to-slate-900/95 dark:text-slate-100 min-h-screen overflow-hidden">
         <div class="px-6 sm:px-10 pt-8 pb-6">
           <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div class="max-w-2xl">
-              <p class="text-sm uppercase tracking-[0.32em] text-slate-500 dark:text-slate-400 mb-2">섹션 2.5</p>
-              <h2 class="text-2xl sm:text-3xl font-bold">통합 아키텍처 다이어그램</h2>
-              <p class="mt-4 text-base sm:text-lg leading-7 text-slate-600 dark:text-slate-300">Windows 10 · WSL2 기반 온프레미스 환경에서 Ollama, KorBERT, ChromaDB, LlamaIndex, FastAPI, Celery, Redis, RabbitMQ, Prometheus, Grafana, DVC가 상호작용하며 RAG 서비스를 제공하는 전체 구조를 탐색형 인터페이스로 정리했습니다.</p>
+              <p class="text-sm uppercase tracking-[0.32em] text-slate-500 dark:text-slate-400 mb-2 font-semibold">섹션 2.5</p>
+              <h2 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">통합 아키텍처 다이어그램</h2>
+              <p class="mt-4 text-base sm:text-lg leading-7 text-slate-600 dark:text-slate-300 font-medium" style="font-family: 'Noto Sans KR', sans-serif;">Windows 10 · WSL2 기반 온프레미스 환경에서 Ollama, KorBERT, ChromaDB, LlamaIndex, FastAPI, Celery, Redis, RabbitMQ, Prometheus, Grafana, DVC가 상호작용하며 RAG 서비스를 제공하는 전체 구조를 혁신적인 인터랙티브 다이어그램으로 재설계했습니다.</p>
             </div>
-            <div class="text-sm text-slate-500 dark:text-slate-400 leading-6 space-y-2">
-              <p><span class="inline-block w-3 h-3 rounded-full bg-sky-400 mr-2 align-middle"></span>실시간 서비스 경로</p>
-              <p><span class="inline-block w-3 h-3 rounded-full bg-emerald-400 mr-2 align-middle"></span>데이터 · 임베딩 파이프라인</p>
-              <p><span class="inline-block w-3 h-3 rounded-full bg-indigo-400 mr-2 align-middle"></span>관측 &amp; 거버넌스</p>
+            <div class="text-sm text-slate-500 dark:text-slate-400 leading-6 space-y-2 font-semibold">
+              <p class="flex items-center"><span class="inline-block w-4 h-4 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 mr-2 animate-pulse"></span>실시간 서비스 경로</p>
+              <p class="flex items-center"><span class="inline-block w-4 h-4 rounded-full bg-gradient-to-r from-emerald-400 to-green-500 mr-2 animate-pulse"></span>데이터 · 임베딩 파이프라인</p>
+              <p class="flex items-center"><span class="inline-block w-4 h-4 rounded-full bg-gradient-to-r from-indigo-400 to-purple-500 mr-2 animate-pulse"></span>관측 & 거버넌스</p>
             </div>
           </div>
         </div>
         <div class="px-6 sm:px-10 pb-10 space-y-8">
           <div class="flex justify-center">
-            <button id="simulate-btn" class="rag-simulate-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl transition-colors">데이터 흐름 시뮬레이션 시작</button>
+            <button id="simulate-btn" class="rag-simulate-btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">🚀 데이터 흐름 시뮬레이션 시작</button>
           </div>
-          <div class="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(220px,0.9fr),minmax(480px,1.6fr),minmax(260px,1fr)] lg:items-start lg:gap-10">
-            <aside class="rag-nav bg-white/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg p-4 sticky top-6">
-              <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-100 mb-3 border-b border-slate-200/70 dark:border-slate-700/70 pb-2">구성 요소</h3>
+          <div class="flex flex-col gap-8 xl:grid xl:grid-cols-[0.8fr,2fr,0.9fr] xl:items-start xl:gap-12">
+            <aside class="rag-nav bg-white/80 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg backdrop-blur-sm p-5 sticky top-6 transform transition-all duration-300 hover:shadow-xl">
+              <h3 class="text-lg font-bold text-slate-700 dark:text-slate-100 mb-4 border-b border-slate-200/70 dark:border-slate-700/70 pb-2 flex items-center"><span class="text-2xl mr-2">📋</span>구성 요소 탐색</h3>
               <nav id="component-nav" class="space-y-1"></nav>
             </aside>
-            <div id="diagram-root" class="space-y-6">
-              <div class="rag-tier">
-                <p class="rag-tier-title">Client Application · 전자정부프레임워크 / WebLogic</p>
-                <div class="rag-grid">
-                  <div id="A" data-id="A" class="rag-component client-app">Web App (사용자)</div>
-                  <div id="C" data-id="C" class="rag-component dev-ops">개발 운영자 (소스 질의)</div>
-                </div>
-              </div>
-              <div class="rag-tier">
-                <p class="rag-tier-title">RAG System · Python Runtime</p>
-                <div class="rag-grid">
-                  <div id="B" data-id="B" class="rag-component gateway">FastAPI RAG Gateway</div>
-                </div>
-                <div class="rag-grid">
-                  <div id="D" data-id="D" class="rag-component cache">Redis Cache</div>
-                  <div id="E" data-id="E" class="rag-component orchestrator">LlamaIndex Orchestrator</div>
-                </div>
-                <div class="rag-subtier mt-6">
-                  <p class="rag-subtier-title">Core RAG Pipeline</p>
-                  <div class="rag-grid rag-grid-justify-between">
-                    <div id="F" data-id="F" class="rag-component vector-store">ChromaDB Vector Store</div>
-                    <div id="G" data-id="G" class="rag-component llm">Ollama · Llama 3.1</div>
-                  </div>
-                </div>
-              </div>
-              <div class="rag-tier">
-                <p class="rag-tier-title">Data Management &amp; Preprocessing</p>
-                <div class="rag-grid rag-grid-justify-between">
-                  <div class="rag-grid-col">
-                    <div id="J" data-id="J" class="rag-component rag-component-neutral">원본 데이터 리포지토리</div>
-                    <div id="H1" data-id="H1" class="rag-component rag-component-neutral">매뉴얼 / 코드 원본</div>
-                  </div>
-                  <div class="rag-subtier">
-                    <p class="rag-subtier-title">Embedding Process · Celery Task</p>
-                    <div class="rag-grid">
-                      <div id="H2" data-id="H2" class="rag-component parser">Tree-Sitter / Parser</div>
-                      <div id="I" data-id="I" class="rag-component embedding">KorBERT Embedding Model</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div id="diagram-root" class="space-y-8">
+              <svg id="architecture-svg" class="w-full h-full" viewBox="0 0 1200 800" style="min-height: 600px;" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                  <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#3b82f6"/>
+                    <stop offset="100%" style="stop-color:#8b5cf6"/>
+                  </linearGradient>
+                </defs>
+
+                <!-- Flow arrows -->
+                <path id="flow-path-1" d="M 350 200 Q 400 230 550 260" stroke="url(#flowGradient)" stroke-width="3" fill="none" opacity="0" marker-end="url(#arrowhead)" class="flow-arrow"/>
+                <path id="flow-path-2" d="M 550 260 Q 600 290 700 320" stroke="url(#flowGradient)" stroke-width="3" fill="none" opacity="0" marker-end="url(#arrowhead)" class="flow-arrow"/>
+                <path id="flow-path-3" d="M 700 320 Q 800 380 900 400" stroke="url(#flowGradient)" stroke-width="3" fill="none" opacity="0" marker-end="url(#arrowhead)" class="flow-arrow"/>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6"/>
+                </marker>
+
+                <!-- Tiers -->
+                <rect x="200" y="150" width="800" height="100" rx="15" fill="rgba(59, 130, 246, 0.1)" stroke="rgba(59, 130, 246, 0.3)" stroke-width="2"/>
+                <rect x="200" y="300" width="800" height="200" rx="15" fill="rgba(16, 185, 129, 0.1)" stroke="rgba(16, 185, 129, 0.3)" stroke-width="2"/>
+                <rect x="200" y="550" width="800" height="150" rx="15" fill="rgba(139, 92, 246, 0.1)" stroke="rgba(139, 92, 246, 0.3)" stroke-width="2"/>
+
+                <!-- Components -->
+                <g class="rag-component" data-id="A">
+                  <rect x="250" y="170" width="120" height="60" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" class="component-rect" style="filter: url(#glow);"/>
+                  <text x="310" y="195" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 600; fill: #1e40af;">Web App</text>
+                  <text x="310" y="210" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 10px; fill: #64748b;">(사용자)</text>
+                </g>
+                <g class="rag-component" data-id="C">
+                  <rect x="400" y="170" width="140" height="60" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" class="component-rect"/>
+                  <text x="470" y="190" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #92400e;">개발 운영자</text>
+                  <text x="470" y="205" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 10px; fill: #a16207;">(소스 질의)</text>
+                </g>
+
+                <g class="rag-component" data-id="B">
+                  <rect x="350" y="330" width="140" height="40" rx="8" fill="#c7f0dd" stroke="#065f46" stroke-width="2" class="component-rect"/>
+                  <text x="420" y="350" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #065f46;">FastAPI RAG Gateway</text>
+                </g>
+                <g class="rag-component" data-id="D">
+                  <rect x="300" y="390" width="120" height="40" rx="8" fill="#fef7ed" stroke="#ea580c" stroke-width="2" class="component-rect"/>
+                  <text x="360" y="410" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #9a3412;">Redis Cache</text>
+                </g>
+                <g class="rag-component" data-id="E">
+                  <rect x="500" y="390" width="140" height="40" rx="8" fill="#fef0f5" stroke="#be185d" stroke-width="2" class="component-rect"/>
+                  <text x="570" y="410" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #be185d;">LlamaIndex Orchestrator</text>
+                </g>
+
+                <rect x="300" y="450" width="400" height="80" rx="10" fill="rgba(0,0,0,0.05)" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+                <text x="500" y="470" text-anchor="middle" class="tier-label" style="font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 700; fill: #374151;">Core RAG Pipeline</text>
+                <g class="rag-component" data-id="F">
+                  <rect x="320" y="480" width="130" height="40" rx="8" fill="#f3e8ff" stroke="#7c3aed" stroke-width="2" class="component-rect"/>
+                  <text x="385" y="500" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #7c3aed;">ChromaDB Vector Store</text>
+                </g>
+                <g class="rag-component" data-id="G">
+                  <rect x="530" y="480" width="140" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2" class="component-rect"/>
+                  <text x="600" y="500" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #1d4ed8;">Ollama · Llama 3.1</text>
+                </g>
+
+                <g class="rag-component" data-id="J">
+                  <rect x="250" y="570" width="140" height="40" rx="8" fill="rgba(148,163,184,0.2)" stroke="rgba(148,163,184,0.5)" stroke-width="2" class="component-rect"/>
+                  <text x="320" y="590" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 600; fill: #475569;">원본 데이터 리포지토리</text>
+                </g>
+                <g class="rag-component" data-id="H1">
+                  <rect x="250" y="620" width="120" height="40" rx="8" fill="rgba(148,163,184,0.2)" stroke="rgba(148,163,184,0.5)" stroke-width="2" class="component-rect"/>
+                  <text x="310" y="640" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 10px; font-weight: 600; fill: #475569;">매뉴얼 / 코드 원본</text>
+                </g>
+
+                <rect x="500" y="570" width="250" height="90" rx="10" fill="rgba(0,0,0,0.05)" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+                <text x="625" y="585" text-anchor="middle" class="tier-label" style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 700; fill: #374151;">Embedding Process · Celery Task</text>
+                <g class="rag-component" data-id="H2">
+                  <rect x="520" y="600" width="110" height="35" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" class="component-rect"/>
+                  <text x="575" y="620" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 10px; font-weight: 600; fill: #166534;">Tree-Sitter / Parser</text>
+                </g>
+                <g class="rag-component" data-id="I">
+                  <rect x="640" y="600" width="120" height="35" rx="8" fill="#fdf4ff" stroke="#c026d3" stroke-width="2" class="component-rect"/>
+                  <text x="700" y="620" text-anchor="middle" class="component-text" style="font-family: 'Noto Sans KR', sans-serif; font-size: 10px; font-weight: 600; fill: #831843;">KorBERT Embedding</text>
+                </g>
+
+                <!-- Tier labels -->
+                <text x="600" y="135" text-anchor="middle" class="tier-title" style="font-family: 'Noto Sans KR', sans-serif; font-size: 18px; font-weight: 800; fill: #1e40af;">Client Application · 전자정부프레임워크 / WebLogic</text>
+                <text x="600" y="285" text-anchor="middle" class="tier-title" style="font-family: 'Noto Sans KR', sans-serif; font-size: 18px; font-weight: 800; fill: #065f46;">RAG System · Python Runtime</text>
+                <text x="600" y="535" text-anchor="middle" class="tier-title" style="font-family: 'Noto Sans KR', sans-serif; font-size: 18px; font-weight: 800; fill: #5b21b6;">Data Management & Preprocessing</text>
+              </svg>
             </div>
-            <aside class="rag-info-panel p-6 lg:p-7 sticky top-6" id="info-panel">
-              <h3 id="info-title" class="text-2xl font-bold text-slate-800 dark:text-white mb-3">아키텍처 개요</h3>
-              <div id="info-content" class="text-slate-700 dark:text-slate-200 space-y-4">
-                <p>이 다이어그램은 내일채움공제 AI 헬퍼 시스템의 전체 구조를 탐색형으로 제공합니다. 각 구성 요소는 특정 역할을 수행하며 유기적으로 연결되어 사용자와 운영자의 질문에 대한 정밀한 답변을 생성합니다.</p>
-                <p>좌측 메뉴 또는 다이어그램 요소를 클릭해 역할과 기술 스택을 살펴보거나, 시뮬레이션을 실행해 데이터 흐름을 따라가 보세요.</p>
-                <div class="rag-tip mt-4 p-4">
-                  <h4 class="font-semibold text-blue-800 dark:text-blue-200">💡 사용 팁</h4>
-                  <p class="text-sm text-blue-700 dark:text-blue-100 mt-1">‘데이터 흐름 시뮬레이션’을 누르면 사용자 요청이 시스템 내에서 처리되는 순서를 하이라이트로 확인할 수 있습니다.</p>
+            <aside class="rag-info-panel p-6 lg:p-7 sticky top-6 bg-white/90 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg backdrop-blur-sm transform transition-all duration-300 hover:shadow-xl" id="info-panel">
+              <h3 id="info-title" class="text-2xl font-bold text-slate-800 dark:text-white mb-4 flex items-center"><span class="text-2xl mr-3">🔍</span>아키텍처 상세 정보</h3>
+              <div id="info-content" class="text-slate-700 dark:text-slate-200 space-y-4" style="font-family: 'Noto Sans KR', sans-serif;">
+                <p>이 대화형 아키텍처 다이어그램은 AI 헬퍼 시스템의 모든 구성 요소를 시각적으로 표현합니다. 각 블록을 클릭하여 세부 역할과 기술 스택을 확인하세요.</p>
+                <p class="font-semibold">시뮬레이션 모드로 데이터 흐름을 따라가며 시스템 작동 원리를 체험해보시거나, 구성 요소 탐색 메뉴에서 관심 있는 부분을 선택하세요.</p>
+                <div class="rag-tip mt-6 p-5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl">
+                  <h4 class="font-bold text-blue-800 dark:text-blue-200 flex items-center"><span class="text-lg mr-2">💡</span>사용 팁</h4>
+                  <p class="text-sm text-blue-700 dark:text-blue-100 mt-2 font-medium">‘데이터 흐름 시뮬레이션’ 버튼을 클릭하면 애니메이션으로 사용자 요청이 시스템을 통과하는 과정을 확인할 수 있습니다. SVG 기반으로 선명하고 반응성 좋게 디자인되었습니다.</p>
                 </div>
               </div>
             </aside>
