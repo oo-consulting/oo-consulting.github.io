@@ -1,516 +1,359 @@
-<!doctype html>
-<html lang="ko" data-theme="dark">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ollama·PyTorch·KorBERT·ChromaDB 통합 RAG 구축 가이드</title>
-  <meta name="description" content="대화형 RAG 아키텍처 탐색기 - Ollama, KorBERT, ChromaDB, LlamaIndex 등 온프레미스 AI 시스템의 구성 요소를 시각적으로 탐색하고 데이터 흐름을 이해하세요." />
-  <meta name="google-site-verification" content="google9c3f444d05c1610b" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내부망 RAG 시스템 아키텍처 탐색기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Soothing Neutrals -->
+    <!-- Application Structure Plan: 이 애플리케이션은 복잡한 RAG 아키텍처를 사용자가 단계별로 쉽게 이해할 수 있도록 설계되었습니다. 중앙에는 인터랙티브 다이어그램을 배치하고, 좌측에는 네비게이션, 우측에는 상세 정보 패널을 두는 3단 구조를 채택했습니다. 사용자는 다이어그램의 각 요소를 직접 클릭하여 해당 구성 요소의 역할과 기술 스택을 즉시 확인할 수 있습니다. 또한, '흐름 시뮬레이션' 기능을 통해 요청부터 응답까지 데이터의 전체 이동 경로를 시각적으로 추적할 수 있어, 정적인 다이어그램보다 훨씬 깊은 이해를 돕습니다. 이 구조는 정보를 탐색하고 학습하는 과정을 능동적으로 만들어 시스템 전체에 대한 직관적인 정신 모델을 구축하는 데 최적화되었습니다. -->
+    <!-- Visualization & Content Choices: Report Info: 시스템 아키텍처 순서도 -> Goal: 아키텍처의 각 구성 요소와 전체 데이터 흐름을 쉽게 이해하도록 지원 -> Viz/Presentation Method: Tailwind CSS를 이용한 반응형 HTML 다이어그램, 클릭 시 동적으로 변경되는 정보 패널 -> Interaction: 각 구성 요소 클릭 시 상세 정보 표시, 버튼 클릭 시 데이터 흐름 애니메이션 시뮬레이션 -> Justification: 정적인 순서도를 동적이고 탐색 가능한 경험으로 전환하여 복잡한 시스템의 이해도를 높임. -> Library/Method: Vanilla JavaScript, Tailwind CSS. 다이어그램은 순수 HTML/CSS로 구현. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        .component {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .component.selected {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.7);
+            transform: scale(1.03);
+        }
+        .component.highlight {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        .diagram-container {
+            position: relative;
+            height: auto;
+            min-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        #diagram-root {
+            min-height: 100%;
+            position: relative;
+            padding: 1rem;
+        }
+        .component {
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.875rem;
+            padding: 0.5rem;
+        }
+        .client-app { background-color: #DCEFFB; border-color: #a6cde4; }
+        .dev-ops { background-color: #FFE0B2; border-color: #e6b980; }
+        .gateway { background-color: #C8E6C9; border-color: #97c299; }
+        .cache { background-color: #FFFDE7; border-color: #e6e4b3; }
+        .orchestrator { background-color: #FFF3E0; border-color: #e6d3b0; }
+        .vector-store { background-color: #F3E5F5; border-color: #d3bde0; }
+        .llm { background-color: #E1F5FE; border-color: #b0d9e6; }
+        .embedding { background-color: #E0F7FA; border-color: #b0dfe6; }
+        .parser { background-color: #E6EE9C; border-color: #c2cc70; }
 
-  <script src="bg-stars.js" defer></script>
+        /* Mobile-first responsive design */
+        @media (max-width: 1023px) {
+            .client-section, .rag-section, .data-section {
+                position: static !important;
+                margin-bottom: 2rem !important;
+                transform: none !important;
+                top: auto !important;
+                left: auto !important;
+            }
+            .rag-section .absolute {
+                position: static !important;
+                margin-top: 1rem !important;
+            }
+            #diagram-root {
+                padding: 0.5rem;
+            }
+        }
 
-  <script>
-    // Early theme boot to avoid FOUC
-    try {
-      const saved = localStorage.getItem('theme');
-      const pref = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', saved || pref);
-    } catch(e) {}
-  </script>
+        /* Touch-friendly for mobile */
+        @media (hover: none) and (pointer: coarse) {
+            .component {
+                min-height: 3.5rem;
+                font-size: 1rem;
+                padding: 0.75rem;
+            }
+            .component.selected {
+                transform: scale(1.05);
+            }
+        }
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+        /* Accessibility improvements */
+        .component:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- GSAP for animations -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-
-  <style>
-    :root {
-      --bg: #0b1020;
-      --fg: #e7ecff;
-      --fg-soft: #c6cdeb;
-      --muted: #8b93a7;
-      --accent: #58c4ff;
-      --accent-2: #7cffb2;
-      --fs-body: clamp(0.98rem, 0.92rem + 0.55vw, 1.05rem);
-      --fs-small: clamp(0.82rem, 0.78rem + 0.3vw, 0.94rem);
-      --fs-lead: clamp(1.05rem, 0.95rem + 1vw, 1.25rem);
-      --fs-h1: clamp(2.2rem, 1.6rem + 3.1vw, 3.5rem);
-      --fs-h2: clamp(1.65rem, 1.4rem + 1.6vw, 2.35rem);
-      --fs-h3: clamp(1.3rem, 1.15rem + 0.9vw, 1.8rem);
-    }
-    :root[data-theme="light"] {
-      --bg: #f7f9ff;
-      --fg: #0b1020;
-      --fg-soft: #293042;
-      --muted: #4c5368;
-      --accent: #3e86ff;
-      --accent-2: #47e5a1;
-    }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-      background: var(--bg);
-      color: var(--fg);
-      font-size: var(--fs-body);
-      line-height: 1.72;
-      letter-spacing: 0.01em;
-      overflow-x: hidden;
-    }
-    p { margin-bottom: 0.85em; }
-    p.lead { font-size: var(--fs-lead); }
-    small, .text-sm { font-size: var(--fs-small); }
-    h1, h2, h3, h4 { font-weight: 800; line-height: 1.2; margin-bottom: 0.6em; }
-    h1 { font-size: var(--fs-h1); }
-    h2 { font-size: var(--fs-h2); }
-    h3 { font-size: var(--fs-h3); }
-    header h1[class*="text-"] { font-size: var(--fs-h1); letter-spacing: -0.01em; }
-    header h1 span.text-2xl { font-size: clamp(1.25rem, 1.1rem + 1vw, 1.85rem); }
-    header h1 span.text-3xl { font-size: clamp(1.45rem, 1.2rem + 1.2vw, 2.1rem); }
-    .type-cycle { font-size: var(--fs-small); line-height: 1.6; }
-    .container-max { max-width: 1100px; }
-    .text-muted { color: var(--muted); }
-    .text-fg { color: var(--fg); }
-    .text-soft { color: var(--fg-soft); }
-
-    nav.topbar { position: sticky; top: 0; z-index: 40; backdrop-filter: blur(8px); }
-    nav.topbar .bar {
-      border: 1px solid rgba(255,255,255,.08);
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-    }
-    :root[data-theme="light"] nav.topbar .bar {
-      border: 1px solid rgba(0,0,0,.06);
-      background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.01));
-    }
-
-    #bg-stars { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
-    header, main, footer, nav { position: relative; z-index: 1; }
-
-    .cursor { position: fixed; inset: 0 auto auto 0; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 9999px; background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2)); mix-blend-mode: screen; pointer-events: none; z-index: 50; opacity: .8; transition: width .2s ease, height .2s ease, opacity .2s ease; }
-    .cursor.-lg { width: 42px; height: 42px; opacity: .55; }
-    @media (prefers-reduced-motion: reduce) { .cursor { display: none; } }
-
-    /* 모바일 최적화 */
-    @media (max-width: 767px) {
-      html { font-size: 16px; } /* iOS Safari에서 줌 방지 */
-      body { padding: 0 1rem; letter-spacing: 0; }
-      .container-max { max-width: 100%; }
-      .container-max.mx-auto { padding-left: 0.5rem; padding-right: 0.5rem; }
-
-      /* 헤더 크기 조정 */
-      header { padding: 1.25rem 0 2.25rem; }
-      header h1 { font-size: clamp(2.1rem, 1.9rem + 1.5vw, 2.8rem); line-height: 1.18; }
-
-      /* 내비게이션 최적화 */
-      .topbar { display: none; } /* 모바일에서는 간소화 */
-
-      /* 섹션 패딩 조정 */
-      section { padding: 2.25rem 0; }
-      section h2 { margin-bottom: 1.25rem; }
-      section p { line-height: 1.7; }
-
-      /* 버튼 크기 확대 */
-      a.rounded-full { padding: 0.85rem 1.6rem; font-size: 1.02rem; min-height: 46px; display: flex; align-items: center; justify-content: center; }
-
-      /* 글래스 패널 조정 */
-      .glass { padding: 1.4rem 1.1rem; border-radius: 1.4rem; backdrop-filter: blur(18px); }
-      .glass h2 { font-size: clamp(1.45rem, 1.3rem + 0.8vw, 1.7rem); }
-      .glass p { font-size: clamp(0.95rem, 0.92rem + 0.3vw, 1.05rem); }
-
-      /* 코드 블록 조정 */
-      pre { font-size: clamp(0.82rem, 0.78rem + 0.3vw, 0.9rem); padding: 1rem; border-radius: 1rem; }
-
-      /* 그리드 조정 */
-      .grid.md\:grid-cols-2 { grid-template-columns: 1fr; gap: 1.5rem; }
-      .grid.md\:grid-cols-3 { grid-template-columns: 1fr; gap: 1.5rem; }
-      .grid.lg\:grid-cols-2 { grid-template-columns: 1fr; gap: 1.5rem; }
-      .grid.lg\:grid-cols-[1.1fr,0.9fr] { grid-template-columns: 1fr; }
-
-      /* 리스트 항목 간격 조정 */
-      ol.space-y-6 > li, ul.space-y-3 > li { margin-bottom: 1.4rem; }
-
-      /* 이미지 반응형 */
-      img { max-width: 100%; height: auto; }
-
-      /* 터치 쇠사례 버튼 */
-      button, input, select, textarea { min-height: 46px; padding: 0.75rem; }
-
-      /* 스크롤 팁 */
-      .policy-content { max-height: 300px; }
-
-      /* 백그라운드 스타 효과 감소 (성능) */
-      #bg-stars { opacity: 0.5; }
-    }
-
-    /* 중간 크기 장치 */
-    @media (min-width: 768px) and (max-width: 1023px) {
-      .container-max { padding: 0 1.5rem; }
-      header h1 { font-size: clamp(2.45rem, 2rem + 1vw, 3rem); }
-      section { padding: 2.8rem 0; }
-    }
-
-    @media (min-width: 1024px) {
-      .container-max { padding: 0 2rem; }
-      section { padding: 3.5rem 0; }
-      main p { max-width: 70ch; }
-    }
-
-    .brand .logo { filter: drop-shadow(0 4px 12px rgba(88,196,255,.35)); }
-    .brand > span { display: none; }
-    .brand svg[viewBox="0 0 64 64"] { display: none; }
-    :root[data-theme="light"] .brand .logo { filter: drop-shadow(0 0 1px rgba(0,0,0,.35)) drop-shadow(0 0 8px rgba(0,0,0,.12)); }
-
-    .hero-gradient { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0)); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(8px); }
-    :root[data-theme="light"] .hero-gradient { background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,0)); border: 1px solid rgba(0,0,0,.06); }
-    .type-cycle > .active { color: var(--accent); }
-
-    .glass { background: rgba(17, 24, 39, 0.78); border: 1px solid rgba(148,163,184,0.28); box-shadow: 0 24px 48px rgba(15,23,42,0.32); }
-    .glass .text-soft { color: rgba(226,232,240,0.88); }
-    .glass .text-muted { color: rgba(203,213,225,0.75); }
-    :root[data-theme="light"] .glass {
-      background: rgba(255,255,255,0.92);
-      border: 1px solid rgba(148,163,184,0.25);
-      box-shadow: 0 18px 36px rgba(15,23,42,0.12);
-    }
-    :root[data-theme="light"] .glass .text-soft { color: rgba(30,41,59,0.85); }
-    :root[data-theme="light"] .glass .text-muted { color: rgba(71,85,105,0.75); }
-    .tilt-card { transform-style: preserve-3d; will-change: transform; }
-    .tilt-card .shine { position: absolute; inset: 0; border-radius: 1rem; pointer-events: none; background: radial-gradient(500px 200px at var(--mx,50%) var(--my,50%), rgba(255,255,255,.18), transparent 60%); opacity: 0; transition: opacity .25s ease; }
-    .tilt-card:hover .shine { opacity: 1; }
-
-    .progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); z-index: 60; }
-
-    .policy-content { max-height: 400px; overflow-y: auto; }
-
-    .magnetic { will-change: transform; display: inline-flex; align-items: center; gap: .6rem; }
-
-    .architecture-explorer { position: relative; overflow: hidden; }
-    .architecture-explorer .rag-tier { border: 2px dashed rgba(148,163,184,0.35); border-radius: 1.25rem; padding: clamp(1.5rem, 3vw, 2.6rem); background: rgba(255,255,255,0.78); backdrop-filter: blur(6px); }
-    .architecture-explorer .rag-tier + .rag-tier { margin-top: clamp(1.5rem, 2.3vw, 2.8rem); }
-    .architecture-explorer .rag-tier-title { text-align: center; font-size: 0.95rem; letter-spacing: 0.08em; text-transform: uppercase; color: #475569; margin-bottom: 1.1rem; font-weight: 600; }
-    .architecture-explorer .rag-component { border: 2px solid rgba(30,64,175,0.15); border-radius: 1rem; padding: 1rem 1.25rem; text-align: center; font-weight: 600; transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease, color .25s ease; cursor: pointer; min-width: 10.5rem; background: rgba(241,245,249,0.8); color: #1e293b; box-shadow: 0 6px 16px rgba(15,23,42,0.06); }
-    .architecture-explorer .rag-component:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(15,23,42,0.12); }
-    .architecture-explorer .rag-component.selected { box-shadow: 0 0 0 3px rgba(59,130,246,0.6), 0 18px 32px rgba(59,130,246,0.25); transform: translateY(-4px); }
-    .architecture-explorer .rag-component.highlight { background: #2563eb; color: #ffffff; box-shadow: 0 0 0 3px rgba(37,99,235,0.4), 0 18px 40px rgba(37,99,235,0.35); border-color: rgba(37,99,235,0.5); }
-    .architecture-explorer .rag-component small { display: block; font-weight: 500; margin-top: 0.35rem; opacity: 0.75; }
-    .architecture-explorer .rag-component-neutral { background: #f1f5f9; border-color: rgba(148,163,184,0.45); color: #1f2937; }
-    .architecture-explorer .rag-subtier { border: 1.6px solid rgba(148,163,184,0.35); border-radius: 1rem; padding: 1.25rem 1.5rem; background: rgba(248,250,252,0.85); }
-    .architecture-explorer .rag-subtier-title { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; text-align: center; margin-bottom: 1rem; color: #64748b; font-weight: 600; }
-    .architecture-explorer .rag-nav a { display: block; padding: 0.65rem 0.85rem; border-radius: 0.75rem; color: #334155; font-size: 0.92rem; font-weight: 500; transition: background-color .2s ease, color .2s ease, transform .2s ease; }
-    .architecture-explorer .rag-nav a:hover { background: rgba(59,130,246,0.08); color: #1d4ed8; transform: translateX(4px); }
-    .architecture-explorer .rag-nav a.active { background: rgba(59,130,246,0.12); color: #1d4ed8; font-weight: 600; box-shadow: inset 0 0 0 1px rgba(59,130,246,0.2); }
-    .architecture-explorer .rag-info-panel { background: rgba(248,250,252,0.92); border-radius: 1.5rem; box-shadow: 0 18px 40px rgba(15,23,42,0.16); border: 1px solid rgba(148,163,184,0.25); }
-    .architecture-explorer .rag-tip { background: rgba(37,99,235,0.08); border-left: 4px solid rgba(37,99,235,0.45); border-radius: 0 1rem 1rem 0; }
-    .architecture-explorer .rag-simulate-btn { box-shadow: 0 18px 35px rgba(37,99,235,0.25); }
-    .architecture-explorer .rag-simulate-btn.stop { box-shadow: 0 18px 35px rgba(220,38,38,0.25); }
-    .architecture-explorer .client-app { background: #dceffb; border-color: #a6cde4; }
-    .architecture-explorer .dev-ops { background: #ffe0b2; border-color: #e6b980; }
-    .architecture-explorer .gateway { background: #c8e6c9; border-color: #97c299; }
-    .architecture-explorer .cache { background: #fffde7; border-color: #e6e4b3; }
-    .architecture-explorer .orchestrator { background: #fff3e0; border-color: #e6d3b0; }
-    .architecture-explorer .vector-store { background: #f3e5f5; border-color: #d3bde0; }
-    .architecture-explorer .llm { background: #e1f5fe; border-color: #b0d9e6; }
-    .architecture-explorer .embedding { background: #e0f7fa; border-color: #b0dfe6; }
-    .architecture-explorer .parser { background: #e6ee9c; border-color: #c2cc70; }
-    .architecture-explorer .rag-tier .rag-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem; }
-    .architecture-explorer .rag-tier .rag-grid-justify-between { justify-content: space-between; }
-    .architecture-explorer .rag-tier .rag-grid-col { display: flex; flex-direction: column; gap: 0.75rem; align-items: center; }
-    :root[data-theme="dark"] .architecture-explorer .rag-tier { background: rgba(15,23,42,0.55); border-color: rgba(148,163,184,0.45); }
-    :root[data-theme="dark"] .architecture-explorer .rag-tier-title { color: #cbd5f5; }
-    :root[data-theme="dark"] .architecture-explorer .rag-component { background: rgba(15,23,42,0.7); color: #e2e8f0; border-color: rgba(148,163,184,0.35); box-shadow: 0 8px 18px rgba(15,23,42,0.4); }
-    :root[data-theme="dark"] .architecture-explorer .rag-component.highlight { color: #ffffff; }
-    :root[data-theme="dark"] .architecture-explorer .rag-component-neutral { background: rgba(30,41,59,0.7); border-color: rgba(148,163,184,0.45); color: #e2e8f0; }
-    :root[data-theme="dark"] .architecture-explorer .rag-subtier { background: rgba(30,41,59,0.65); border-color: rgba(148,163,184,0.35); }
-    :root[data-theme="dark"] .architecture-explorer .rag-subtier-title { color: #a5b4fc; }
-    :root[data-theme="dark"] .architecture-explorer .rag-nav a { color: #cbd5f5; }
-    :root[data-theme="dark"] .architecture-explorer .rag-nav a:hover { background: rgba(59,130,246,0.18); color: #93c5fd; }
-    :root[data-theme="dark"] .architecture-explorer .rag-nav a.active { background: rgba(59,130,246,0.25); color: #bfdbfe; }
-    :root[data-theme="dark"] .architecture-explorer .rag-info-panel { background: rgba(15,23,42,0.75); border-color: rgba(148,163,184,0.35); box-shadow: 0 22px 45px rgba(8,10,26,0.65); }
-    :root[data-theme="dark"] .architecture-explorer .rag-tip { background: rgba(37,99,235,0.2); border-left-color: rgba(96,165,250,0.6); }
-    @media (min-width: 1024px) {
-      .architecture-explorer .rag-tier .rag-grid { justify-content: space-evenly; }
-      .architecture-explorer .rag-tier .rag-grid-justify-between { justify-content: space-around; }
-    }
-
-    #themeToggle.active { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 40%, transparent); }
-  </style>
+        /* Reduced motion preferences */
+        @media (prefers-reduced-motion: reduce) {
+            .component {
+                transition: none;
+            }
+            .component.selected {
+                transform: none;
+            }
+            .component.highlight {
+                box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+            }
+        }
+    </style>
 </head>
-<body class="antialiased leading-relaxed">
-  <canvas id="bg-stars" aria-hidden="true"></canvas>
-  <div class="progress" aria-hidden="true"></div>
-  <div class="cursor" aria-hidden="true"></div>
+<body class="text-gray-800">
 
-  <!-- Navigation bar with theme toggle and stars -->
-  <nav class="topbar">
-    <div class="container-max mx-auto px-6 pt-4">
-      <div class="bar rounded-2xl px-5 py-3 flex items-center justify-between">
-        <a href="#top" class="brand inline-flex items-center gap-3" aria-label="RAG 아키텍처 탐색기">
-          <span class="text-xl font-bold text-accent">⚡ RAG 아키텍처 탐색기</span>
-        </a>
-        <div class="flex items-center gap-2">
-          <button id="themeToggle" class="rounded-full px-3.5 py-2 text-sm font-semibold border border-white/20 hover:bg-white/5 transition text-muted" aria-label="별 수 증가 토글" title="별 밀도 1.5배 토글">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 3l1.6 3.8L17 8.5l-3.4 1.7L12 14l-1.6-3.8L7 8.5l3.4-1.7L12 3Z" fill="currentColor"/>
-              <path d="M5 16l.9 2.2L8 19l-2.1 1L5 22l-.9-2L2 19l2.1-.8L5 16Z" fill="currentColor" opacity=".7"/>
-              <path d="M19 15l1.2 2.7L23 19l-2.8 1.3L19 23l-1.2-2.7L15 19l2.8-1.3L19 15Z" fill="currentColor" opacity=".7"/>
-            </svg>
-          </button>
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">내부망 RAG 시스템 아키텍처 탐색기</h1>
+            <p class="mt-2 text-lg text-gray-600">내일채움공제 AI 헬퍼 시스템의 구성 요소를 클릭하여 상세 정보를 확인하고 데이터 흐름을 시뮬레이션 해보세요.</p>
+        </header>
+
+        <div class="flex justify-center mb-8">
+            <button id="simulate-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+                데이터 흐름 시뮬레이션 시작
+            </button>
         </div>
-      </div>
-    </div>
-  </nav>
 
-  <main>
-    <!-- Enhanced fully responsive RAG architecture section with night sky background -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <main class="space-y-8 lg:grid lg:grid-cols-12 lg:gap-8">
+            <!-- Mobile: order components for better flow -->
+            <aside class="order-1 lg:col-span-3 lg:order-1 bg-white p-4 rounded-xl shadow-lg">
+                <h2 class="text-lg sm:text-xl font-bold mb-4 border-b pb-2">구성 요소</h2>
+                <nav id="component-nav" class="space-y-2 text-sm">
+                    <!-- Navigation items will be injected by JS -->
+                </nav>
+            </aside>
 
-    <section id="architecture" class="container-max mx-auto px-6 py-10 sm:py-16 lg:py-20 relative" style="min-height: calc(100vh - 100px);">
-        <div class="architecture-explorer rounded-3xl text-slate-900 shadow-2xl dark:text-slate-100 min-h-screen overflow-hidden px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
-            <div class="mb-8 text-center">
-                <h2 class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">통합 아키텍처 탐색기</h2>
-                <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">내일채움공제 AI 헬퍼 시스템의 구성 요소를 인터랙티브하게 탐색하고 데이터 흐름을 시뮬레이션 해보세요.</p>
-            </div>
+            <div class="order-2 lg:col-span-6 lg:order-2 diagram-container bg-white p-4 rounded-xl shadow-lg">
+                <div id="diagram-root" class="space-y-8">
+                    <!-- Client Application Section -->
+                    <section class="client-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+                        <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">Client Application (전자정부프레임워크 / WebLogic)</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div id="A" data-id="A" class="component client-app border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">Web App (사용자)</div>
+                            <div id="C" data-id="C" class="component dev-ops border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">개발 운영자 (소스 질의)</div>
+                        </div>
+                    </section>
 
-            <div class="flex justify-center mb-8">
-                <button id="simulate-btn" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg shadow-md transform transition-all duration-300 hover:scale-105">🚀 데이터 흐름 시뮬레이션 시작</button>
-            </div>
+                    <!-- RAG System Section -->
+                    <section class="rag-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+                        <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">RAG System (Python 환경)</h3>
+                        <div class="grid grid-cols-1 gap-3">
+                            <div id="B" data-id="B" class="component gateway border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">FastAPI RAG Gateway</div>
+                            <div id="D" data-id="D" class="component cache border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">Redis Cache</div>
+                            <div id="E" data-id="E" class="component orchestrator border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">LlamaIndex Orchestrator</div>
+                        </div>
 
-            <div class="space-y-8 lg:grid lg:grid-cols-12 lg:gap-8">
-                <!-- Left Navigation -->
-                <aside class="order-1 lg:col-span-3 lg:order-1 glass rounded-2xl p-4 sm:p-5">
-                    <h3 class="text-xl font-bold mb-4 border-b pb-2 flex items-center"><span class="text-2xl mr-2">📋</span>구성 요소 탐색</h3>
-                    <nav id="component-nav" class="space-y-2 text-sm" aria-label="아키텍처 구성 요소 네비게이션"></nav>
-                </aside>
-
-                <!-- Diagram Container -->
-                <div class="order-2 lg:col-span-6 lg:order-2 diagram-container glass rounded-2xl p-4 sm:p-6">
-                    <div id="diagram-root" class="space-y-8">
-                        <!-- Client Application -->
-                        <section class="client-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50" aria-label="클라이언트 애플리케이션 계층">
-                            <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">Client Application (전자정부프레임워크 / WebLogic)</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div id="A" data-id="A" class="component client-app border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">Web App (사용자)</div>
-                                <div id="C" data-id="C" class="component dev-ops border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">개발 운영자 (소스 질의)</div>
+                        <!-- Core RAG Pipeline Sub-section -->
+                        <div class="mt-6 p-3 border border-gray-300 rounded-lg bg-white">
+                            <h4 class="text-center font-semibold text-gray-500 mb-3 text-sm">Core RAG Pipeline</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div id="F" data-id="F" class="component vector-store border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">ChromaDB Vector Store</div>
+                                <div id="G" data-id="G" class="component llm border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">Ollama - Llama 3.1</div>
                             </div>
-                        </section>
+                        </div>
+                    </section>
 
-                        <!-- RAG System -->
-                        <section class="rag-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50" aria-label="RAG 시스템 계층">
-                            <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">RAG System (Python Runtime)</h3>
-                            <div class="grid grid-cols-1 gap-3">
-                                <div id="B" data-id="B" class="component gateway border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">FastAPI RAG Gateway</div>
-                                <div id="D" data-id="D" class="component cache border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">Redis Cache</div>
-                                <div id="E" data-id="E" class="component orchestrator border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">LlamaIndex Orchestrator</div>
+                    <!-- Data Management Section -->
+                    <section class="data-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+                        <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">Data Management & Preprocessing</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-3">
+                                <div id="J" data-id="J" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">원본 데이터 리포지토리</div>
+                                <div id="H1" data-id="H1" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center">매뉴얼/코드 원본</div>
                             </div>
-
-                            <!-- Core RAG Pipeline -->
-                            <div class="mt-6 p-3 border border-gray-300 rounded-lg bg-white">
-                                <h4 class="text-center font-semibold text-gray-500 mb-3 text-sm">Core RAG Pipeline</h4>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div id="F" data-id="F" class="component vector-store border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">ChromaDB Vector Store</div>
-                                    <div id="G" data-id="G" class="component llm border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">Ollama · Llama 3.1</div>
-                                </div>
-                            </div>
-                        </section>
-
-                        <!-- Data Management -->
-                        <section class="data-section p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50" aria-label="데이터 관리 계층">
-                            <h3 class="text-center font-semibold text-gray-600 mb-4 text-base sm:text-lg">Data Management & Preprocessing</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div class="space-y-3">
-                                    <div id="J" data-id="J" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">원본 데이터 리포지토리</div>
-                                    <div id="H1" data-id="H1" class="component border bg-gray-100 border-gray-300 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center" role="button" tabindex="0">매뉴얼/코드 원본</div>
-                                </div>
-                                <div class="space-y-3">
-                                    <div class="p-3 border border-gray-300 rounded-lg bg-white">
-                                        <h4 class="text-center font-semibold text-gray-500 mb-3 text-sm">Embedding Process (Celery)</h4>
-                                        <div class="space-y-2">
-                                            <div id="H2" data-id="H2" class="component parser border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center text-xs" role="button" tabindex="0">Tree-Sitter/Parser</div>
-                                            <div id="I" data-id="I" class="component embedding border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center text-xs" role="button" tabindex="0">KorBERT Embedding</div>
-                                        </div>
+                            <div class="space-y-3">
+                                <div class="p-3 border border-gray-300 rounded-lg bg-white">
+                                    <h4 class="text-center font-semibold text-gray-500 mb-3 text-sm">Embedding Process (Celery)</h4>
+                                    <div class="space-y-2">
+                                        <div id="H2" data-id="H2" class="component parser border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center text-xs">Tree-Sitter/Parser</div>
+                                        <div id="I" data-id="I" class="component embedding border-2 p-3 rounded-lg text-center min-h-[3rem] flex items-center justify-center text-xs">KorBERT Embedding</div>
                                     </div>
                                 </div>
                             </div>
-                        </section>
-                    </div>
+                        </div>
+                    </section>
                 </div>
+            </div>
 
-                <!-- Information Panel -->
-                <aside class="order-3 lg:col-span-3 lg:order-3 glass rounded-2xl p-4 sm:p-6 lg:sticky lg:top-8">
-                    <h3 id="info-title" class="text-xl sm:text-2xl font-bold mb-3" aria-live="polite"><span class="text-2xl mr-2">🔍</span>아키텍처 상세 정보</h3>
-                    <div id="info-content" class="text-gray-700 dark:text-gray-200 space-y-3 text-sm sm:text-base" aria-live="polite">
-                        <p>이 대화형 아키텍처 다이어그램은 AI 헬퍼 시스템의 모든 구성 요소를 시각적으로 표현합니다. 각 블록을 클릭하여 세부 역할과 기술 스택을 확인하세요.</p>
-                        <p>시뮬레이션 모드로 데이터 흐름을 따라가며 시스템 작동 원리를 체험해보세요.</p>
-                        <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 rounded-r-lg">
-                            <h4 class="font-semibold text-blue-800 dark:text-blue-200 text-sm"><span class="text-lg mr-1">💡</span>사용 팁</h4>
-                            <p class="text-blue-700 dark:text-blue-100 text-xs sm:text-sm mt-1">'데이터 흐름 시뮬레이션' 버튼을 클릭하면 애니메이션으로 데이터 경로를 확인할 수 있습니다.</p>
+            <!-- Information Panel -->
+            <aside class="order-3 lg:col-span-3 lg:order-3">
+                <div id="info-panel" class="bg-white p-4 sm:p-6 rounded-xl shadow-lg lg:sticky lg:top-8">
+                    <h2 id="info-title" class="text-xl sm:text-2xl font-bold mb-3">아키텍처 개요</h2>
+                    <div id="info-content" class="text-gray-700 space-y-3">
+                        <p class="text-sm sm:text-base">이 다이어그램은 내일채움공제 AI 헬퍼 시스템의 전체 구조를 보여줍니다. 각 구성 요소는 특정 역할을 수행하며 유기적으로 연결되어 사용자 및 개발자의 질문에 대한 정확한 답변을 생성합니다.</p>
+                        <p class="text-sm sm:text-base">왼쪽 목록 또는 다이어그램의 각 부분을 클릭하여 더 자세한 정보를 확인하세요.</p>
+                        <div class="mt-4 p-3 sm:p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+                            <h4 class="font-semibold text-blue-800 text-sm">💡 사용 팁</h4>
+                            <p class="text-blue-700 text-xs sm:text-sm mt-1">'데이터 흐름 시뮬레이션' 버튼을 클릭하면 사용자 요청이 시스템 내에서 어떻게 처리되는지 시각적으로 따라갈 수 있습니다.</p>
                         </div>
                     </div>
-                </aside>
-            </div>
-        </div>
-    </section>
-  </main>
+                </div>
+            </aside>
+        </main>
+    </div>
 
-  <script>
-    (function() {
-      const componentData = {
-        'A': { title: 'Web App Interface (사용자)', role: '사용자 인터페이스', tech: '전자정부프레임워크, JSP/Servlet, HTML/CSS/JS', description: '일반 사용자가 내일채움공제 업무를 처리하는 웹 화면입니다. 사용자가 특정 메뉴나 입력 필드에서 도움을 요청하면, 해당 메뉴 ID와 질문을 RAG 시스템으로 전송합니다.' },
-        'C': { title: '개발 운영자', role: '기술 질의 인터페이스', tech: '내부 관리 시스템, IDE 연동', description: '개발자나 운영자가 시스템 유지보수 중 발생하는 기술적인 질문이나 소스코드 관련 문의를 하는 인터페이스입니다. 분석이 필요한 파일 ID나 코드 조각을 RAG 시스템으로 보냅니다.' },
-        'B': { title: 'FastAPI RAG Gateway', role: 'API 게이트웨이', tech: 'Python, FastAPI', description: 'JAVA 기반의 클라이언트 애플리케이션과 Python 기반 RAG 시스템을 연결하는 관문입니다. 모든 요청을 받아 처리하고, 캐시를 확인하며, 최종 결과를 JSON 형식으로 응답합니다.' },
-        'D': { title: 'Redis Cache', role: '캐싱 엔진', tech: 'Redis', description: '자주 묻는 질문과 그에 대한 LLM의 답변을 메모리에 저장하는 단기 기억 장치입니다. 동일한 질문이 반복될 경우, LLM을 호출하지 않고 캐시에서 즉시 답변을 제공하여 응답 속도를 극대화하고 서버 부하를 줄입니다.' },
-        'E': { title: 'LlamaIndex Orchestrator', role: 'RAG 파이프라인 관리', tech: 'Python, LlamaIndex', description: 'RAG의 전체 흐름을 지휘하는 핵심 컨트롤러입니다. 사용자 질문을 받아 벡터 DB에서 관련 문서를 검색하고, 이 정보를 LLM에 전달하여 최종 답변을 생성하도록 요청하는 모든 과정을 관리합니다.' },
-        'F': { title: 'ChromaDB Vector Store', role: '벡터 데이터베이스', tech: 'ChromaDB', description: '매뉴얼과 소스코드가 벡터 형태로 변환되어 저장되는 AI의 장기 기억 장치입니다. 사용자 질문과 의미적으로 가장 유사한 정보를 초고속으로 검색하여 LlamaIndex에 제공합니다.' },
-        'G': { title: 'Ollama - Llama 3.1', role: '대규모 언어 모델 (LLM)', tech: 'Ollama, Llama 3.1', description: 'RAG 시스템의 두뇌 역할을 합니다. ChromaDB에서 검색된 관련 정보를 바탕으로, 사용자가 이해하기 쉬운 자연스러운 문장 형태의 최종 답변을 생성합니다.' },
-        'H1': { title: '매뉴얼/코드 원본', role: '원본 데이터', tech: 'PDF, Word, Java, SQL 파일', description: 'AI가 학습하고 참조하는 모든 지식의 원천입니다. 사용자 및 관리자 매뉴얼, 시스템의 전체 소스코드, DB 스키마 등이 포함됩니다.' },
-        'J': { title: '원본 데이터 리포지토리', role: '데이터 버전 관리', tech: 'DVC (Data Version Control), Git', description: '매뉴얼이나 소스코드의 변경 이력을 관리합니다. AI 모델의 성능이 달라졌을 때, 어떤 버전의 데이터로 학습했는지 추적하고 필요시 이전 버전으로 롤백하기 위해 사용됩니다.' },
-        'H2': { title: 'Tree-Sitter/Parser', role: '소스코드 구조 분석', tech: 'Tree-Sitter', description: 'Java, SQL과 같은 소스코드를 단순 텍스트가 아닌 문법적 구조(클래스, 메서드 단위)로 분석하고 분할합니다. 이를 통해 코드 관련 질문의 정확도를 높입니다.' },
-        'I': { title: 'KorBERT Embedding Model', role: '임베딩 모델', tech: 'KorBERT, PyTorch', description: '한국어 텍스트(매뉴얼, 코드 주석 등)의 의미를 컴퓨터가 이해할 수 있는 숫자 벡터로 변환하는 역할을 합니다. RAG 시스템의 검색 정확도를 결정하는 핵심 요소입니다.' }
-      };
-
-      const flowSequence = ['A', 'B', 'D', 'E', 'F', 'G'];
-
-      document.addEventListener('DOMContentLoaded', () => {
-        const nav = document.getElementById('component-nav');
-        const components = document.querySelectorAll('.component');
-        const infoTitle = document.getElementById('info-title');
-        const infoContent = document.getElementById('info-content');
-        const simulateBtn = document.getElementById('simulate-btn');
-
-        // Populate navigation
-        Object.keys(componentData).forEach(id => {
-          const data = componentData[id];
-          const navItem = document.createElement('a');
-          navItem.href = '#';
-          navItem.className = 'block p-2 rounded-md hover:bg-gray-100 transition-colors';
-          navItem.textContent = data.title;
-          navItem.dataset.id = id;
-          navItem.setAttribute('style', 'font-family: \'Noto Sans KR\', sans-serif; font-size: 14px;');
-          nav.appendChild(navItem);
-        });
-
-        const updateInfoPanel = (id) => {
-          const data = componentData[id];
-          if (!data) return;
-
-          infoTitle.textContent = data.title;
-          infoContent.innerHTML = `
-            <p><strong class="font-semibold text-gray-800">역할:</strong> ${data.role}</p>
-            <p><strong class="font-semibold text-gray-800">주요 기술:</strong> ${data.tech}</p>
-            <p class="mt-4 pt-4 border-t">${data.description}</p>
-          `;
-
-          components.forEach(comp => {
-            comp.classList.toggle('selected', comp.dataset.id === id);
-          });
+    <script>
+        const componentData = {
+            'A': { title: 'Web App Interface (사용자)', role: '사용자 인터페이스', tech: '전자정부프레임워크, JSP/Servlet, HTML/CSS/JS', description: '일반 사용자가 내일채움공제 업무를 처리하는 웹 화면입니다. 사용자가 특정 메뉴나 입력 필드에서 도움을 요청하면, 해당 메뉴 ID와 질문을 RAG 시스템으로 전송합니다.' },
+            'C': { title: '개발 운영자', role: '기술 질의 인터페이스', tech: '내부 관리 시스템, IDE 연동', description: '개발자나 운영자가 시스템 유지보수 중 발생하는 기술적인 질문이나 소스코드 관련 문의를 하는 인터페이스입니다. 분석이 필요한 파일 ID나 코드 조각을 RAG 시스템으로 보냅니다.' },
+            'B': { title: 'FastAPI RAG Gateway', role: 'API 게이트웨이', tech: 'Python, FastAPI', description: 'JAVA 기반의 클라이언트 애플리케이션과 Python 기반 RAG 시스템을 연결하는 관문입니다. 모든 요청을 받아 처리하고, 캐시를 확인하며, 최종 결과를 JSON 형식으로 응답합니다.' },
+            'D': { title: 'Redis Cache', role: '캐싱 엔진', tech: 'Redis', description: '자주 묻는 질문과 그에 대한 LLM의 답변을 메모리에 저장하는 단기 기억 장치입니다. 동일한 질문이 반복될 경우, LLM을 호출하지 않고 캐시에서 즉시 답변을 제공하여 응답 속도를 극대화하고 서버 부하를 줄입니다.' },
+            'E': { title: 'LlamaIndex Orchestrator', role: 'RAG 파이프라인 관리', tech: 'Python, LlamaIndex', description: 'RAG의 전체 흐름을 지휘하는 핵심 컨트롤러입니다. 사용자 질문을 받아 벡터 DB에서 관련 문서를 검색하고, 이 정보를 LLM에 전달하여 최종 답변을 생성하도록 요청하는 모든 과정을 관리합니다.' },
+            'F': { title: 'ChromaDB Vector Store', role: '벡터 데이터베이스', tech: 'ChromaDB', description: '매뉴얼과 소스코드가 벡터 형태로 변환되어 저장되는 AI의 장기 기억 장치입니다. 사용자 질문과 의미적으로 가장 유사한 정보를 초고속으로 검색하여 LlamaIndex에 제공합니다.' },
+            'G': { title: 'Ollama - Llama 3.1', role: '대규모 언어 모델 (LLM)', tech: 'Ollama, Llama 3.1', description: 'RAG 시스템의 두뇌 역할을 합니다. ChromaDB에서 검색된 관련 정보를 바탕으로, 사용자가 이해하기 쉬운 자연스러운 문장 형태의 최종 답변을 생성합니다.' },
+            'H1': { title: '매뉴얼/코드 원본', role: '원본 데이터', tech: 'PDF, Word, Java, SQL 파일', description: 'AI가 학습하고 참조하는 모든 지식의 원천입니다. 사용자 및 관리자 매뉴얼, 시스템의 전체 소스코드, DB 스키마 등이 포함됩니다.' },
+            'J': { title: '원본 데이터 리포지토리', role: '데이터 버전 관리', tech: 'DVC (Data Version Control), Git', description: '매뉴얼이나 소스코드의 변경 이력을 관리합니다. AI 모델의 성능이 달라졌을 때, 어떤 버전의 데이터로 학습했는지 추적하고 필요시 이전 버전으로 롤백하기 위해 사용됩니다.' },
+            'H2': { title: 'Tree-Sitter/Parser', role: '소스코드 구조 분석', tech: 'Tree-Sitter', description: 'Java, SQL과 같은 소스코드를 단순 텍스트가 아닌 문법적 구조(클래스, 메서드 단위)로 분석하고 분할합니다. 이를 통해 코드 관련 질문의 정확도를 높입니다.' },
+            'I': { title: 'KorBERT Embedding Model', role: '임베딩 모델', tech: 'KorBERT, PyTorch', description: '한국어 텍스트(매뉴얼, 코드 주석 등)의 의미를 컴퓨터가 이해할 수 있는 숫자 벡터로 변환하는 역할을 합니다. RAG 시스템의 검색 정확도를 결정하는 핵심 요소입니다.' }
         };
 
-        const selectComponent = (id) => {
-          updateInfoPanel(id);
-          document.getElementById('info-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        };
+        const flowSequence = ['A', 'B', 'D', 'E', 'F', 'G'];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const nav = document.getElementById('component-nav');
+            const components = document.querySelectorAll('.component');
+            const infoTitle = document.getElementById('info-title');
+            const infoContent = document.getElementById('info-content');
+            const simulateBtn = document.getElementById('simulate-btn');
 
-        document.getElementById('diagram-root').addEventListener('click', (e) => {
-          const component = e.target.closest('.component');
-          if (component && component.dataset.id) {
-            selectComponent(component.dataset.id);
-          }
+            // Populate navigation
+            Object.keys(componentData).forEach(id => {
+                const data = componentData[id];
+                const navItem = document.createElement('a');
+                navItem.href = '#';
+                navItem.className = 'block p-2 rounded-md hover:bg-gray-100 transition-colors';
+                navItem.textContent = data.title;
+                navItem.dataset.id = id;
+                nav.appendChild(navItem);
+            });
+
+            const updateInfoPanel = (id) => {
+                const data = componentData[id];
+                if (!data) return;
+
+                infoTitle.textContent = data.title;
+                infoContent.innerHTML = `
+                    <p><strong class="font-semibold text-gray-800">역할:</strong> ${data.role}</p>
+                    <p><strong class="font-semibold text-gray-800">주요 기술:</strong> ${data.tech}</p>
+                    <p class="mt-4 pt-4 border-t">${data.description}</p>
+                `;
+                
+                components.forEach(comp => {
+                    comp.classList.toggle('selected', comp.dataset.id === id);
+                });
+            };
+
+            const selectComponent = (id) => {
+                updateInfoPanel(id);
+                document.getElementById('info-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+
+            // Click handlers for components
+            document.getElementById('diagram-root').addEventListener('click', (e) => {
+                const component = e.target.closest('.component');
+                if (component && component.dataset.id) {
+                    selectComponent(component.dataset.id);
+                }
+            });
+
+            nav.addEventListener('click', (e) => {
+                e.preventDefault();
+                const navItem = e.target.closest('a');
+                if (navItem && navItem.dataset.id) {
+                    selectComponent(navItem.dataset.id);
+                }
+            });
+
+            // Keyboard navigation support
+            nav.addEventListener('keydown', (e) => {
+                const navItems = Array.from(nav.querySelectorAll('a[data-id]'));
+                const currentIndex = navItems.findIndex(item => item === document.activeElement);
+
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (document.activeElement.dataset.id) {
+                        selectComponent(document.activeElement.dataset.id);
+                    }
+                } else if (e.key === 'ArrowDown' && currentIndex < navItems.length - 1) {
+                    e.preventDefault();
+                    navItems[currentIndex + 1].focus();
+                } else if (e.key === 'ArrowUp' && currentIndex > 0) {
+                    e.preventDefault();
+                    navItems[currentIndex - 1].focus();
+                }
+            });
+
+            // Add ARIA attributes to components
+            components.forEach(component => {
+                component.setAttribute('role', 'button');
+                component.setAttribute('tabindex', '0');
+                component.setAttribute('aria-label', componentData[component.dataset.id]?.title || '');
+            });
+
+            // Focus management
+            components.forEach(component => {
+                component.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        selectComponent(component.dataset.id);
+                    }
+                });
+            });
+
+            let isSimulating = false;
+            let timeoutId;
+
+            simulateBtn.addEventListener('click', () => {
+                if (isSimulating) {
+                    clearTimeout(timeoutId);
+                    isSimulating = false;
+                    simulateBtn.textContent = '데이터 흐름 시뮬레이션 시작';
+                    simulateBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    simulateBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    components.forEach(c => c.classList.remove('highlight'));
+                    return;
+                }
+
+                isSimulating = true;
+                simulateBtn.textContent = '시뮬레이션 중지';
+                simulateBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                simulateBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                
+                let step = 0;
+                const runStep = () => {
+                    components.forEach(c => c.classList.remove('highlight'));
+                    
+                    if (step >= flowSequence.length) {
+                        isSimulating = false;
+                        simulateBtn.click(); // Reset button
+                        return;
+                    }
+
+                    const currentId = flowSequence[step];
+                    const currentElement = document.getElementById(currentId);
+                    if (currentElement) {
+                        currentElement.classList.add('highlight');
+                        updateInfoPanel(currentId);
+                    }
+                    
+                    step++;
+                    timeoutId = setTimeout(runStep, 1500);
+                };
+
+                runStep();
+            });
+
         });
-
-        nav.addEventListener('click', (e) => {
-          e.preventDefault();
-          const navItem = e.target.closest('a');
-          if (navItem && navItem.dataset.id) {
-            selectComponent(navItem.dataset.id);
-          }
-        });
-
-        // Keyboard navigation support
-        nav.addEventListener('keydown', (e) => {
-          const navItems = Array.from(nav.querySelectorAll('a[data-id]'));
-          const currentIndex = navItems.findIndex(item => item === document.activeElement);
-
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            if (document.activeElement.dataset.id) {
-              selectComponent(document.activeElement.dataset.id);
-            }
-          } else if (e.key === 'ArrowDown' && currentIndex < navItems.length - 1) {
-            e.preventDefault();
-            navItems[currentIndex + 1].focus();
-          } else if (e.key === 'ArrowUp' && currentIndex > 0) {
-            e.preventDefault();
-            navItems[currentIndex - 1].focus();
-          }
-        });
-
-        // Add ARIA attributes to components
-        components.forEach(component => {
-          component.setAttribute('role', 'button');
-          component.setAttribute('tabindex', '0');
-          component.setAttribute('aria-label', componentData[component.dataset.id]?.title || '');
-        });
-
-        // Focus management
-        components.forEach(component => {
-          component.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              selectComponent(component.dataset.id);
-            }
-          });
-        });
-
-        let isSimulating = false;
-        let timeoutId;
-
-        simulateBtn.addEventListener('click', () => {
-          if (isSimulating) {
-            clearTimeout(timeoutId);
-            isSimulating = false;
-            simulateBtn.textContent = '데이터 흐름 시뮬레이션 시작';
-            simulateBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-            simulateBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-            components.forEach(c => c.classList.remove('highlight'));
-            return;
-          }
-
-          isSimulating = true;
-          simulateBtn.textContent = '시뮬레이션 중지';
-          simulateBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-          simulateBtn.classList.add('bg-red-600', 'hover:bg-red-700');
-
-          let step = 0;
-          const runStep = () => {
-            components.forEach(c => c.classList.remove('highlight'));
-
-            if (step >= flowSequence.length) {
-              isSimulating = false;
-              simulateBtn.click(); // Reset button
-              return;
-            }
-
-            const currentId = flowSequence[step];
-            const currentElement = document.getElementById(currentId);
-            if (currentElement) {
-              currentElement.classList.add('highlight');
-              updateInfoPanel(currentId);
-            }
-
-            step++;
-            timeoutId = setTimeout(runStep, 1500);
-          };
-
-          runStep();
-        });
-      });
-    })();
-  </script>
+    </script>
+</body>
+</html>
