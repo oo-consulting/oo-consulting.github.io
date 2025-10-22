@@ -80,21 +80,21 @@
             z-index: 0;
         }
         body .bg-white {
-            background-color: rgba(15, 23, 42, 0.78) !important;
-            border-color: rgba(148, 163, 184, 0.35) !important;
-            color: inherit;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.55);
+            background-color: rgba(15, 23, 42, 0.55) !important;
+            border-color: rgba(148, 163, 184, 0.25) !important;
+            color: #e2ebff;
+            backdrop-filter: blur(18px) saturate(135%);
+            box-shadow: 0 22px 55px rgba(5, 9, 20, 0.55);
         }
         body .bg-gray-100 {
-            background-color: rgba(30, 41, 59, 0.7) !important;
+            background-color: rgba(30, 41, 59, 0.65) !important;
         }
         body .bg-blue-50 {
-            background-color: rgba(30, 64, 175, 0.25) !important;
+            background-color: rgba(37, 99, 235, 0.18) !important;
             color: #cbdafc;
         }
         body .border-gray-300 {
-            border-color: rgba(148, 163, 184, 0.35) !important;
+            border-color: rgba(148, 163, 184, 0.22) !important;
         }
         body .text-gray-900,
         body .text-gray-800 {
@@ -109,6 +109,15 @@
         }
         body .text-gray-400 {
             color: #a5b4fc !important;
+        }
+        .component:not(.highlight) {
+            color: #0f172a;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+        }
+        .component:not(.highlight) .text-gray-500,
+        .component:not(.highlight) .text-gray-600,
+        .component:not(.highlight) .text-gray-700 {
+            color: #1f2937 !important;
         }
         .client-app { background-color: #DCEFFB; border-color: #a6cde4; }
         .dev-ops { background-color: #FFE0B2; border-color: #e6b980; }
