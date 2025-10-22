@@ -4,164 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ollama·PyTorch·KorBERT·ChromaDB 통합 RAG 구축 가이드</title>
-  <meta name="description" content="Windows 10/WSL2 환경에서 Ollama, PyTorch, KorBERT, ChromaDB, Tree-Sitter, LlamaIndex, FastAPI, Redis, Celery, Prometheus, DVC를 결합해 온프레미스 RAG 플랫폼을 구축하는 단계별 안내" />
+  <meta name="description" content="대화형 RAG 아키텍처 탐색기 - Ollama, KorBERT, ChromaDB, LlamaIndex 등 온프레미스 AI 시스템의 구성 요소를 시각적으로 탐색하고 데이터 흐름을 이해하세요." />
   <meta name="google-site-verification" content="google9c3f444d05c1610b" />
 
   <script src="bg-stars.js" defer></script>
-  <script>
-    (function() {
-      const componentData = {
-        'A': { title: 'Web App Interface (사용자)', role: '사용자 인터페이스', tech: '전자정부프레임워크, JSP/Servlet, HTML/CSS/JS', description: '일반 사용자가 내일채움공제 업무를 처리하는 웹 화면입니다. 사용자가 특정 메뉴나 입력 필드에서 도움을 요청하면, 해당 메뉴 ID와 질문을 RAG 시스템으로 전송합니다.' },
-        'C': { title: '개발 운영자', role: '기술 질의 인터페이스', tech: '내부 관리 시스템, IDE 연동', description: '개발자나 운영자가 시스템 유지보수 중 발생하는 기술적인 질문이나 소스코드 관련 문의를 하는 인터페이스입니다. 분석이 필요한 파일 ID나 코드 조각을 RAG 시스템으로 보냅니다.' },
-        'B': { title: 'FastAPI RAG Gateway', role: 'API 게이트웨이', tech: 'Python, FastAPI', description: 'JAVA 기반의 클라이언트 애플리케이션과 Python 기반 RAG 시스템을 연결하는 관문입니다. 모든 요청을 받아 처리하고, 캐시를 확인하며, 최종 결과를 JSON 형식으로 응답합니다.' },
-        'D': { title: 'Redis Cache', role: '캐싱 엔진', tech: 'Redis', description: '자주 묻는 질문과 그에 대한 LLM의 답변을 메모리에 저장하는 단기 기억 장치입니다. 동일한 질문이 반복될 경우, LLM을 호출하지 않고 캐시에서 즉시 답변을 제공하여 응답 속도를 극대화하고 서버 부하를 줄입니다.' },
-        'E': { title: 'LlamaIndex Orchestrator', role: 'RAG 파이프라인 관리', tech: 'Python, LlamaIndex', description: 'RAG의 전체 흐름을 지휘하는 핵심 컨트롤러입니다. 사용자 질문을 받아 벡터 DB에서 관련 문서를 검색하고, 이 정보를 LLM에 전달하여 최종 답변을 생성하도록 요청하는 모든 과정을 관리합니다.' },
-        'F': { title: 'ChromaDB Vector Store', role: '벡터 데이터베이스', tech: 'ChromaDB', description: '매뉴얼과 소스코드가 벡터 형태로 변환되어 저장되는 AI의 장기 기억 장치입니다. 사용자 질문과 의미적으로 가장 유사한 정보를 초고속으로 검색하여 LlamaIndex에 제공합니다.' },
-        'G': { title: 'Ollama - Llama 3.1', role: '대규모 언어 모델 (LLM)', tech: 'Ollama, Llama 3.1', description: 'RAG 시스템의 두뇌 역할을 합니다. ChromaDB에서 검색된 관련 정보를 바탕으로, 사용자가 이해하기 쉬운 자연스러운 문장 형태의 최종 답변을 생성합니다.' },
-        'H1': { title: '매뉴얼/코드 원본', role: '원본 데이터', tech: 'PDF, Word, Java, SQL 파일', description: 'AI가 학습하고 참조하는 모든 지식의 원천입니다. 사용자 및 관리자 매뉴얼, 시스템의 전체 소스코드, DB 스키마 등이 포함됩니다.' },
-        'J': { title: '원본 데이터 리포지토리', role: '데이터 버전 관리', tech: 'DVC (Data Version Control), Git', description: '매뉴얼이나 소스코드의 변경 이력을 관리합니다. AI 모델의 성능이 달라졌을 때, 어떤 버전의 데이터로 학습했는지 추적하고 필요시 이전 버전으로 롤백하기 위해 사용됩니다.' },
-        'H2': { title: 'Tree-Sitter/Parser', role: '소스코드 구조 분석', tech: 'Tree-Sitter', description: 'Java, SQL과 같은 소스코드를 단순 텍스트가 아닌 문법적 구조(클래스, 메서드 단위)로 분석하고 분할합니다. 이를 통해 코드 관련 질문의 정확도를 높입니다.' },
-        'I': { title: 'KorBERT Embedding Model', role: '임베딩 모델', tech: 'KorBERT, PyTorch', description: '한국어 텍스트(매뉴얼, 코드 주석 등)의 의미를 컴퓨터가 이해할 수 있는 숫자 벡터로 변환하는 역할을 합니다. RAG 시스템의 검색 정확도를 결정하는 핵심 요소입니다.' }
-      };
-
-      const flowSequence = ['A', 'B', 'D', 'E', 'F', 'G'];
-
-      document.addEventListener('DOMContentLoaded', () => {
-        const nav = document.getElementById('component-nav');
-        const components = document.querySelectorAll('.component');
-        const infoTitle = document.getElementById('info-title');
-        const infoContent = document.getElementById('info-content');
-        const simulateBtn = document.getElementById('simulate-btn');
-
-        // Populate navigation
-        Object.keys(componentData).forEach(id => {
-          const data = componentData[id];
-          const navItem = document.createElement('a');
-          navItem.href = '#';
-          navItem.className = 'block p-2 rounded-md hover:bg-gray-100 transition-colors';
-          navItem.textContent = data.title;
-          navItem.dataset.id = id;
-          navItem.setAttribute('style', 'font-family: \'Noto Sans KR\', sans-serif; font-size: 14px;');
-          nav.appendChild(navItem);
-        });
-
-        const updateInfoPanel = (id) => {
-          const data = componentData[id];
-          if (!data) return;
-
-          infoTitle.textContent = data.title;
-          infoContent.innerHTML = `
-            <p><strong class="font-semibold text-gray-800">역할:</strong> ${data.role}</p>
-            <p><strong class="font-semibold text-gray-800">주요 기술:</strong> ${data.tech}</p>
-            <p class="mt-4 pt-4 border-t">${data.description}</p>
-          `;
-
-          components.forEach(comp => {
-            comp.classList.toggle('selected', comp.dataset.id === id);
-          });
-        };
-
-        const selectComponent = (id) => {
-          updateInfoPanel(id);
-          document.getElementById('info-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        };
-
-        document.getElementById('diagram-root').addEventListener('click', (e) => {
-          const component = e.target.closest('.component');
-          if (component && component.dataset.id) {
-            selectComponent(component.dataset.id);
-          }
-        });
-
-        nav.addEventListener('click', (e) => {
-          e.preventDefault();
-          const navItem = e.target.closest('a');
-          if (navItem && navItem.dataset.id) {
-            selectComponent(navItem.dataset.id);
-          }
-        });
-
-        // Keyboard navigation support
-        nav.addEventListener('keydown', (e) => {
-          const navItems = Array.from(nav.querySelectorAll('a[data-id]'));
-          const currentIndex = navItems.findIndex(item => item === document.activeElement);
-
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            if (document.activeElement.dataset.id) {
-              selectComponent(document.activeElement.dataset.id);
-            }
-          } else if (e.key === 'ArrowDown' && currentIndex < navItems.length - 1) {
-            e.preventDefault();
-            navItems[currentIndex + 1].focus();
-          } else if (e.key === 'ArrowUp' && currentIndex > 0) {
-            e.preventDefault();
-            navItems[currentIndex - 1].focus();
-          }
-        });
-
-        // Add ARIA attributes to components
-        components.forEach(component => {
-          component.setAttribute('role', 'button');
-          component.setAttribute('tabindex', '0');
-          component.setAttribute('aria-label', componentData[component.dataset.id]?.title || '');
-        });
-
-        // Focus management
-        components.forEach(component => {
-          component.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              selectComponent(component.dataset.id);
-            }
-          });
-        });
-
-        let isSimulating = false;
-        let timeoutId;
-
-        simulateBtn.addEventListener('click', () => {
-          if (isSimulating) {
-            clearTimeout(timeoutId);
-            isSimulating = false;
-            simulateBtn.textContent = '데이터 흐름 시뮬레이션 시작';
-            simulateBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-            simulateBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-            components.forEach(c => c.classList.remove('highlight'));
-            return;
-          }
-
-          isSimulating = true;
-          simulateBtn.textContent = '시뮬레이션 중지';
-          simulateBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-          simulateBtn.classList.add('bg-red-600', 'hover:bg-red-700');
-
-          let step = 0;
-          const runStep = () => {
-            components.forEach(c => c.classList.remove('highlight'));
-
-            if (step >= flowSequence.length) {
-              isSimulating = false;
-              simulateBtn.click(); // Reset button
-              return;
-            }
-
-            const currentId = flowSequence[step];
-            const currentElement = document.getElementById(currentId);
-            if (currentElement) {
-              currentElement.classList.add('highlight');
-              updateInfoPanel(currentId);
-            }
-
-            step++;
-            timeoutId = setTimeout(runStep, 1500);
-          };
-
-          runStep();
-        });
-      });
-    })();
-  </script>
 
   <script>
     // Early theme boot to avoid FOUC
@@ -392,51 +238,13 @@
   <div class="progress" aria-hidden="true"></div>
   <div class="cursor" aria-hidden="true"></div>
 
+  <!-- Navigation bar with theme toggle and stars -->
   <nav class="topbar">
     <div class="container-max mx-auto px-6 pt-4">
       <div class="bar rounded-2xl px-5 py-3 flex items-center justify-between">
-        <a href="#top" class="brand inline-flex items-center gap-3" aria-label="Ollama · Llama 3.1 가이드 홈">
-          <svg class="wordmark h-7 sm:h-8" viewBox="0 0 260 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ollama Llama Guide">
-            <title>Ollama·PyTorch·KorBERT·ChromaDB 통합 RAG 구축 가이드</title>
-            <defs>
-              <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="var(--accent)"/>
-                <stop offset="100%" stop-color="var(--accent-2)"/>
-              </linearGradient>
-              <filter id="softGlow" x="-20%" y="-50%" width="140%" height="200%" color-interpolation-filters="sRGB">
-                <feGaussianBlur stdDeviation="1.2" result="blur"/>
-                <feMerge>
-                  <feMergeNode in="blur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-            </defs>
-            <text x="16" y="27" font-size="22" font-weight="800" font-family="'Noto Sans KR','Malgun Gothic','Inter',system-ui,sans-serif" fill="url(#brandGrad)" filter="url(#softGlow)">Ollama · Llama 가이드</text>
-          </svg>
-          <svg width="36" height="36" viewBox="0 0 64 64" role="img" aria-hidden="true">
-            <title>Ollama·PyTorch·KorBERT·ChromaDB 통합 RAG 구축 가이드</title>
-            <defs>
-              <linearGradient id="gOO" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" style="stop-color: var(--accent)"/>
-                <stop offset="100%" style="stop-color: var(--accent-2)"/>
-              </linearGradient>
-            </defs>
-            <circle cx="24" cy="32" r="14" fill="none" stroke="url(#gOO)" stroke-width="4" opacity="0.95" />
-            <circle cx="40" cy="32" r="14" fill="none" stroke="url(#gOO)" stroke-width="4" opacity="0.6" />
-            <ellipse cx="32" cy="28" rx="26" ry="12" fill="none" stroke="url(#gOO)" stroke-width="1.6" opacity="0.55" />
-            <circle cx="46" cy="22" r="2.5" fill="url(#gOO)" />
-          </svg>
-          <span class="hidden sm:inline text-sm font-semibold text-soft">Windows 10 내부 임베딩 구축</span>
+        <a href="#top" class="brand inline-flex items-center gap-3" aria-label="RAG 아키텍처 탐색기">
+          <span class="text-xl font-bold text-accent">⚡ RAG 아키텍처 탐색기</span>
         </a>
-        <div class="hidden lg:flex items-center gap-2 text-muted text-sm font-medium">
-          <a href="#overview" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">개요</a>
-          <a href="#setup" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">Ollama 설치</a>
-          <a href="#llama" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">Llama 3.1</a>
-          <a href="#pipeline" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">임베딩 파이프라인</a>
-          <a href="#optimization" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">최적화</a>
-          <a href="#troubleshooting" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">문제 해결</a>
-          <a href="#cases" class="rounded-full px-4 py-2 border border-white/20 hover:bg-white/5 transition">적용 사례</a>
-        </div>
         <div class="flex items-center gap-2">
           <button id="themeToggle" class="rounded-full px-3.5 py-2 text-sm font-semibold border border-white/20 hover:bg-white/5 transition text-muted" aria-label="별 수 증가 토글" title="별 밀도 1.5배 토글">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -450,209 +258,13 @@
     </div>
   </nav>
 
-  <header id="top" class="relative">
-    <div class="container-max mx-auto px-6 pt-12 pb-8 sm:pt-20 sm:pb-14 lg:pt-24">
-      <div class="hero-gradient rounded-3xl p-8 sm:p-12 lg:p-16">
-        <div class="flex flex-col items-center text-center gap-6">
-          <span class="inline-flex items-center gap-2 text-sm text-muted">
-            Windows 10 · 온프레미스 RAG · 엔터프라이즈 AI 오케스트레이션
-          </span>
-          <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight">
-            <span class="block">Ollama · Llama 3.1 · PyTorch · KorBERT · ChromaDB · Tree-Sitter · LlamaIndex · FastAPI</span>
-            <span class="block text-2xl sm:text-3xl mt-2 text-soft">Redis/memcached 캐싱 · Celery &amp; RabbitMQ/Redis · Prometheus &amp; Grafana 모니터링 · DVC 기반 데이터/모델 버전 관리</span>
-          </h1>
-          <p class="type-cycle text-base sm:text-lg text-muted">
-            <span class="cycle-item active">온프레미스 LLM + KorBERT 하이브리드 RAG 아키텍처</span>
-            <span class="cycle-item hidden">Tree-Sitter 문서 파싱과 ChromaDB 임베딩 동기화</span>
-            <span class="cycle-item hidden">LlamaIndex + FastAPI 실시간 질의 파이프라인</span>
-            <span class="cycle-item hidden">Celery 워커와 Redis 캐시 최적화 전략</span>
-            <span class="cycle-item hidden">Prometheus·Grafana·DVC 기반 운영 거버넌스</span>
-          </p>
-          <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-2">
-            <a href="#pipeline" class="magnetic rounded-full px-5 py-3 text-sm font-semibold text-black bg-white hover:opacity-90 transition">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="opacity-80"><path d="M4 8l8 5 8-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              파이프라인 바로 보기
-            </a>
-            <a href="mailto:younseok.oh@gmail.com" class="rounded-full px-5 py-3 text-sm font-semibold border border-white/20 hover:bg-white/5 transition text-fg">전문가 상담 문의</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
-
   <main>
-    <section id="overview" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
-      <div class="glass rounded-2xl p-6 sm:p-10 tilt-card relative">
-        <div class="shine" aria-hidden="true"></div>
-        <h2 class="text-2xl sm:text-3xl font-bold mb-4">프로젝트 개요</h2>
-        <p class="text-soft leading-7">
-          Windows 10 또는 WSL2 환경에서 Ollama로 Llama 3.1을 구동하고, PyTorch 기반 KorBERT 임베딩을 학습하며, Tree-Sitter로 사내 코드·문서를 정규화해 ChromaDB에 적재하는 온프레미스 RAG 아키텍처를 설계합니다. LlamaIndex와 FastAPI가 검색과 추론을 조합해 실시간 응답 품질을 보장하고, 데이터셋과 모델 전파는 DVC로 추적합니다.
-        </p>
-        <p class="text-soft leading-7 mt-4">
-          본 가이드는 환경 준비, 모델·임베딩 학습, 비동기 파이프라인, API 연동, 관제·운영까지 한 번에 정리합니다. Redis/memcached 캐시, Celery 워커 + RabbitMQ/Redis 브로커, Prometheus·Grafana 모니터링을 활용해 안정적인 서비스 운영과 반복 가능한 배포 전략을 제시합니다.
-        </p>
-      </div>
-    </section>
-
-    <section id="toc" class="container-max mx-auto px-6 py-6 sm:py-10 lg:py-12">
-      <div class="glass rounded-2xl p-6 sm:p-10">
-        <div class="text-sm uppercase tracking-[0.35em] text-muted mb-4">로드맵</div>
-        <h2 class="text-2xl sm:text-3xl font-bold mb-6">구축 여정 한눈에 보기</h2>
-        <div class="grid md:grid-cols-2 gap-6 text-soft">
-          <ul class="space-y-3 list-none pl-0">
-            <li class="flex gap-3"><span class="text-accent text-xl">01</span><span>Windows 10/WSL2, GPU 드라이버, Python·Poetry 개발 환경 및 필수 CLI 점검</span></li>
-            <li class="flex gap-3"><span class="text-accent text-xl">02</span><span>Ollama 설치와 Llama 3.1 풀링, KorBERT 가중치 다운로드 및 PyTorch 런타임 구성</span></li>
-            <li class="flex gap-3"><span class="text-accent text-xl">03</span><span>Tree-Sitter 파서 구축, 사내 문서·코드 정제, DVC 기반 데이터셋 버전 관리</span></li>
-          </ul>
-          <ul class="space-y-3 list-none pl-0">
-            <li class="flex gap-3"><span class="text-accent text-xl">04</span><span>ChromaDB 인덱스 설계와 LlamaIndex 그래프 구성, FastAPI 게이트웨이 연동</span></li>
-            <li class="flex gap-3"><span class="text-accent text-xl">05</span><span>Celery 워커 풀 및 RabbitMQ/Redis 브로커 구성, Redis/memcached 캐시 정책 수립</span></li>
-            <li class="flex gap-3"><span class="text-accent text-xl">06</span><span>Prometheus &amp; Grafana APM, 모델·데이터 모니터링, 배포 자동화와 운영 KPI 정립</span></li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
     <!-- Enhanced fully responsive RAG architecture section with night sky background -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <style>
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f8f9fa;
-            overflow-x: hidden;
-        }
-        .component {
-            transition: all 0.3s ease-in-out;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-        .component.selected {
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.7);
-            transform: scale(1.03);
-        }
-        .component.highlight {
-            background-color: #3b82f6 !important;
-            color: white !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-        }
-        .diagram-container {
-            position: relative;
-            height: auto;
-            min-height: calc(100vh - 200px);
-            overflow-y: auto;
-        }
-        #diagram-root {
-            min-height: 100%;
-            position: relative;
-            padding: 1rem;
-        }
-        .component {
-            min-height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: 0.875rem;
-            padding: 0.5rem;
-        }
-        .client-app { background-color: #DCEFFB; border-color: #a6cde4; }
-        .dev-ops { background-color: #FFE0B2; border-color: #e6b980; }
-        .gateway { background-color: #C8E6C9; border-color: #97c299; }
-        .cache { background-color: #FFFDE7; border-color: #e6e4b3; }
-        .orchestrator { background-color: #FFF3E0; border-color: #e6d3b0; }
-        .vector-store { background-color: #F3E5F5; border-color: #d3bde0; }
-        .llm { background-color: #E1F5FE; border-color: #b0d9e6; }
-        .embedding { background-color: #E0F7FA; border-color: #b0dfe6; }
-        .parser { background-color: #E6EE9C; border-color: #c2cc70; }
-
-        /* Mobile-first responsive design */
-        @media (max-width: 1023px) {
-            .client-section, .rag-section, .data-section {
-                position: static !important;
-                margin-bottom: 2rem !important;
-                transform: none !important;
-                top: auto !important;
-                left: auto !important;
-            }
-            .rag-section .absolute {
-                position: static !important;
-                margin-top: 1rem !important;
-            }
-            #diagram-root {
-                padding: 0.5rem;
-            }
-        }
-
-        /* Touch-friendly for mobile */
-        @media (hover: none) and (pointer: coarse) {
-            .component {
-                min-height: 3.5rem;
-                font-size: 1rem;
-                padding: 0.75rem;
-            }
-            .component.selected {
-                transform: scale(1.05);
-            }
-        }
-
-        /* Accessibility improvements */
-        .component:focus {
-            outline: 2px solid #3b82f6;
-            outline-offset: 2px;
-        }
-
-        /* Reduced motion preferences */
-        @media (prefers-reduced-motion: reduce) {
-            .component {
-                transition: none;
-            }
-            .component.selected {
-                transform: none;
-            }
-            .component.highlight {
-                box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-            }
-        }
-
-        /* Glass effect overrides for architecture explorer */
-        .architecture-explorer {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            position: relative;
-        }
-        .architecture-explorer::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-            pointer-events: none;
-        }
-        .architecture-explorer .rag-nav,
-        .architecture-explorer .diagram-container,
-        .architecture-explorer .rag-info-panel {
-            background: rgba(248, 250, 252, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(148, 163, 184, 0.25);
-        }
-        :root[data-theme="dark"] .architecture-explorer {
-            background: rgba(15, 23, 42, 0.7);
-            border-color: rgba(148, 163, 184, 0.3);
-        }
-        :root[data-theme="dark"] .architecture-explorer .rag-nav,
-        :root[data-theme="dark"] .architecture-explorer .diagram-container,
-        :root[data-theme="dark"] .architecture-explorer .rag-info-panel {
-            background: rgba(15, 23, 42, 0.8);
-            border-color: rgba(148, 163, 184, 0.4);
-        }
-    </style>
-
-    <section id="architecture" class="container-max mx-auto px-6 py-10 sm:py-16 lg:py-20 relative">
+    <section id="architecture" class="container-max mx-auto px-6 py-10 sm:py-16 lg:py-20 relative" style="min-height: calc(100vh - 100px);">
         <div class="architecture-explorer rounded-3xl text-slate-900 shadow-2xl dark:text-slate-100 min-h-screen overflow-hidden px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
             <div class="mb-8 text-center">
                 <h2 class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">통합 아키텍처 탐색기</h2>
@@ -663,7 +275,7 @@
                 <button id="simulate-btn" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg shadow-md transform transition-all duration-300 hover:scale-105">🚀 데이터 흐름 시뮬레이션 시작</button>
             </div>
 
-        <main class="space-y-8 lg:grid lg:grid-cols-12 lg:gap-8">
+            <div class="space-y-8 lg:grid lg:grid-cols-12 lg:gap-8">
                 <!-- Left Navigation -->
                 <aside class="order-1 lg:col-span-3 lg:order-1 bg-white/90 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/70 rounded-2xl shadow-lg backdrop-blur-sm p-4 sm:p-5">
                     <h3 class="text-xl font-bold mb-4 border-b pb-2 flex items-center"><span class="text-2xl mr-2">📋</span>구성 요소 탐색</h3>
@@ -735,266 +347,162 @@
                         </div>
                     </div>
                 </aside>
-            </main>
-        </div>
-    </section>
-            
-    <section id="setup" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
-      <div class="grid lg:grid-cols-[1.1fr,0.9fr] gap-10 items-start">
-        <article class="glass rounded-2xl p-6 sm:p-10 tilt-card relative">
-          <div class="shine" aria-hidden="true"></div>
-          <p class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 2</p>
-          <h2 class="text-2xl sm:text-3xl font-bold mb-6">설치 및 환경 준비</h2>
-          <ol class="space-y-6 text-soft">
-            <li>
-              <h3 class="text-lg font-semibold text-fg mb-2">기본 OS · GPU · Python 설정</h3>
-              <p>Windows 10 22H2 이상 또는 동일 수준의 WSL2 배포판에서 Hyper-V/가상화와 WSL2 기능을 활성화합니다. NVIDIA GPU 사용 시 최신 스튜디오 드라이버와 CUDA 12.x, cuDNN을 설치하고, Python 3.10+와 Poetry(또는 pipx)로 프로젝트 전용 가상환경을 구성합니다.</p>
-            </li>
-            <li>
-              <h3 class="text-lg font-semibold text-fg mb-2">Ollama · PyTorch · KorBERT 스택 구성</h3>
-              <p>관리자 PowerShell에서 Ollama를 설치한 뒤 <code>ollama pull llama3.1:8b</code>로 베이스 모델을 내려받습니다. PyTorch는 GPU 사양에 맞는 휠을 설치하고, KorBERT 프리트레인 가중치를 다운로드해 <code>torchrun</code> 기반 파인튜닝 스크립트와 DVC 데이터 리모트를 연동합니다.</p>
-            </li>
-            <li>
-              <h3 class="text-lg font-semibold text-fg mb-2">브로커 · 캐시 · 모니터링 배치</h3>
-              <p>Celery 워커가 사용할 RabbitMQ 또는 Redis 브로커를 설치해 접근 계정과 vhost를 분리하고, Redis/memcached 캐시 서버를 구성해 세션·임베딩 데이터를 저장합니다. Prometheus 노드 익스포터와 Grafana를 함께 설치해 추론 메트릭과 시스템 지표를 수집합니다.</p>
-            </li>
-          </ol>
-        </article>
-        <aside class="glass rounded-2xl p-6 sm:p-8 space-y-5">
-          <h3 class="text-xl font-semibold text-fg">빠른 체크리스트</h3>
-          <ul class="space-y-3 text-soft text-sm">
-            <li class="flex items-start gap-3"><span class="mt-1 text-accent">✔</span><span>Windows Update, WSL2, 가상화(VT-x/AMD-V) 활성화 완료</span></li>
-            <li class="flex items-start gap-3"><span class="mt-1 text-accent">✔</span><span>CUDA/ROCm 및 GPU 드라이버 설치, <code>nvidia-smi</code> 정상 응답</span></li>
-            <li class="flex items-start gap-3"><span class="mt-1 text-accent">✔</span><span>Python 3.10+, Poetry/pipx, 필수 패키지(<code>torch</code>, <code>dvc</code>, <code>llama-index</code>) 설치</span></li>
-            <li class="flex items-start gap-3"><span class="mt-1 text-accent">✔</span><span>Redis 또는 memcached 캐시 서비스 포트 및 보안 설정</span></li>
-            <li class="flex items-start gap-3"><span class="mt-1 text-accent">✔</span><span>RabbitMQ/Redis 브로커 사용자 권한, Prometheus 익스포터 배포</span></li>
-          </ul>
-        </aside>
-      </div>
-    </section>
-
-    <section id="llama" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
-      <div class="glass rounded-2xl p-6 sm:p-10 tilt-card relative">
-        <div class="shine" aria-hidden="true"></div>
-        <p class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 3</p>
-        <h2 class="text-2xl sm:text-3xl font-bold mb-6">설치 및 초기 설정</h2>
-        <div class="grid md:grid-cols-3 gap-8 text-soft">
-          <div>
-            <h3 class="text-lg font-semibold text-fg mb-2">1. Ollama &amp; Llama 3.1 런타임</h3>
-            <p><code>ollama serve</code>로 백그라운드 서비스를 기동하고, <code>ollama pull llama3.1:8b</code> 또는 사내 정책에 맞는 모델을 다운로드합니다. <code>OLLAMA_HOST</code>를 FastAPI 게이트웨이에서 접근 가능한 주소로 노출하고, <code>--keepalive</code> 설정으로 초기 응답 지연을 줄입니다.</p>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-fg mb-2">2. KorBERT 임베딩 · PyTorch 파이프라인</h3>
-            <p>KorBERT 파인튜닝 스크립트를 PyTorch Lightning/Accelerate로 실행하고, Tree-Sitter가 생성한 청크 데이터를 DVC 스테이지로 관리합니다. 학습된 체크포인트는 <code>torch.jit</code> 또는 safetensors 형식으로 내보내 Celery 임베딩 워커에서 즉시 로드합니다.</p>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-fg mb-2">3. LlamaIndex · FastAPI · ChromaDB 연계</h3>
-            <p>LlamaIndex 노드 그래프를 ChromaDB 벡터스토어와 KorBERT 임베딩에 연결하여 검색 정확도를 확보합니다. FastAPI에서는 의존성 주입 패턴으로 쿼리 엔진을 구성하고, Redis 캐시 키를 활용해 자주 조회되는 질의를 재사용하며 Celery 태스크로 배치 업데이트를 예약합니다.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="pipeline" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
-      <div class="glass rounded-2xl p-6 sm:p-10">
-        <div class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 4</div>
-        <h2 class="text-2xl sm:text-3xl font-bold mb-6">내부 임베딩 파이프라인</h2>
-        <div class="grid lg:grid-cols-2 gap-8">
-          <div class="space-y-5 text-soft leading-7">
-            <p><strong class="text-fg">문서 파싱 &amp; 임베딩 학습</strong> Tree-Sitter 파서를 통해 코드·문서를 토큰 단위로 정규화하고 KorBERT 토크나이저로 512 토큰 청크를 생성합니다. 생성된 데이터셋은 DVC 파이프라인 스테이지에 등록되어 버전별로 재현 가능한 PyTorch 학습을 보장합니다.</p>
-            <p><strong class="text-fg">벡터 스토어 &amp; 쿼리 그래프</strong> KorBERT 임베딩 벡터는 ChromaDB 컬렉션에 저장하고, HNSW/IVF 파라미터를 업무 도메인에 맞춰 튜닝합니다. LlamaIndex는 KorBERT 벡터를 1차 검색으로, Ollama Llama 3.1을 생성 모델로 조합해 컨텍스트 기반 답변을 제공합니다.</p>
-            <p><strong class="text-fg">비동기 파이프라인 &amp; 버전 관리</strong> Celery 워커는 Tree-Sitter 결과와 KorBERT 임베딩을 배치로 재생성하고, Redis/memcached 캐시는 자주 조회되는 질의를 저장합니다. 모든 데이터 변경 이력과 모델 체크포인트는 DVC 및 Git 태그로 관리해 배포와 롤백을 단순화합니다.</p>
-          </div>
-          <div class="glass rounded-2xl p-6 space-y-5">
-            <h3 class="text-xl font-semibold text-fg">샘플 구성</h3>
-            <div class="space-y-3 text-sm text-soft">
-              <div>
-                <div class="font-semibold text-fg mb-1">DVC 파이프라인</div>
-                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>dvc stage add -n parse \
-  -d data/raw -d scripts/tree_sitter.py \
-  -o data/parsed
-python scripts/tree_sitter.py</code></pre>
-              </div>
-              <div>
-                <div class="font-semibold text-fg mb-1">Celery 임베딩 태스크</div>
-                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>@celery.task(bind=True, retry_backoff=True)
-def build_embedding(self, doc_id):
-    text = fetch_document(doc_id)
-    emb = korbert_encoder.encode(text)
-    chroma.upsert(doc_id, emb)</code></pre>
-              </div>
-              <div>
-                <div class="font-semibold text-fg mb-1">FastAPI + LlamaIndex</div>
-                <pre class="bg-black/30 rounded-xl p-4 overflow-x-auto"><code>@app.post(&quot;/query&quot;)
-async def query(payload: Query):
-    cached = redis.get(payload.key)
-    if cached:
-        return cached
-    answer = index.as_query_engine().query(payload.text)
-    redis.setex(payload.key, 300, answer)
-    return answer</code></pre>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-    </section>
-
-    <section id="optimization" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
-      <div class="glass rounded-2xl p-6 sm:p-10">
-        <div class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 5</div>
-        <h2 class="text-2xl sm:text-3xl font-bold mb-8">성능 최적화 &amp; 운영 전략</h2>
-        <div class="grid lg:grid-cols-2 gap-8 text-soft leading-7">
-          <div class="space-y-5">
-            <p><strong class="text-fg">성능 관측 &amp; 프로파일링</strong> Ollama, FastAPI, Celery, ChromaDB 인스턴스에 Prometheus 익스포터를 부착해 지연, 처리량, GPU 메모리, 큐 적체를 수집합니다. Grafana에서는 워크로드별 대시보드를 만들고 Alertmanager로 임계치 기반 알람을 설정합니다.</p>
-            <p><strong class="text-fg">캐시 &amp; 세션 전략</strong> Redis/memcached는 질의 결과, 모델 메타데이터, 세션 토큰을 분리된 네임스페이스로 저장합니다. TTL, 버전 키, Bloom Filter를 활용해 캐시 오염을 방지하고, FastAPI 미들웨어에서 히트율을 측정해 정책을 고도화합니다.</p>
-          </div>
-          <div class="space-y-5">
-            <p><strong class="text-fg">비동기 태스크 튜닝</strong> Celery 워커는 GPU/CPU 리소스에 맞춰 <code>--concurrency</code>와 <code>--prefetch-multiplier</code>를 조정하며, RabbitMQ/Redis 브로커의 QoS 설정으로 대기열 폭발을 방지합니다. 예약 태스크는 Beat 또는 Airflow 트리거와 연계해 야간 일괄 업데이트를 수행합니다.</p>
-            <p><strong class="text-fg">모델 최적화 &amp; 배포</strong> KorBERT 임베딩 모델은 8-bit/FP16 혼합 정밀도와 TorchScript로 경량화하고, Llama 3.1은 Ollama <code>quantize</code> 옵션이나 GPU 샤딩으로 확장합니다. DVC 스테이지를 통해 학습→검증→배포를 자동화하고, Canary/Blue-Green 전략으로 서비스 중단 없이 롤아웃합니다.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="troubleshooting" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
-      <div class="glass rounded-2xl p-6 sm:p-10">
-        <div class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 6</div>
-        <h2 class="text-2xl sm:text-3xl font-bold mb-8">문제 해결 및 주의사항</h2>
-        <div class="grid md:grid-cols-3 gap-6">
-          <article class="glass rounded-2xl p-6 text-center space-y-3">
-            <div class="text-3xl" aria-hidden="true">🪟</div>
-            <h3 class="text-lg font-semibold text-fg">사전 점검 미흡</h3>
-            <p class="text-sm text-soft">Windows 버전이 낮거나 가상화가 비활성화되면 설치가 중단되고, 메모리·디스크 부족으로 모델 다운로드가 실패합니다. Windows 22H2 이상, BIOS/Hyper-V 가상화 활성화, 디스크 정리를 우선 수행하세요.</p>
-          </article>
-          <article class="glass rounded-2xl p-6 text-center space-y-3">
-            <div class="text-3xl" aria-hidden="true">🧰</div>
-            <h3 class="text-lg font-semibold text-fg">GPU·라이브러리 불일치</h3>
-            <p class="text-sm text-soft">NVIDIA 드라이버와 CUDA 버전 불일치, <code>transformers</code> 패키지 구버전, 네트워크 끊김 등이 실행 오류를 유발합니다. <code>nvidia-smi</code>로 상태를 점검하고, CUDA·cuDNN·패키지를 최신으로 유지한 뒤 안정적인 네트워크 환경에서 재시도하세요.</p>
-          </article>
-          <article class="glass rounded-2xl p-6 text-center space-y-3">
-            <div class="text-3xl" aria-hidden="true">⚠️</div>
-            <h3 class="text-lg font-semibold text-fg">권한·운영 리스크</h3>
-            <p class="text-sm text-soft">관리자 권한 부족, 모델 대비 시스템 자원 부족은 서비스 실패와 성능 저하를 유발합니다. 모든 설치·서비스 기동은 관리자 권한으로 수행하고, 작은 모델·양자화로 성능을 검증한 뒤 점진적으로 확장하세요.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="cases" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
-      <div class="glass rounded-2xl p-6 sm:p-10">
-        <div class="text-sm uppercase tracking-[0.35em] text-muted mb-4">섹션 7</div>
-        <h2 class="text-2xl sm:text-3xl font-bold mb-6">적용 시나리오</h2>
-        <div class="grid lg:grid-cols-2 gap-8 items-start">
-          <div class="space-y-5 text-soft leading-7">
-            <p><strong class="text-fg">사내 지식 허브</strong> KorBERT + ChromaDB 조합으로 규정, 매뉴얼, 티켓 로그를 임베딩하여 직원용 Q&amp;A 포털을 구축합니다. FastAPI는 권한 기반 라우팅을 제공하고 Redis 캐시로 반복 질의를 가속해 평균 응답 시간을 1초 이하로 유지합니다.</p>
-            <p><strong class="text-fg">코드 거버넌스 자동화</strong> Tree-Sitter로 서비스별 저장소를 파싱하고 Celery 워커가 KorBERT 임베딩을 생성해 보안 감사 용어집과 비교합니다. 비정상 패턴은 RabbitMQ 이벤트로 전송되어 LlamaIndex를 통한 자연어 요약 리포트로 전달됩니다.</p>
-            <p><strong class="text-fg">운영/모니터링 통합</strong> Prometheus·Grafana로 추론 지연, 큐 적체, GPU 활용률을 감시하고, DVC 스테이지 메타데이터를 연결해 모델 릴리스별 성능 변화를 한눈에 추적합니다. Celery Beat가 야간에 데이터를 재인덱싱해 안정적인 서비스 품질을 유지합니다.</p>
-          </div>
-          <div class="glass rounded-2xl overflow-hidden">
-            <img src="https://milvus.io/docs/v2.2.x/assets/architecture_diagram.png" alt="Milvus 벡터 데이터베이스 아키텍처" class="w-full h-full object-cover" />
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="resources" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
-      <div class="glass rounded-2xl p-6 sm:p-10 text-center space-y-4">
-        <h2 class="text-2xl sm:text-3xl font-bold">다음 단계</h2>
-        <p class="text-soft leading-7">PoC를 끝냈다면, 모니터링 지표와 보안 요건을 정의하고 운영 자동화(배치 재임베딩, 지식 베이스 동기화)를 설계하세요. 필요한 경우 저희 컨설턴트가 Windows 10 기반의 로컬 AI 파이프라인 구축을 도와드립니다.</p>
-        <a href="mailto:younseok.oh@gmail.com" class="magnetic inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-black bg-white hover:opacity-90 transition">전문 컨설턴트에게 문의하기</a>
-      </div>
     </section>
   </main>
 
-  <footer class="container-max mx-auto px-6 pb-12 text-center text-sm text-muted">
-    &copy; 2025 OO Consulting · Windows 10 Ollama &amp; Llama 3.1 Guide.
-  </footer>
-
-  <button id="backToTop" aria-label="맨 위로" class="fixed bottom-5 right-5 rounded-full px-4 py-3 text-sm font-semibold text-black bg-white shadow-lg border border-white/20 opacity-0 pointer-events-none transition">Top</button>
-
   <script>
-    const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-    const getCSSVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-    const hexToRgb = (hex) => {
-      const h = hex.replace('#','').trim();
-      if (/^[0-9a-fA-F]{3}$/.test(h)) {
-        const r = parseInt(h[0]+h[0],16), g = parseInt(h[1]+h[1],16), b = parseInt(h[2]+h[2],16); return {r,g,b};
-      }
-      if (/^[0-9a-fA-F]{6}$/.test(h)) {
-        return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
-      }
-      return { r: 88, g: 196, b: 255 };
-    };
-
-    (function(){
-      const btn = document.getElementById('themeToggle');
-      window.starBoost = false;
-      function ensureNight(){ document.documentElement.setAttribute('data-theme', 'dark'); try { localStorage.setItem('theme', 'dark'); } catch(e) {} }
-      btn.addEventListener('click', () => {
-        ensureNight();
-        window.starBoost = !window.starBoost;
-        btn.classList.toggle('active', window.starBoost);
-        document.dispatchEvent(new CustomEvent('starboost', { detail: window.starBoost }));
-      });
-    })();
-
     (function() {
-      const items = Array.from(document.querySelectorAll('.type-cycle .cycle-item'));
-      if (!items.length) return;
-      let i = 0; setInterval(() => { items.forEach(el => el.classList.add('hidden')); i = (i+1) % items.length; items[i].classList.remove('hidden'); }, 2200);
-    })();
+      const componentData = {
+        'A': { title: 'Web App Interface (사용자)', role: '사용자 인터페이스', tech: '전자정부프레임워크, JSP/Servlet, HTML/CSS/JS', description: '일반 사용자가 내일채움공제 업무를 처리하는 웹 화면입니다. 사용자가 특정 메뉴나 입력 필드에서 도움을 요청하면, 해당 메뉴 ID와 질문을 RAG 시스템으로 전송합니다.' },
+        'C': { title: '개발 운영자', role: '기술 질의 인터페이스', tech: '내부 관리 시스템, IDE 연동', description: '개발자나 운영자가 시스템 유지보수 중 발생하는 기술적인 질문이나 소스코드 관련 문의를 하는 인터페이스입니다. 분석이 필요한 파일 ID나 코드 조각을 RAG 시스템으로 보냅니다.' },
+        'B': { title: 'FastAPI RAG Gateway', role: 'API 게이트웨이', tech: 'Python, FastAPI', description: 'JAVA 기반의 클라이언트 애플리케이션과 Python 기반 RAG 시스템을 연결하는 관문입니다. 모든 요청을 받아 처리하고, 캐시를 확인하며, 최종 결과를 JSON 형식으로 응답합니다.' },
+        'D': { title: 'Redis Cache', role: '캐싱 엔진', tech: 'Redis', description: '자주 묻는 질문과 그에 대한 LLM의 답변을 메모리에 저장하는 단기 기억 장치입니다. 동일한 질문이 반복될 경우, LLM을 호출하지 않고 캐시에서 즉시 답변을 제공하여 응답 속도를 극대화하고 서버 부하를 줄입니다.' },
+        'E': { title: 'LlamaIndex Orchestrator', role: 'RAG 파이프라인 관리', tech: 'Python, LlamaIndex', description: 'RAG의 전체 흐름을 지휘하는 핵심 컨트롤러입니다. 사용자 질문을 받아 벡터 DB에서 관련 문서를 검색하고, 이 정보를 LLM에 전달하여 최종 답변을 생성하도록 요청하는 모든 과정을 관리합니다.' },
+        'F': { title: 'ChromaDB Vector Store', role: '벡터 데이터베이스', tech: 'ChromaDB', description: '매뉴얼과 소스코드가 벡터 형태로 변환되어 저장되는 AI의 장기 기억 장치입니다. 사용자 질문과 의미적으로 가장 유사한 정보를 초고속으로 검색하여 LlamaIndex에 제공합니다.' },
+        'G': { title: 'Ollama - Llama 3.1', role: '대규모 언어 모델 (LLM)', tech: 'Ollama, Llama 3.1', description: 'RAG 시스템의 두뇌 역할을 합니다. ChromaDB에서 검색된 관련 정보를 바탕으로, 사용자가 이해하기 쉬운 자연스러운 문장 형태의 최종 답변을 생성합니다.' },
+        'H1': { title: '매뉴얼/코드 원본', role: '원본 데이터', tech: 'PDF, Word, Java, SQL 파일', description: 'AI가 학습하고 참조하는 모든 지식의 원천입니다. 사용자 및 관리자 매뉴얼, 시스템의 전체 소스코드, DB 스키마 등이 포함됩니다.' },
+        'J': { title: '원본 데이터 리포지토리', role: '데이터 버전 관리', tech: 'DVC (Data Version Control), Git', description: '매뉴얼이나 소스코드의 변경 이력을 관리합니다. AI 모델의 성능이 달라졌을 때, 어떤 버전의 데이터로 학습했는지 추적하고 필요시 이전 버전으로 롤백하기 위해 사용됩니다.' },
+        'H2': { title: 'Tree-Sitter/Parser', role: '소스코드 구조 분석', tech: 'Tree-Sitter', description: 'Java, SQL과 같은 소스코드를 단순 텍스트가 아닌 문법적 구조(클래스, 메서드 단위)로 분석하고 분할합니다. 이를 통해 코드 관련 질문의 정확도를 높입니다.' },
+        'I': { title: 'KorBERT Embedding Model', role: '임베딩 모델', tech: 'KorBERT, PyTorch', description: '한국어 텍스트(매뉴얼, 코드 주석 등)의 의미를 컴퓨터가 이해할 수 있는 숫자 벡터로 변환하는 역할을 합니다. RAG 시스템의 검색 정확도를 결정하는 핵심 요소입니다.' }
+      };
 
-    (function(){
-      const cursor = document.querySelector('.cursor');
-      let x = 0, y = 0, tx = 0, ty = 0;
-      function raf(){ x += (tx - x) * 0.18; y += (ty - y) * 0.18; cursor.style.transform = `translate(${x}px, ${y}px)`; requestAnimationFrame(raf); }
-      window.addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; }, { passive: true });
-      raf();
-      for (const m of document.querySelectorAll('.magnetic')){
-        const strength = 18;
-        m.addEventListener('pointermove', e => { const r = m.getBoundingClientRect(); const mx = e.clientX - r.left - r.width/2; const my = e.clientY - r.top - r.height/2; m.style.transform = `translate(${mx/strength}px, ${my/strength}px)`; cursor.classList.add('-lg'); });
-        m.addEventListener('pointerleave', () => { m.style.transform = ''; cursor.classList.remove('-lg'); });
-      }
-    })();
+      const flowSequence = ['A', 'B', 'D', 'E', 'F', 'G'];
 
-    (function(){
-      const cards = document.querySelectorAll('.tilt-card');
-      cards.forEach(card => {
-        const max = 8;
-        card.addEventListener('pointermove', e => { const r = card.getBoundingClientRect(); const px = (e.clientX - r.left) / r.width; const py = (e.clientY - r.top) / r.height; const rx = (py - .5) * -max; const ry = (px - .5) * max; card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`; card.style.setProperty('--mx', `${px*100}%`); card.style.setProperty('--my', `${py*100}%`); });
-        card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+      document.addEventListener('DOMContentLoaded', () => {
+        const nav = document.getElementById('component-nav');
+        const components = document.querySelectorAll('.component');
+        const infoTitle = document.getElementById('info-title');
+        const infoContent = document.getElementById('info-content');
+        const simulateBtn = document.getElementById('simulate-btn');
+
+        // Populate navigation
+        Object.keys(componentData).forEach(id => {
+          const data = componentData[id];
+          const navItem = document.createElement('a');
+          navItem.href = '#';
+          navItem.className = 'block p-2 rounded-md hover:bg-gray-100 transition-colors';
+          navItem.textContent = data.title;
+          navItem.dataset.id = id;
+          navItem.setAttribute('style', 'font-family: \'Noto Sans KR\', sans-serif; font-size: 14px;');
+          nav.appendChild(navItem);
+        });
+
+        const updateInfoPanel = (id) => {
+          const data = componentData[id];
+          if (!data) return;
+
+          infoTitle.textContent = data.title;
+          infoContent.innerHTML = `
+            <p><strong class="font-semibold text-gray-800">역할:</strong> ${data.role}</p>
+            <p><strong class="font-semibold text-gray-800">주요 기술:</strong> ${data.tech}</p>
+            <p class="mt-4 pt-4 border-t">${data.description}</p>
+          `;
+
+          components.forEach(comp => {
+            comp.classList.toggle('selected', comp.dataset.id === id);
+          });
+        };
+
+        const selectComponent = (id) => {
+          updateInfoPanel(id);
+          document.getElementById('info-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        document.getElementById('diagram-root').addEventListener('click', (e) => {
+          const component = e.target.closest('.component');
+          if (component && component.dataset.id) {
+            selectComponent(component.dataset.id);
+          }
+        });
+
+        nav.addEventListener('click', (e) => {
+          e.preventDefault();
+          const navItem = e.target.closest('a');
+          if (navItem && navItem.dataset.id) {
+            selectComponent(navItem.dataset.id);
+          }
+        });
+
+        // Keyboard navigation support
+        nav.addEventListener('keydown', (e) => {
+          const navItems = Array.from(nav.querySelectorAll('a[data-id]'));
+          const currentIndex = navItems.findIndex(item => item === document.activeElement);
+
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (document.activeElement.dataset.id) {
+              selectComponent(document.activeElement.dataset.id);
+            }
+          } else if (e.key === 'ArrowDown' && currentIndex < navItems.length - 1) {
+            e.preventDefault();
+            navItems[currentIndex + 1].focus();
+          } else if (e.key === 'ArrowUp' && currentIndex > 0) {
+            e.preventDefault();
+            navItems[currentIndex - 1].focus();
+          }
+        });
+
+        // Add ARIA attributes to components
+        components.forEach(component => {
+          component.setAttribute('role', 'button');
+          component.setAttribute('tabindex', '0');
+          component.setAttribute('aria-label', componentData[component.dataset.id]?.title || '');
+        });
+
+        // Focus management
+        components.forEach(component => {
+          component.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              selectComponent(component.dataset.id);
+            }
+          });
+        });
+
+        let isSimulating = false;
+        let timeoutId;
+
+        simulateBtn.addEventListener('click', () => {
+          if (isSimulating) {
+            clearTimeout(timeoutId);
+            isSimulating = false;
+            simulateBtn.textContent = '데이터 흐름 시뮬레이션 시작';
+            simulateBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+            simulateBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            components.forEach(c => c.classList.remove('highlight'));
+            return;
+          }
+
+          isSimulating = true;
+          simulateBtn.textContent = '시뮬레이션 중지';
+          simulateBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+          simulateBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+
+          let step = 0;
+          const runStep = () => {
+            components.forEach(c => c.classList.remove('highlight'));
+
+            if (step >= flowSequence.length) {
+              isSimulating = false;
+              simulateBtn.click(); // Reset button
+              return;
+            }
+
+            const currentId = flowSequence[step];
+            const currentElement = document.getElementById(currentId);
+            if (currentElement) {
+              currentElement.classList.add('highlight');
+              updateInfoPanel(currentId);
+            }
+
+            step++;
+            timeoutId = setTimeout(runStep, 1500);
+          };
+
+          runStep();
+        });
       });
     })();
-
-    (function(){
-      const bar = document.querySelector('.progress');
-      const btn = document.getElementById('backToTop');
-      function onScroll(){ const s = window.scrollY; const h = document.body.scrollHeight - innerHeight; const p = clamp(h > 0 ? s/h : 0, 0, 1); bar.style.width = `${p*100}%`; if (s > innerHeight * 0.6) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; } else { btn.style.opacity = '0'; btn.style.pointerEvents = 'none'; } }
-      window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
-      btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-    })();
-
-    window.addEventListener('load', () => {
-      if (!window.gsap) return; const { gsap } = window; if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
-      gsap.from('header .hero-gradient', { y: 20, autoAlpha: 0, duration: 0.8, ease: 'power2.out' });
-      gsap.utils.toArray('.tilt-card').forEach((el, i) => { gsap.from(el, { y: 30, autoAlpha: 0, duration: 0.7, ease: 'power2.out', delay: i*0.05, scrollTrigger: { trigger: el, start: 'top 85%' } }); });
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-      try {
-        const el = document.querySelector('header h1 .block');
-        if (!el) return;
-        const raw = (el.textContent || '').trim();
-        const open = raw.indexOf('(');
-        const close = raw.indexOf(')');
-        if (open === 0 && close > open) {
-          const prefix = raw.slice(0, close + 1);
-          const rest = raw.slice(close + 1);
-          el.innerHTML = `<span style="font-size:0.5em; vertical-align:baseline;">${prefix}</span><span class="ml-1 align-baseline">${rest}</span>`;
-        }
-      } catch(e) {}
-    });
   </script>
-</body>
-</html>
