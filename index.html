@@ -326,159 +326,149 @@
             </div>
           </div>
         </div>
-        <svg class="w-full h-auto" viewBox="0 0 1200 780" role="img" aria-labelledby="archTitle archDesc">
+        <svg class="w-full h-auto" viewBox="0 0 1200 880" role="img" aria-labelledby="archTitle archDesc">
           <title id="archTitle">Ollama · KorBERT 기반 온프레미스 RAG 레퍼런스 아키텍처</title>
-          <desc id="archDesc">엔드유저가 FastAPI 게이트웨이를 통해 LlamaIndex를 호출하고, LlamaIndex가 ChromaDB와 Ollama Llama 3.1, Redis 캐시, Celery 비동기 파이프라인, KorBERT 학습, Prometheus &amp; Grafana 관측 체계와 연계되는 전체 구성.</desc>
+          <desc id="archDesc">엔드유저가 FastAPI 게이트웨이를 통해 LlamaIndex를 호출하고, LlamaIndex가 Redis 캐시, ChromaDB, Ollama Llama 3.1, Celery 파이프라인, KorBERT 학습, DVC, Prometheus와 연계되는 과정을 표현한 다이어그램.</desc>
           <defs>
             <pattern id="archGrid" width="40" height="40" patternUnits="userSpaceOnUse">
               <path d="M40 0H0V40" fill="none" stroke="#f8fafc" stroke-width="1" />
             </pattern>
-            <marker id="arrowSky" viewBox="0 0 24 24" refX="18" refY="12" markerWidth="12" markerHeight="12" orient="auto">
-              <path d="M0 0L24 12L0 24Z" fill="#0ea5e9" />
+            <marker id="arrowSky" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0 0L8 4L0 8Z" fill="#0ea5e9" />
             </marker>
-            <marker id="arrowGreen" viewBox="0 0 24 24" refX="18" refY="12" markerWidth="12" markerHeight="12" orient="auto">
-              <path d="M0 0L24 12L0 24Z" fill="#10b981" />
+            <marker id="arrowGreen" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0 0L8 4L0 8Z" fill="#10b981" />
             </marker>
-            <marker id="arrowIndigo" viewBox="0 0 24 24" refX="18" refY="12" markerWidth="12" markerHeight="12" orient="auto">
-              <path d="M0 0L24 12L0 24Z" fill="#6366f1" />
+            <marker id="arrowIndigo" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0 0L8 4L0 8Z" fill="#6366f1" />
             </marker>
             <style>
-              .arch-box { stroke-width:1.8; stroke:#d1d5f0; }
-              .arch-label { font-family: 'Inter','Noto Sans KR','Malgun Gothic',sans-serif; }
+              .arch-box { stroke-width:1.8; }
+              .arch-process { fill:#e0f2fe; stroke:#0ea5e9; }
+              .arch-storage { fill:#dcfce7; stroke:#059669; }
+              .arch-ops { fill:#eef2ff; stroke:#6366f1; }
+              .arch-layer { fill:#f8fafc; fill-opacity:0.9; stroke:#cbd5f5; stroke-width:1.4; stroke-dasharray:12 9; }
+              .arch-layer-label { font-size:16px; font-weight:600; fill:#1e293b; }
+              .arch-label { font-family:'Inter','Noto Sans KR','Malgun Gothic',sans-serif; }
             </style>
           </defs>
-          <rect x="20" y="20" width="1160" height="740" rx="28" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" />
-          <rect x="20" y="20" width="1160" height="740" rx="28" fill="url(#archGrid)" opacity="0.55" />
-          <!-- 사용자 계층 -->
+          <rect x="20" y="20" width="1160" height="820" rx="28" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" />
+          <rect x="20" y="20" width="1160" height="820" rx="28" fill="url(#archGrid)" opacity="0.5" />
+          <!-- Layer backgrounds -->
           <g>
-            <rect class="arch-box" x="360" y="60" width="480" height="80" rx="20" fill="#e0f2fe" stroke="#0ea5e9" />
-            <text class="arch-label" x="600" y="100" text-anchor="middle" font-size="22" font-weight="700" fill="#0f172a">엔드유저 · 사내 애플리케이션</text>
-            <text class="arch-label" x="600" y="126" text-anchor="middle" font-size="14" fill="#1f2937">포털 UI · 챗봇 · 업무 자동화 · BI 시스템</text>
+            <rect class="arch-layer" x="60" y="70" width="1080" height="260" rx="24" />
+            <text class="arch-label arch-layer-label" x="80" y="110">레이어 1 · 경험 &amp; 오케스트레이션</text>
           </g>
-          <!-- 데이터 소스 -->
           <g>
-            <rect class="arch-box" x="80" y="160" width="220" height="120" rx="20" fill="#ecfdf5" stroke="#10b981" />
-            <text class="arch-label" x="190" y="200" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">사내 데이터 자산</text>
-            <text class="arch-label" x="190" y="224" text-anchor="middle" font-size="13" fill="#065f46">문서 · 코드 · 로그 · 위키 · 정책 문서</text>
-            <text class="arch-label" x="190" y="246" text-anchor="middle" font-size="13" fill="#065f46">S3/NAS · Git · DB 덤프</text>
+            <rect class="arch-layer" x="60" y="340" width="1080" height="220" rx="24" />
+            <text class="arch-label arch-layer-label" x="80" y="380">레이어 2 · 데이터 수집 &amp; 스토리지</text>
           </g>
-          <!-- FastAPI 게이트웨이 -->
           <g>
-            <rect class="arch-box" x="340" y="190" width="240" height="110" rx="20" fill="#e0f2fe" stroke="#0ea5e9" />
-            <text class="arch-label" x="460" y="230" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">FastAPI 게이트웨이</text>
-            <text class="arch-label" x="460" y="254" text-anchor="middle" font-size="13" fill="#1f2937">JWT 인증 · 감사 로깅 · 스트리밍 응답</text>
-            <text class="arch-label" x="460" y="276" text-anchor="middle" font-size="13" fill="#1f2937">LlamaIndex · 캐시 · 비동기 태스크 호출</text>
+            <rect class="arch-layer" x="60" y="580" width="1080" height="240" rx="24" />
+            <text class="arch-label arch-layer-label" x="80" y="620">레이어 3 · 파이프라인 &amp; 운영</text>
           </g>
-          <!-- LlamaIndex 오케스트레이터 -->
+          <!-- Presentation & Orchestration -->
           <g>
-            <rect class="arch-box" x="620" y="190" width="240" height="110" rx="20" fill="#e0f2fe" stroke="#0ea5e9" />
-            <text class="arch-label" x="740" y="230" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">LlamaIndex 오케스트레이터</text>
-            <text class="arch-label" x="740" y="254" text-anchor="middle" font-size="13" fill="#1f2937">쿼리 엔진 · 라우터 · 메트릭 훅 · 정책 필터</text>
-            <text class="arch-label" x="740" y="276" text-anchor="middle" font-size="13" fill="#1f2937">KorBERT 임베딩 + Llama 3.1 추론 결합</text>
+            <rect class="arch-box arch-process" x="360" y="90" width="480" height="90" rx="22" />
+            <text class="arch-label" x="600" y="130" text-anchor="middle" font-size="22" font-weight="700" fill="#0f172a">엔드유저 · 사내 애플리케이션</text>
+            <text class="arch-label" x="600" y="155" text-anchor="middle" font-size="14" fill="#1f2937">포털 UI · 챗봇 · 업무 자동화 · BI 시스템</text>
           </g>
-          <!-- 관측 -->
           <g>
-            <rect class="arch-box" x="900" y="190" width="220" height="110" rx="20" fill="#eef2ff" stroke="#6366f1" />
-            <text class="arch-label" x="1010" y="230" text-anchor="middle" font-size="18" font-weight="700" fill="#312e81">Prometheus &amp; Grafana</text>
-            <text class="arch-label" x="1010" y="254" text-anchor="middle" font-size="13" fill="#3730a3">FastAPI · Ollama · Celery · ChromaDB Exporter</text>
-            <text class="arch-label" x="1010" y="276" text-anchor="middle" font-size="13" fill="#3730a3">Alertmanager · SLO 대시보드 · Tracing</text>
+            <rect class="arch-box arch-process" x="300" y="220" width="230" height="110" rx="20" />
+            <text class="arch-label" x="415" y="260" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">FastAPI 게이트웨이</text>
+            <text class="arch-label" x="415" y="284" text-anchor="middle" font-size="13" fill="#1f2937">JWT 인증 · 감사 로깅 · 스트리밍 응답</text>
           </g>
-          <!-- Tree-Sitter -->
           <g>
-            <rect class="arch-box" x="80" y="320" width="220" height="110" rx="20" fill="#ecfdf5" stroke="#10b981" />
-            <text class="arch-label" x="190" y="358" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">Tree-Sitter 파싱 레이어</text>
-            <text class="arch-label" x="190" y="382" text-anchor="middle" font-size="13" fill="#065f46">문서/코드 청크화 · 민감정보 필터링</text>
-            <text class="arch-label" x="190" y="404" text-anchor="middle" font-size="13" fill="#065f46">DVC Stage: parse · clean</text>
+            <rect class="arch-box arch-process" x="560" y="220" width="230" height="110" rx="20" />
+            <text class="arch-label" x="675" y="260" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">LlamaIndex 오케스트레이터</text>
+            <text class="arch-label" x="675" y="284" text-anchor="middle" font-size="13" fill="#1f2937">쿼리 라우터 · 정책 필터 · 메트릭 훅</text>
           </g>
-          <!-- Redis/memcached -->
           <g>
-            <rect class="arch-box" x="340" y="340" width="240" height="100" rx="20" fill="#e0f2fe" stroke="#0ea5e9" />
-            <text class="arch-label" x="460" y="374" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Redis / memcached 캐시</text>
-            <text class="arch-label" x="460" y="398" text-anchor="middle" font-size="13" fill="#1f2937">세션 · Top-K 결과 · 피드백 메타데이터</text>
+            <rect class="arch-box arch-process" x="820" y="220" width="230" height="110" rx="20" />
+            <text class="arch-label" x="935" y="260" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Ollama Llama 3.1 런타임</text>
+            <text class="arch-label" x="935" y="284" text-anchor="middle" font-size="13" fill="#1f2937">GPU 추론 · 모델 샤딩 · Keepalive 서버</text>
           </g>
-          <!-- ChromaDB -->
+          <!-- Data & Storage -->
           <g>
-            <rect class="arch-box" x="620" y="340" width="240" height="100" rx="20" fill="#ecfdf5" stroke="#10b981" />
-            <text class="arch-label" x="740" y="374" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">ChromaDB 벡터 스토어</text>
-            <text class="arch-label" x="740" y="398" text-anchor="middle" font-size="13" fill="#065f46">KorBERT 임베딩 · 메타데이터 · HNSW 튜닝</text>
+            <rect class="arch-box arch-storage" x="70" y="350" width="220" height="110" rx="20" />
+            <text class="arch-label" x="180" y="392" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">사내 데이터 자산</text>
+            <text class="arch-label" x="180" y="416" text-anchor="middle" font-size="13" fill="#036548">문서 · 코드 · 로그 · DB · 위키</text>
           </g>
-          <!-- Celery -->
           <g>
-            <rect class="arch-box" x="340" y="460" width="240" height="110" rx="20" fill="#ecfdf5" stroke="#10b981" />
-            <text class="arch-label" x="460" y="500" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">Celery 워커 &amp; 스케줄러</text>
-            <text class="arch-label" x="460" y="524" text-anchor="middle" font-size="13" fill="#065f46">임베딩 재생성 · 배치 추론 · DVC Trigger</text>
-            <text class="arch-label" x="460" y="546" text-anchor="middle" font-size="13" fill="#065f46">Beat · Airflow 연동 · 재시도/알람</text>
+            <rect class="arch-box arch-process" x="70" y="480" width="220" height="100" rx="20" />
+            <text class="arch-label" x="180" y="518" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Tree-Sitter 파싱 레이어</text>
+            <text class="arch-label" x="180" y="542" text-anchor="middle" font-size="13" fill="#1f2937">청크화 · 민감정보 필터링 · DVC stage</text>
           </g>
-          <!-- DVC 파이프라인 -->
           <g>
-            <rect class="arch-box" x="80" y="460" width="220" height="110" rx="20" fill="#ecfdf5" stroke="#10b981" />
-            <text class="arch-label" x="190" y="500" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">DVC 파이프라인 / Registry</text>
-            <text class="arch-label" x="190" y="524" text-anchor="middle" font-size="13" fill="#065f46">원천 → 정제 → 임베딩 · 모델 산출</text>
-            <text class="arch-label" x="190" y="546" text-anchor="middle" font-size="13" fill="#065f46">S3 · MinIO · Git Remote 버전 관리</text>
+            <ellipse cx="470" cy="370" rx="90" ry="18" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
+            <rect x="380" y="370" width="180" height="60" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
+            <ellipse cx="470" cy="430" rx="90" ry="18" fill="#bdecd7" stroke="#059669" stroke-width="1.8" />
+            <text class="arch-label" x="470" y="364" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">Redis / memcached 캐시</text>
+            <text class="arch-label" x="470" y="388" text-anchor="middle" font-size="13" fill="#036548">세션 · Top-K 결과 · TTL 정책</text>
           </g>
-          <!-- Ollama -->
           <g>
-            <rect class="arch-box" x="620" y="460" width="240" height="110" rx="20" fill="#e0f2fe" stroke="#0ea5e9" />
-            <text class="arch-label" x="740" y="500" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Ollama Llama 3.1 런타임</text>
-            <text class="arch-label" x="740" y="524" text-anchor="middle" font-size="13" fill="#1f2937">GPU 추론 · 모델 샤딩 · Keepalive Serve</text>
-            <text class="arch-label" x="740" y="546" text-anchor="middle" font-size="13" fill="#1f2937">Quantize · LoRA · 안전 필터</text>
+            <ellipse cx="780" cy="370" rx="90" ry="18" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
+            <rect x="690" y="370" width="180" height="60" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
+            <ellipse cx="780" cy="430" rx="90" ry="18" fill="#bdecd7" stroke="#059669" stroke-width="1.8" />
+            <text class="arch-label" x="780" y="364" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">ChromaDB 벡터 스토어</text>
+            <text class="arch-label" x="780" y="388" text-anchor="middle" font-size="13" fill="#036548">KorBERT 임베딩 · HNSW 파라미터 · 메타데이터</text>
           </g>
-          <!-- Broker -->
+          <!-- Pipelines & Ops -->
           <g>
-            <rect class="arch-box" x="900" y="460" width="220" height="110" rx="20" fill="#ecfdf5" stroke="#10b981" />
-            <text class="arch-label" x="1010" y="500" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">RabbitMQ / Redis 브로커</text>
-            <text class="arch-label" x="1010" y="524" text-anchor="middle" font-size="13" fill="#065f46">큐 분리 · QoS · DLX · SLA 기반 분배</text>
-            <text class="arch-label" x="1010" y="546" text-anchor="middle" font-size="13" fill="#065f46">Celery 이벤트 · 지연 작업 · 백프레셔</text>
+            <rect class="arch-box arch-process" x="70" y="610" width="220" height="110" rx="20" />
+            <text class="arch-label" x="180" y="650" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">DVC 파이프라인</text>
+            <text class="arch-label" x="180" y="674" text-anchor="middle" font-size="13" fill="#1f2937">원천 → 정제 → 임베딩 · 모델 데이터 추적</text>
           </g>
-          <!-- KorBERT Training -->
           <g>
-            <rect class="arch-box" x="340" y="600" width="240" height="110" rx="20" fill="#ecfdf5" stroke="#10b981" />
-            <text class="arch-label" x="460" y="640" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">PyTorch · KorBERT 파인튜닝</text>
-            <text class="arch-label" x="460" y="664" text-anchor="middle" font-size="13" fill="#065f46">GPU/WSL2 · Mixed Precision · Checkpoint Export</text>
-            <text class="arch-label" x="460" y="686" text-anchor="middle" font-size="13" fill="#065f46">DVC Stage: train · evaluate</text>
+            <rect class="arch-box arch-process" x="320" y="610" width="220" height="110" rx="20" />
+            <text class="arch-label" x="430" y="650" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Celery 워커 풀</text>
+            <text class="arch-label" x="430" y="674" text-anchor="middle" font-size="13" fill="#1f2937">배치 임베딩 · 재지표 · 장애 자동 복구</text>
           </g>
-          <!-- 모델 저장소 -->
           <g>
-            <rect class="arch-box" x="620" y="600" width="240" height="110" rx="20" fill="#ecfdf5" stroke="#10b981" />
-            <text class="arch-label" x="740" y="640" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">DVC Remote · 모델 레지스트리</text>
-            <text class="arch-label" x="740" y="664" text-anchor="middle" font-size="13" fill="#065f46">S3/MinIO · GitLab · 버전 태깅 · 권한 관리</text>
-            <text class="arch-label" x="740" y="686" text-anchor="middle" font-size="13" fill="#065f46">CI/CD · Canary · 롤백 히스토리</text>
+            <rect class="arch-box arch-process" x="570" y="610" width="220" height="110" rx="20" />
+            <text class="arch-label" x="680" y="650" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">RabbitMQ / Redis 브로커</text>
+            <text class="arch-label" x="680" y="674" text-anchor="middle" font-size="13" fill="#1f2937">큐 분리 · QoS · 지연/재시도 · DLX</text>
           </g>
-          <!-- 옵스 거버넌스 -->
           <g>
-            <rect class="arch-box" x="900" y="600" width="220" height="110" rx="20" fill="#eef2ff" stroke="#6366f1" />
-            <text class="arch-label" x="1010" y="640" text-anchor="middle" font-size="18" font-weight="700" fill="#312e81">보안 · 거버넌스</text>
-            <text class="arch-label" x="1010" y="664" text-anchor="middle" font-size="13" fill="#3730a3">Vault / AD / OIDC · 비밀 관리 · 접근 제어</text>
-            <text class="arch-label" x="1010" y="686" text-anchor="middle" font-size="13" fill="#3730a3">감사 로그 · 정책 엔진 · 배포 승인</text>
+            <rect class="arch-box arch-ops" x="820" y="610" width="260" height="110" rx="20" />
+            <text class="arch-label" x="950" y="648" text-anchor="middle" font-size="18" font-weight="700" fill="#312e81">Ops &amp; Governance 스택</text>
+            <text class="arch-label" x="950" y="672" text-anchor="middle" font-size="13" fill="#3730a3">Prometheus · Grafana · Alertmanager</text>
+            <text class="arch-label" x="950" y="694" text-anchor="middle" font-size="13" fill="#3730a3">Vault / AD / OIDC · 배포 승인 · 감시</text>
           </g>
-          <!-- 실시간 서비스 경로 -->
-          <path d="M600 140L600 190" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowSky)" />
-          <path d="M460 300L460 340" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowSky)" />
-          <path d="M580 245L620 245" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowSky)" />
-          <path d="M740 300L740 340" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowSky)" />
-          <path d="M720 440L720 300" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowSky)" />
-          <path d="M780 300L780 460" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowSky)" />
-          <path d="M760 460L760 300" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowSky)" />
-          <path d="M620 220C700 160 520 160 520 190" stroke="#0ea5e9" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowSky)" />
-          <!-- 데이터·임베딩 파이프라인 -->
-          <path d="M190 280L190 320" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowGreen)" />
-          <path d="M190 430L190 460" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowGreen)" />
-          <path d="M300 375C360 375 360 420 620 390" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowGreen)" />
-          <path d="M300 515L340 515" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowGreen)" />
-          <path d="M580 515H620" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowGreen)" />
-          <path d="M580 515V390H620" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowGreen)" />
-          <path d="M460 600L460 570" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowGreen)" />
-          <path d="M580 655L620 655" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowGreen)" />
-          <path d="M740 600L780 460" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowGreen)" />
-          <path d="M900 515L580 515" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowGreen)" />
-          <!-- 관측/거버넌스 -->
-          <path d="M900 245L580 245" stroke="#6366f1" stroke-width="2.5" stroke-dasharray="10 8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowIndigo)" />
-          <path d="M900 245L900 515" stroke="#6366f1" stroke-width="2.5" stroke-dasharray="10 8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowIndigo)" />
-          <path d="M1010 600L1010 300" stroke="#6366f1" stroke-width="2.5" stroke-dasharray="10 8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowIndigo)" />
+          <g>
+            <rect class="arch-box arch-process" x="320" y="740" width="220" height="110" rx="20" />
+            <text class="arch-label" x="430" y="780" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">PyTorch · KorBERT 파인튜닝</text>
+            <text class="arch-label" x="430" y="804" text-anchor="middle" font-size="13" fill="#1f2937">Mixed Precision · 체크포인트 · 평가 지표</text>
+          </g>
+          <g>
+            <ellipse cx="700" cy="760" rx="90" ry="18" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
+            <rect x="610" y="760" width="180" height="60" fill="#dcfce7" stroke="#059669" stroke-width="1.8" />
+            <ellipse cx="700" cy="820" rx="90" ry="18" fill="#bdecd7" stroke="#059669" stroke-width="1.8" />
+            <text class="arch-label" x="700" y="754" text-anchor="middle" font-size="18" font-weight="700" fill="#064e3b">DVC Remote · 모델 레지스트리</text>
+            <text class="arch-label" x="700" y="778" text-anchor="middle" font-size="13" fill="#036548">S3/MinIO · GitLab · 버전 태깅 · 롤백</text>
+          </g>
+          <!-- Real-time service flow -->
+          <path d="M600 180L600 220" stroke="#0ea5e9" stroke-width="2.4" fill="none" marker-end="url(#arrowSky)" />
+          <path d="M530 275H560" stroke="#0ea5e9" stroke-width="2.4" fill="none" marker-end="url(#arrowSky)" />
+          <path d="M790 275H820" stroke="#0ea5e9" stroke-width="2.4" fill="none" marker-end="url(#arrowSky)" />
+          <path d="M710 330V352H780V370" stroke="#0ea5e9" stroke-width="2.4" fill="none" marker-end="url(#arrowSky)" />
+          <path d="M710 330V352H470V370" stroke="#0ea5e9" stroke-width="2.4" fill="none" marker-end="url(#arrowSky)" />
+          <!-- Data & embedding pipeline -->
+          <path d="M180 440L180 480" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
+          <path d="M180 570L180 610" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
+          <path d="M290 665H320" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
+          <path d="M430 610V450H780" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
+          <path d="M180 720H320" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
+          <path d="M540 795H610" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
+          <path d="M700 760V640H430" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
+          <path d="M570 665H540" stroke="#10b981" stroke-width="2.4" fill="none" marker-end="url(#arrowGreen)" />
+          <!-- Observability & governance -->
+          <path d="M950 610V250H820" stroke="#6366f1" stroke-width="2" stroke-dasharray="10 8" fill="none" marker-end="url(#arrowIndigo)" />
+          <path d="M950 610V670H540" stroke="#6366f1" stroke-width="2" stroke-dasharray="10 8" fill="none" marker-end="url(#arrowIndigo)" />
+          <path d="M950 610V300H600" stroke="#6366f1" stroke-width="2" stroke-dasharray="10 8" fill="none" marker-end="url(#arrowIndigo)" />
         </svg>
       </div>
     </section>
-
     <section id="setup" class="container-max mx-auto px-6 py-10 sm:py-14 lg:py-16">
       <div class="grid lg:grid-cols-[1.1fr,0.9fr] gap-10 items-start">
         <article class="glass rounded-2xl p-6 sm:p-10 tilt-card relative">
