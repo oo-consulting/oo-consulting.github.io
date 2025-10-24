@@ -1,25 +1,28 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redis Cache - RAG 캐싱 및 세션 관리</title>
+    <title>Redis Cache - RAG 캐시 및 세션 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background: radial-gradient(circle at 20% 16%, rgba(248, 113, 113, 0.32), transparent 55%), radial-gradient(circle at 84% 12%, rgba(248, 181, 123, 0.3), transparent 45%), linear-gradient(180deg, #120608 0%, #201013 85%);
-            overflow-x: hidden;
-            color: #fde8e8;
+            background: radial-gradient(circle at 20% 16%, rgba(248, 113, 113, 0.32), transparent 55%),
+                        radial-gradient(circle at 82% 12%, rgba(248, 181, 123, 0.3), transparent 45%),
+                        linear-gradient(180deg, #12060a 0%, #241016 85%);
             min-height: 100vh;
+            color: #ffe4e6;
+            overflow-x: hidden;
         }
+        .wrapper { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 48px 20px 64px; }
         .glass-panel {
             position: relative;
-            background: linear-gradient(150deg, rgba(248, 113, 113, 0.12), rgba(248, 181, 123, 0.18));
-            border: 1px solid rgba(248, 181, 123, 0.35);
-            border-radius: 1rem;
-            box-shadow: 0 28px 50px rgba(34, 9, 11, 0.6);
+            background: linear-gradient(155deg, rgba(248, 113, 113, 0.16), rgba(248, 181, 123, 0.18));
+            border: 1px solid rgba(248, 113, 113, 0.35);
+            border-radius: 18px;
+            box-shadow: 0 26px 50px rgba(32, 9, 12, 0.65);
             backdrop-filter: blur(26px) saturate(190%);
             -webkit-backdrop-filter: blur(26px) saturate(190%);
         }
@@ -28,171 +31,137 @@
             position: absolute;
             inset: 0;
             border-radius: inherit;
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08) 55%, transparent 80%);
             pointer-events: none;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06) 55%, transparent 75%);
         }
         .glass-panel > * { position: relative; z-index: 1; }
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.5rem 1.25rem;
-            border-radius: 9999px;
-            background: rgba(248, 181, 123, 0.22);
-            border: 1px solid rgba(248, 113, 113, 0.55);
-            color: #ffe4e6;
-            font-size: 0.9rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-        }
-        .nav-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.4rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            background: linear-gradient(130deg, rgba(248, 113, 113, 0.32), rgba(248, 181, 123, 0.45));
-            border: 1px solid rgba(248, 181, 123, 0.6);
-            color: #fff5f5;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .nav-button:hover {
-            transform: translateY(-2px);
+        .step-badge {
+            width: 3rem; height: 3rem; border-radius: 50%;
+            background: linear-gradient(135deg, #f97316, #f43f5e);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.125rem; color: #4a0404;
             box-shadow: 0 12px 28px rgba(248, 113, 113, 0.35);
         }
-        .section-title {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
+        .nav-button {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.8rem 1.6rem; border-radius: 9999px;
+            background: linear-gradient(135deg, rgba(248, 113, 113, 0.32), rgba(248, 181, 123, 0.45));
+            border: 1px solid rgba(248, 181, 123, 0.6);
+            color: #fff1f2; font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        table { border-collapse: separate; border-spacing: 0; }
-        th {
-            background: rgba(248, 113, 113, 0.18);
-            color: #fff7f7;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        td { color: #ffe4e6; }
-        .info-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
-        .info-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 18px 36px rgba(40, 10, 12, 0.55);
-        }
-        code { font-family: 'JetBrains Mono', Consolas, monospace; }
+        .nav-button:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(248, 113, 113, 0.35); }
+        th { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.75rem; }
+        @media (max-width: 640px) { .nav-button { width: 100%; justify-content: center; } }
     </style>
 </head>
 <body>
-    <div class="relative">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-            <header class="mb-10">
-                <a href="webapp.html" class="inline-flex items-center text-rose-200 hover:text-white font-semibold mb-6 glass-panel px-4 py-2 rounded-full">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                    이전 단계 (Web App)
-                </a>
-                <div class="glass-panel p-6 sm:p-8">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                        <div class="space-y-4">
-                            <span class="badge">개발 순서 8단계 · Redis Cache</span>
-                            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">Redis 기반 캐시·세션·레이트 관리</h1>
-                            <p class="text-base sm:text-lg md:text-xl text-red-100 leading-relaxed">
-                                RAG 응답 캐시, 사용자 세션, 레이트 리미트를 Redis로 통합 관리하여 성능과 안정성을 동시에 확보합니다.
-                            </p>
+    <div class="wrapper">
+        <header class="mb-10">
+            <a href="webapp.html" class="inline-flex items-center text-rose-200 hover:text-white font-semibold mb-6 glass-panel px-4 py-2 rounded-full">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                이전 단계 (Web App)
+            </a>
+            <div class="glass-panel p-6 sm:p-8">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="step-badge">8</div>
+                            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">Redis 기반 RAG 캐시·세션 관리</h1>
                         </div>
-                        <div class="glass-panel px-5 py-4 rounded-2xl text-right text-rose-100">
-                            <p class="text-sm uppercase tracking-[0.25em] text-amber-200">현재 진행률</p>
-                            <p class="text-2xl font-bold text-white">45% · 캐시 전략 수립 중</p>
-                            <p class="text-sm text-rose-200 mt-2">응답 캐시 TTL · 토큰 버킷 레이트 리미트 설계</p>
-                        </div>
+                        <p class="text-base sm:text-lg md:text-xl text-rose-100 leading-relaxed">
+                            Redis로 응답 캐시, 사용자 세션, 레이트 리미트를 관리하여 LLM 호출 비용을 절감하고 시스템 안정성을 높입니다.
+                        </p>
+                    </div>
+                    <div class="glass-panel px-5 py-4 rounded-2xl text-rose-100">
+                        <p class="text-sm uppercase tracking-[0.3em] text-rose-200">개발 순서</p>
+                        <p class="text-xl font-semibold text-white">8단계 · Redis</p>
+                        <p class="text-sm text-rose-200 mt-2">응답 캐시 · 세션 · 레이트 리미트</p>
                     </div>
                 </div>
-            </header>
+            </div>
+        </header>
 
-            <main class="space-y-8">
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-6a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                        </svg>
-                        개요
-                    </h2>
-                    <div class="space-y-4 text-rose-100 leading-relaxed">
-                        <p>
-                            Redis는 RAG 시스템에서 반복되는 질의를 캐시하고, 사용자 세션과 레이트 리미트를 추적하는 핵심 인프라입니다.
-                            KorBERT/ChromaDB/LLM 호출 비용을 줄이고 장애 시에도 빠르게 응답을 제공할 수 있도록 돕습니다.
-                        </p>
-                        <p>
-                            고가용성을 위해 Sentinel 또는 Cluster 구성을 옵션으로 두고, 백업·모니터링·보안을 함께 설계해야 합니다.
-                        </p>
-                    </div>
-                </section>
+        <main class="space-y-8">
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-6a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    단계 개요
+                </h2>
+                <div class="space-y-4 text-rose-100 leading-relaxed">
+                    <p>
+                        Redis는 RAG 시스템의 캐시, 세션, 레이트 리미트 저장소 역할을 담당합니다. 자주 반복되는 질문, 대화 세션, API 사용량을 저장해 성능과 비용을 동시에 개선합니다.
+                    </p>
+                    <p>
+                        Sentinel/Cluster 구성으로 고가용성을 확보하고, 백업/복구, 보안, 모니터링 정책을 세워 운영 안정성을 높입니다.
+                    </p>
+                </div>
+            </section>
 
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                        </svg>
-                        구현 상세
-                    </h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm md:text-base">
-                            <thead>
-                                <tr>
-                                    <th class="px-4 py-3 border-b border-rose-600">항목</th>
-                                    <th class="px-4 py-3 border-b border-rose-600">내용</th>
-                                    <th class="px-4 py-3 border-b border-rose-600">비고</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-rose-100">
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-rose-700 font-semibold">응답 캐시</td>
-                                    <td class="px-4 py-3 border-b border-rose-700">질의+컨텍스트 해시로 저장</td>
-                                    <td class="px-4 py-3 border-b border-rose-700">TTL 5~15분, LLM 호출 감소</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-rose-700 font-semibold">세션 저장소</td>
-                                    <td class="px-4 py-3 border-b border-rose-700">Hash 구조로 사용자 상태 유지</td>
-                                    <td class="px-4 py-3 border-b border-rose-700">Web App 즐겨찾기/히스토리 복원</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-rose-700 font-semibold">레이트 리미트</td>
-                                    <td class="px-4 py-3 border-b border-rose-700">Lua 기반 토큰 버킷</td>
-                                    <td class="px-4 py-3 border-b border-rose-700">429 응답, 고객별 정책 지원</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-rose-700 font-semibold">고가용성</td>
-                                    <td class="px-4 py-3 border-b border-rose-700">Sentinel / Cluster 구성</td>
-                                    <td class="px-4 py-3 border-b border-rose-700">Persistent Volume으로 데이터 유지</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-rose-300" fill="CurrentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    구현 상세
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm md:text-base">
+                        <thead>
+                            <tr class="text-slate-100">
+                                <th class="px-4 py-3 border-b border-rose-600">항목</th>
+                                <th class="px-4 py-3 border-b border-rose-600">내용</th>
+                                <th class="px-4 py-3 border-b border-rose-600">비고</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-rose-100">
+                            <tr>
+                                <td class="px-4 py-3 border-b border-rose-700 font-semibold">응답 캐시</td>
+                                <td class="px-4 py-3 border-b border-rose-700">질의+컨텍스트 해시를 키로 사용</td>
+                                <td class="px-4 py-3 border-b border-rose-700">TTL 5~15분, LLM 호출 감소</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-rose-700 font-semibold">세션 저장소</td>
+                                <td class="px-4 py-3 border-b border-rose-700">Hash 구조로 대화 히스토리 유지</td>
+                                <td class="px-4 py-3 border-b border-rose-700">Web App 즐겨찾기 연동</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-rose-700 font-semibold">레이트 리미트</td>
+                                <td class="px-4 py-3 border-b border-rose-700">Lua 기반 토큰 버킷</td>
+                                <td class="px-4 py-3 border-b border-rose-700">429 응답, 고객별 정책</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-rose-700 font-semibold">고가용성</td>
+                                <td class="px-4 py-3 border-b border-rose-700">Sentinel / Cluster</td>
+                                <td class="px-4 py-3 border-b border-rose-700">Persistent Volume으로 백업</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0012.586 2H4zm8 1.414V6a1 1 0 001 1h3.586L12 4.414z"/>
-                        </svg>
-                        설치 및 개발 방법
-                    </h2>
-                    <div class="space-y-6 text-rose-100 text-sm sm:text-base leading-relaxed">
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">1. Redis 설치</h3>
-                            <pre><code># 로컬 테스트
-docker run -d --name redis-rag -p 6379:6379 redis:7-alpine
-
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-rose-300" fill="CurrentColor" viewBox="0 0 20 20">
+                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 00lë" />
+                    </svg>
+                    설치 및 개발 방법
+                </h2>
+                <div class="space-y-6 text-rose-100 text-sm sm:text-base leading-relaxed">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">1. Redis 설치</h3>
+                        <pre><code>docker run -d --name redis-rag -p 6379:6379 redis:7-alpine
 # Helm (고가용성 예시)
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install redis bitnami/redis --set replica.replicaCount=2 --set auth.enabled=true</code></pre>
-                        </div>
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">2. 파이썬 연동</h3>
-                            <pre><code>from redis.asyncio import Redis
-
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">2. 파이썬 연동</h3>
+                        <pre><code>from redis.asyncio import Redis
 redis = Redis(host=..., port=..., password=...)
 
 async def get_cache(key: str):
@@ -201,10 +170,10 @@ async def get_cache(key: str):
 
 async def set_cache(key: str, value: dict, ttl: int = 600):
     await redis.set(key, json.dumps(value), ex=ttl)</code></pre>
-                        </div>
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">3. 레이트 리미트 Lua</h3>
-                            <pre><code>RATE_LIMIT_SCRIPT = """
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">3. 레이트 리미트 Lua</h3>
+                        <pre><code>RATE_LIMIT_SCRIPT = """
 local current = redis.call('incr', KEYS[1])
 if tonumber(current) == 1 then
   redis.call('expire', KEYS[1], ARGV[1])
@@ -213,81 +182,62 @@ if tonumber(current) > tonumber(ARGV[2]) then
   return 0
 end
 return current
-"""
-</code></pre>
-                        </div>
+"""</code></pre>
                     </div>
-                </section>
-
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm8 5a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V8z" clip-rule="evenodd"/>
-                        </svg>
-                        운영 체크리스트
-                    </h2>
-                    <div class="grid md:grid-cols-2 gap-4 text-rose-100 text-sm leading-relaxed">
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-rose-200 mb-2">모니터링</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>Keyspace hits/misses, 메모리 사용량 추적</li>
-                                <li>Evicted Keys 알림 설정</li>
-                                <li>Redis Exporter + Grafana 대시보드</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-rose-200 mb-2">백업/복구</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>RDB & AOF 병행, Object Storage 백업</li>
-                                <li>복구 시나리오 정기 리허설</li>
-                                <li>캐시 무효화 전략 문서화</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-rose-200 mb-2">보안</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>AUTH 비밀번호, TLS 적용</li>
-                                <li>ACL로 관리 명령 제한</li>
-                                <li>허용된 서브넷만 접근</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-rose-200 mb-2">데이터 거버넌스</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>민감 데이터 캐시 금지 규칙</li>
-                                <li>TTL 정책 표준화</li>
-                                <li>오래된 키 정리 자동화</li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-rose-300" fill="CurrentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
-                        </svg>
-                        다음 단계
-                    </h2>
-                    <div class="bg-gradient-to-r from-rose-900/35 to-amber-900/35 border-l-4 border-rose-400 p-4 rounded-r-xl text-rose-100 text-sm sm:text-base leading-relaxed">
-                        <p class="mb-2">Redis 캐시 구축을 마치면 전체 파이프라인 통합 테스트와 운영 자동화로 이어집니다.</p>
-                        <ol class="list-decimal list-inside space-y-2">
-                            <li><strong class="text-amber-200">종단 간 테스트</strong> – Parser → Redis까지 연동 검증</li>
-                            <li><strong class="text-blue-200">모니터링 고도화</strong> – SLA 준수, 비용 리포트 자동화</li>
-                            <li><strong class="text-emerald-200">운영 자동화</strong> – 캐시 무효화 워크플로, 알림 시나리오 정립</li>
-                        </ol>
-                    </div>
-                </section>
-            </main>
-
-            <footer class="mt-12">
-                <div class="glass-panel px-5 sm:px-6 py-4 rounded-xl flex flex-wrap justify-center gap-3 sm:gap-4">
-                    <a href="webapp.html" class="nav-button">이전 단계 · Web App</a>
-                    <a href="index.html" class="nav-button">메인 허브</a>
-                    <a href="parser.html" class="nav-button">최초 단계로 돌아가기</a>
                 </div>
-            </footer>
-        </div>
+            </section>
+
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-rose-300" fill="CurrentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm7 5a1 1 0 10-2 0v1H9a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V8z" clip-rule="evenodd" />
+                    </svg>
+                    운영 체크리스트
+                </h2>
+                <div class="grid md:grid-cols-2 gap-4 text-rose-100 text-sm leading-relaxed">
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-rose-200 mb-2">모니터링</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Keyspace hits/misses 추적</li>
+                            <li>Evicted keys 알림 설정</li>
+                            <li>Redis Exporter + Grafana 대시보드</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-rose-200 mb-2">백업/복구</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>RDB & AOF 병행, Object Storage 백업</li>
+                            <li>복구 시나리오 정기 리허설</li>
+                            <li>캐시 무효화 전략 문서화</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-rose-200 mb-2">보안</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>AUTH 비밀번호, TLS 적용</li>
+                            <li>허용 서브넷만 접근 허용</li>
+                            <li>관리 명령은 ACL로 제한</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-rose-200 mb-2">데이터 거버넌스</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>민감 데이터 캐시 금지 규칙</li>
+                            <li>TTL 정책 표준화</li>
+                            <li>오래된 키 정리 자동화</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="mt-12">
+            <div class="glass-panel px-5 sm:px-6 py-4 rounded-xl flex flex-wrap justify-center gap-3 sm:gap-4">
+                <a href="webapp.html" class="nav-button">이전 단계 · Web App</a>
+                <a href="index.html" class="nav-button">메인 허브</a>
+                <a href="parser.html" class="nav-button">최초 단계로 돌아가기</a>
+            </div>
+        </footer>
     </div>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -9,186 +9,158 @@
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background: radial-gradient(circle at 20% 16%, rgba(59, 130, 246, 0.32), transparent 55%), radial-gradient(circle at 84% 12%, rgba(236, 72, 153, 0.28), transparent 45%), linear-gradient(180deg, #080b17 0%, #10142d 85%);
-            overflow-x: hidden;
-            color: #e5e7f0;
+            background: radial-gradient(circle at 20% 16%, rgba(59, 130, 246, 0.32), transparent 55%),
+                        radial-gradient(circle at 80% 12%, rgba(236, 72, 153, 0.3), transparent 45%),
+                        linear-gradient(180deg, #070b19 0%, #131936 85%);
             min-height: 100vh;
+            color: #f3f4ff;
+            overflow-x: hidden;
         }
+        .wrapper { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 48px 20px 64px; }
         .glass-panel {
             position: relative;
-            background: linear-gradient(150deg, rgba(148, 163, 184, 0.12), rgba(59, 130, 246, 0.16));
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            border-radius: 1rem;
-            box-shadow: 0 28px 50px rgba(9, 12, 31, 0.6);
-            backdrop-filter: blur(26px) saturate(180%);
-            -webkit-backdrop-filter: blur(26px) saturate(180%);
+            background: linear-gradient(155deg, rgba(59, 130, 246, 0.16), rgba(236, 72, 153, 0.18));
+            border: 1px solid rgba(236, 72, 153, 0.32);
+            border-radius: 18px;
+            box-shadow: 0 26px 50px rgba(10, 10, 35, 0.6);
+            backdrop-filter: blur(26px) saturate(190%);
+            -webkit-backdrop-filter: blur(26px) saturate(190%);
         }
         .glass-panel::before {
             content: "";
             position: absolute;
             inset: 0;
             border-radius: inherit;
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08) 55%, transparent 80%);
             pointer-events: none;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08) 55%, transparent 75%);
         }
         .glass-panel > * { position: relative; z-index: 1; }
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.5rem 1.25rem;
-            border-radius: 9999px;
-            background: rgba(59, 130, 246, 0.22);
-            border: 1px solid rgba(59, 130, 246, 0.55);
-            color: #dbeafe;
-            font-size: 0.9rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
+        .step-badge {
+            width: 3rem; height: 3rem; border-radius: 50%;
+            background: linear-gradient(135deg, #60a5fa, #ec4899);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.125rem; color: #0f172a;
+            box-shadow: 0 12px 28px rgba(236, 72, 153, 0.35);
         }
         .nav-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.4rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            background: linear-gradient(130deg, rgba(59, 130, 246, 0.3), rgba(236, 72, 153, 0.45));
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.8rem 1.6rem; border-radius: 9999px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(236, 72, 153, 0.45));
             border: 1px solid rgba(236, 72, 153, 0.6);
-            color: #e0f2fe;
+            color: #e0f2fe; font-weight: 600;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .nav-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 28px rgba(59, 130, 246, 0.35);
-        }
-        .section-title {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        table { border-collapse: separate; border-spacing: 0; }
-        th {
-            background: rgba(59, 130, 246, 0.15);
-            color: #f8fafc;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        td { color: #dbeafe; }
-        .info-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
-        .info-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 18px 36px rgba(12, 14, 32, 0.55);
-        }
-        code { font-family: 'JetBrains Mono', Consolas, monospace; }
+        .nav-button:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(236, 72, 153, 0.35); }
+        th { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.75rem; }
+        @media (max-width: 640px) { .nav-button { width: 100%; justify-content: center; } }
     </style>
 </head>
 <body>
-    <div class="relative">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-            <header class="mb-10">
-                <a href="fastapi.html" class="inline-flex items-center text-blue-200 hover:text-white font-semibold mb-6 glass-panel px-4 py-2 rounded-full">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                    이전 단계 (FastAPI Gateway)
-                </a>
-                <div class="glass-panel p-6 sm:p-8">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                        <div class="space-y-4">
-                            <span class="badge">개발 순서 7단계 · Web Application</span>
-                            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">RAG 사용자 인터페이스 구축</h1>
-                            <p class="text-base sm:text-lg md:text-xl text-slate-200 leading-relaxed">
-                                FastAPI 게이트웨이를 활용하여 스트리밍 응답, 근거 문서, 피드백 수집을 지원하는 웹 애플리케이션을 구현합니다.
-                            </p>
+    <div class="wrapper">
+        <header class="mb-10">
+            <a href="fastapi.html" class="inline-flex items-center text-blue-200 hover:text-white font-semibold mb-6 glass-panel px-4 py-2 rounded-full">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                이전 단계 (FastAPI Gateway)
+            </a>
+            <div class="glass-panel p-6 sm:p-8">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="step-badge">7</div>
+                            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">Web App 사용자 인터페이스 구축</h1>
                         </div>
-                        <div class="glass-panel px-5 py-4 rounded-2xl text-right text-slate-100">
-                            <p class="text-sm uppercase tracking-[0.25em] text-blue-200">현재 진행률</p>
-                            <p class="text-2xl font-bold text-white">50% · UI/UX 정립 중</p>
-                            <p class="text-sm text-slate-300 mt-2">스트리밍 렌더링 · 접근성 · 다국어 지원</p>
-                        </div>
+                        <p class="text-base sm:text-lg md:text-xl text-blue-100 leading-relaxed">
+                            FastAPI 게이트웨이와 연동해 실시간 스트리밍 응답, 근거 문서, 사용자 피드백을 제공하는 RAG 웹 애플리케이션을 구현합니다.
+                        </p>
+                    </div>
+                    <div class="glass-panel px-5 py-4 rounded-2xl text-blue-100">
+                        <p class="text-sm uppercase tracking-[0.3em] text-blue-200">개발 순서</p>
+                        <p class="text-xl font-semibold text-white">7단계 · Web App</p>
+                        <p class="text-sm text-blue-200 mt-2">Next.js · 스트리밍 UI · 접근성 · 다국어</p>
                     </div>
                 </div>
-            </header>
+            </div>
+        </header>
 
-            <main class="space-y-8">
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-6a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                        </svg>
-                        개요
-                    </h2>
-                    <div class="space-y-4 text-slate-200 leading-relaxed">
-                        <p>
-                            Web App은 사용자가 RAG 질의를 수행하고, 스트리밍 응답과 근거 문서를 확인하며, 피드백을 남길 수 있는 상호작용형 인터페이스입니다.
-                            Next.js + Tailwind 조합을 사용하여 일관된 디자인과 반응형 레이아웃을 손쉽게 구현합니다.
-                        </p>
-                        <p>
-                            React Query를 활용해 API 캐싱을 관리하고, Zustand로 UI 상태를 분리하여 유지보수성을 높입니다.
-                        </p>
-                    </div>
-                </section>
+        <main class="space-y-8">
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-6a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    단계 개요
+                </h2>
+                <div class="space-y-4 text-blue-100 leading-relaxed">
+                    <p>
+                        Web App은 RAG 시스템을 사용자에게 제공하는 프론트엔드입니다. Next.js + Tailwind를 사용해 빠르게 개발하고, React Query와 Zustand로 데이터·UI 상태를 분리 관리합니다.
+                    </p>
+                    <p>
+                        스트리밍 응답, 근거 문서, 피드백 수집, 접근성, 다국어 지원을 고려해 UX를 설계합니다.
+                    </p>
+                </div>
+            </section>
 
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                        </svg>
-                        구현 상세
-                    </h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm md:text-base">
-                            <thead>
-                                <tr>
-                                    <th class="px-4 py-3 border-b border-slate-600">항목</th>
-                                    <th class="px-4 py-3 border-b border-slate-600">내용</th>
-                                    <th class="px-4 py-3 border-b border-slate-600">비고</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-slate-200">
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">프레임워크</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">Next.js + Tailwind</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">SSR + CSR 혼합, 디자인 시스템 공유</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">상태 관리</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">React Query + Zustand</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">API 캐시 vs UI 상태 분리</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">스트리밍</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">EventSource / WebSocket</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">토큰 단위 응답, 타이핑 애니메이션</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">접근성</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">ARIA 라벨 · 키보드 네비게이션</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">다국어, 다크모드 지원</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    구현 상세
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm md:text-base">
+                        <thead>
+                            <tr class="text-slate-100">
+                                <th class="px-4 py-3 border-b border-slate-600">항목</th>
+                                <th class="px-4 py-3 border-b border-slate-600">내용</th>
+                                <th class="px-4 py-3 border-b border-slate-600">비고</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-blue-100">
+                            <tr>
+                                <td class="px-4 py-3 border-b border-slate-700 font-semibold">프레임워크</td>
+                                <td class="px-4 py-3 border-b border-slate-700">Next.js + Tailwind CSS</td>
+                                <td class="px-4 py-3 border-b border-slate-700">CSR + SSR 혼합 구성</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-slate-700 font-semibold">상태 관리</td>
+                                <td class="px-4 py-3 border-b border-slate-700">React Query + Zustand</td>
+                                <td class="px-4 py-3 border-b border-slate-700">API 캐시 vs UI 상태 분리</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-slate-700 font-semibold">스트리밍</td>
+                                <td class="px-4 py-3 border-b border-slate-700">EventSource / WebSocket</td>
+                                <td class="px-4 py-3 border-b border-slate-700">토큰 단위 렌더링, 타이핑 효과</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-slate-700 font-semibold">접근성</td>
+                                <td class="px-4 py-3 border-b border-slate-700">ARIA 라벨, 키보드 네비게이션</td>
+                                <td class="px-4 py-3 border-b border-slate-700">다국어 & 다크모드</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0012.586 2H4zm8 1.414V6a1 1 0 001 1h3.586L12 4.414z"/>
-                        </svg>
-                        설치 및 개발 방법
-                    </h2>
-                    <div class="space-y-6 text-slate-200 text-sm sm:text-base leading-relaxed">
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">1. 프로젝트 초기화</h3>
-                            <pre><code>npx create-next-app@latest rag-webapp --typescript --tailwind --eslint
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0012.586 2H4zm8 1.414V6a1 1 0 001 1h3.586L12 4.414z" />
+                    </svg>
+                    설치 및 개발 방법
+                </h2>
+                <div class="space-y-6 text-blue-100 text-sm sm:text-base leading-relaxed">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">1. 프로젝트 초기화</h3>
+                        <pre><code>npx create-next-app@latest rag-webapp --typescript --tailwind --eslint
 cd rag-webapp
 npm install @tanstack/react-query zustand react-markdown rehype-highlight highlight.js</code></pre>
-                        </div>
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">2. API 연동 훅</h3>
-                            <pre><code>export const useRagQuery = () => {
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">2. API 연동 훅</h3>
+                        <pre><code>export const useRagQuery = () => {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (payload: RagRequest) => {
@@ -203,90 +175,71 @@ npm install @tanstack/react-query zustand react-markdown rehype-highlight highli
     onSuccess: data => client.setQueryData(['history'], prev => [...(prev ?? []), data]),
   });
 };</code></pre>
-                        </div>
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">3. 배포</h3>
-                            <pre><code># Vercel
-npm run build
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">3. 배포 파이프라인</h3>
+                        <pre><code>npm run build
 vercel deploy --prod
 
-# 사내망 Docker 배포
+# 사내망 Ddocker 배포
 docker build -t registry.example.com/rag-webapp:latest .
 docker push registry.example.com/rag-webapp:latest
 kubectl rollout restart deployment rag-webapp</code></pre>
-                        </div>
                     </div>
-                </section>
-
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm3 3a1 1 0 011 1v1h2a1 1 0 010 2H9v1a1 1 0 01-2 0V9H6a1 1 0 010-2h1V7a1 1 0 011-1z" clip-rule="evenodd"/>
-                        </svg>
-                        UX 체크리스트
-                    </h2>
-                    <div class="grid md:grid-cols-2 gap-4 text-slate-200 text-sm leading-relaxed">
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-blue-200 mb-2">대화 히스토리</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>IndexedDB/Redis로 세션 별 기록 유지</li>
-                                <li>즐겨찾기 · 태그 기능 제공</li>
-                                <li>사용자 피드백과 Trace ID 연동</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-blue-200 mb-2">근거 문서 노출</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>파일·라인 정보와 함께 카드 형태로 표시</li>
-                                <li>코드/문서 뷰어를 내장해 즉시 열람</li>
-                                <li>하이라이트 문장은 hover 시 전체 문단 표시</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-blue-200 mb-2">오류 처리</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>LLM 타임아웃 시 재시도 버튼 노출</li>
-                                <li>API 실패 시 이전 응답 임시 표시</li>
-                                <li>오류 메시지는 친숙한 언어로 변환</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-blue-200 mb-2">다국어/테마</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>react-i18next로 한국어/영어 UI 제공</li>
-                                <li>라이트/다크 테마 전환 지원</li>
-                                <li>모바일·태블릿 최적화 레이아웃</li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-blue-300" fill="CurrentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
-                        </svg>
-                        다음 단계
-                    </h2>
-                    <div class="bg-gradient-to-r from-blue-900/35 to-fuchsia-900/35 border-l-4 border-blue-400 p-4 rounded-r-xl text-slate-200 text-sm sm:text-base leading-relaxed">
-                        <p class="mb-2">Web App 구축 후 마무리 단계로 이동합니다.</p>
-                        <ol class="list-decimal list-inside space-y-2">
-                            <li><strong class="text-amber-300">Redis 캐시</strong> – 응답 캐시와 세션/레이트 리미트 저장</li>
-                            <li><strong class="text-emerald-300">모니터링 고도화</strong> – 사용자 행동 분석, UX 지표 수집</li>
-                            <li><strong class="text-purple-300">채널 확장</strong> – Slack/Teams/IDE 플러그인 연동</li>
-                        </ol>
-                    </div>
-                </section>
-            </main>
-
-            <footer class="mt-12">
-                <div class="glass-panel px-5 sm:px-6 py-4 rounded-xl flex flex-wrap justify-center gap-3 sm:gap-4">
-                    <a href="fastapi.html" class="nav-button">이전 단계 · FastAPI</a>
-                    <a href="index.html" class="nav-button">메인 허브</a>
-                    <a href="redis.html" class="nav-button">다음 단계 · Redis →</a>
                 </div>
-            </footer>
-        </div>
+            </section>
+
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm3 3a1 1 0 011 1v1h2a1 1 0 010 2H9v1a1 1 0 01-2 0V9H6a1 1 0 010-2h1V7a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    UX 체크리스트
+                </h2>
+                <div class="grid md:grid-cols-2 gap-4 text-blue-100 text-sm leading-relaxed">
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-blue-200 mb-2">대화 히스토리</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>세션별 히스토리를 IndexedDB/Redis에 저장</li>
+                            <li>즐겨찾기·태그 기능 제공</li>
+                            <li>피드백과 Trace ID 연동</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-blue-200 mb-2">근거 문서</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>파일/라인 정보와 함께 카드 형태로 표시</li>
+                            <li>코드/문서 뷰어 내장</li>
+                            <li>하이라이트 문장 hover 시 전체 문단 표시</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-blue-200 mb-2">오류 처리</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>LLM 타임아웃 시 재시도 버튼 노출</li>
+                            <li>API 실패 시 이전 응답 임시 표시</li>
+                            <li>오류 메시지는 친숙한 문장으로 변환</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-blue-200 mb-2">다국어/테마</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>react-i18next로 다국어 지원</li>
+                            <li>라이트/다크 테마 전환</li>
+                            <li>모바일·태블릿 반응형 레이아웃</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="mt-12">
+            <div class="glass-panel px-5 sm:px-6 py-4 rounded-xl flex flex-wrap justify-center gap-3 sm:gap-4">
+                <a href="fastapi.html" class="nav-button">이전 단계 · FastAPI</a>
+                <a href="index.html" class="nav-button">메인 허브</a>
+                <a href="redis.html" class="nav-button">다음 단계 · Redis →</a>
+            </div>
+        </footer>
     </div>
 </body>
 </html>

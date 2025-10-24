@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -9,272 +9,225 @@
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background: radial-gradient(circle at 18% 18%, rgba(99, 102, 241, 0.28), transparent 55%), radial-gradient(circle at 80% 12%, rgba(56, 189, 248, 0.25), transparent 45%), linear-gradient(180deg, #070814 0%, #111731 85%);
-            overflow-x: hidden;
-            color: #e5e7f0;
+            background: radial-gradient(circle at 18% 18%, rgba(99, 102, 241, 0.3), transparent 55%),
+                        radial-gradient(circle at 80% 12%, rgba(56, 189, 248, 0.26), transparent 45%),
+                        linear-gradient(180deg, #050715 0%, #101738 85%);
             min-height: 100vh;
+            color: #e5e7f0;
+            overflow-x: hidden;
         }
+        .wrapper { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 48px 20px 64px; }
         .glass-panel {
             position: relative;
-            background: linear-gradient(155deg, rgba(148, 163, 184, 0.12), rgba(59, 130, 246, 0.15));
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            border-radius: 1rem;
-            box-shadow: 0 28px 50px rgba(8, 12, 27, 0.58);
-            backdrop-filter: blur(26px) saturate(180%);
-            -webkit-backdrop-filter: blur(26px) saturate(180%);
+            background: linear-gradient(155deg, rgba(148, 163, 184, 0.14), rgba(59, 130, 246, 0.18));
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            border-radius: 18px;
+            box-shadow: 0 26px 50px rgba(6, 9, 30, 0.6);
+            backdrop-filter: blur(26px) saturate(190%);
+            -webkit-backdrop-filter: blur(26px) saturate(190%);
         }
         .glass-panel::before {
             content: "";
             position: absolute;
             inset: 0;
             border-radius: inherit;
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08) 55%, transparent 80%);
             pointer-events: none;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08) 55%, transparent 75%);
         }
         .glass-panel > * { position: relative; z-index: 1; }
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.5rem 1.25rem;
-            border-radius: 9999px;
-            background: rgba(59, 130, 246, 0.2);
-            border: 1px solid rgba(96, 165, 250, 0.5);
-            color: #bfdbfe;
-            font-size: 0.9rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-        }
-        .nav-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.4rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            background: linear-gradient(130deg, rgba(56, 189, 248, 0.28), rgba(99, 102, 241, 0.45));
-            border: 1px solid rgba(129, 140, 248, 0.58);
-            color: #e0f2fe;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .nav-button:hover {
-            transform: translateY(-2px);
+        .step-badge {
+            width: 3rem; height: 3rem; border-radius: 50%;
+            background: linear-gradient(135deg, #60a5fa, #22d3ee);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.125rem; color: #0f172a;
             box-shadow: 0 12px 28px rgba(59, 130, 246, 0.35);
         }
-        .section-title {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
+        .nav-button {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.8rem 1.6rem; border-radius: 9999px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(56, 189, 248, 0.45));
+            border: 1px solid rgba(56, 189, 248, 0.55);
+            color: #e0f2fe; font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        table { border-collapse: separate; border-spacing: 0; }
-        th {
-            background: rgba(59, 130, 246, 0.15);
-            color: #f8fafc;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        td { color: #e0e7ff; }
-        .info-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
-        .info-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 18px 36px rgba(10, 16, 34, 0.55);
-        }
-        code { font-family: 'JetBrains Mono', Consolas, monospace; }
+        .nav-button:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(89, 130, 247, 0.35); }
+        th { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.75rem; }
+        @media (max-width: 640px) { .nav-button { width: 100%; justify-content: center; } }
     </style>
 </head>
 <body>
-    <div class="relative">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-            <header class="mb-10">
-                <a href="Llama_Qwen3coder.html" class="inline-flex items-center text-sky-200 hover:text-white font-semibold mb-6 glass-panel px-4 py-2 rounded-full">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                    이전 단계 (LLM 통합)
-                </a>
-                <div class="glass-panel p-6 sm:p-8">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                        <div class="space-y-4">
-                            <span class="badge">개발 순서 5단계 · LlamaIndex Orchestrator</span>
-                            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">RAG 워크플로 오케스트레이션</h1>
-                            <p class="text-base sm:text-lg md:text-xl text-slate-200 leading-relaxed">
-                                Parser → KorBERT → ChromaDB → LLM 로 이어지는 파이프라인을 LlamaIndex QueryEngine으로 통합하고,
-                                평가 및 모니터링 체계를 구현하여 안정적인 RAG 운영 환경을 완성합니다.
-                            </p>
+    <div class="wrapper">
+        <header class="mb-10">
+            <a href="Llama_Qwen3coder.html" class="inline-flex items-center text-sky-200 hover:text-white font-semibold mb-6 glass-panel px-4 py-2 rounded-full">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                이전 단계 (LLM 통합)
+            </a>
+            <div class="glass-panel p-6 sm:p-8">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="step-badge">5</div>
+                            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">LlamaIndex Orchestrator 구축</h1>
                         </div>
-                        <div class="glass-panel px-5 py-4 rounded-2xl text-right text-slate-100">
-                            <p class="text-sm uppercase tracking-[0.25em] text-blue-200">현재 진행률</p>
-                            <p class="text-2xl font-bold text-white">60% · 파이프라인 검증 중</p>
-                            <p class="text-sm text-slate-300 mt-2">Router, Evaluator, Observability 구성 점검</p>
-                        </div>
+                        <p class="text-base sm:text-lg md:text-xl text-slate-200 leading-relaxed">
+                            Parser → KorBERT → ChromaDB → LLM으로 이어지는 파이프라인을 LlamaIndex QueryEngine으로 통합하고,
+                            평가·관측·피드백 루프를 갖춘 RAG 워크플로 엔진을 구성합니다.
+                        </p>
+                    </div>
+                    <div class="glass-panel px-5 py-4 rounded-2xl text-slate-100">
+                        <p class="text-sm uppercase tracking-[0.3em] text-sky-200">개발 순서</p>
+                        <p class="text-xl font-semibold text-white">5단계 · Orchestrator</p>
+                        <p class="text-sm text-slate-300 mt-2">Query Pipeline · Router · Evaluator · Observability</p>
                     </div>
                 </div>
-            </header>
+            </div>
+        </header>
 
-            <main class="space-y-8">
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-6a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                        </svg>
-                        개요
-                    </h2>
-                    <div class="space-y-4 text-slate-200 leading-relaxed">
-                        <p>
-                            LlamaIndex Orchestrator는 Retriever, Synthesizer, Evaluator, Callback을 조합하여 일관된 질의 처리 흐름을 제공합니다.
-                            각각의 단계를 모듈화하면 구성 변경과 확장에 유연하게 대응할 수 있습니다.
-                        </p>
-                        <p>
-                            본 단계에서는 QueryEngine 설계, Router를 활용한 도메인 분기, LLM 기반 평가 자동화, 관측(Observability) 체계를 함께 구축합니다.
-                        </p>
-                    </div>
-                </section>
+        <main class="space-y-8">
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-6a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    단계 개요
+                </h2>
+                <div class="space-y-4 text-slate-200 leading-relaxed">
+                    <p>
+                        LlamaIndex Orchestrator는 Retriever, Synthesizer, LLM, Evaluator를 모듈로 구성하여 일관된 질의 처리 흐름을 제공합니다.
+                        QueryEngine에 Router를 적용해 도메인별로 다른 파이프라인을 사용하고, CallbackManager와 Observability를 통해 운영 지표를 수집합니다.
+                    </p>
+                    <p>
+                        정기적으로 평가를 수행하고 피드백을 기록하면, 품질 슬립을 빠르게 감지하고 개선할 수 있습니다.
+                    </p>
+                </div>
+            </section>
 
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                        </svg>
-                        구현 상세
-                    </h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm md:text-base">
-                            <thead>
-                                <tr>
-                                    <th class="px-4 py-3 border-b border-slate-600">항목</th>
-                                    <th class="px-4 py-3 border-b border-slate-600">내용</th>
-                                    <th class="px-4 py-3 border-b border-slate-600">비고</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-slate-200">
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">Query Pipeline</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">Retriever → Synthesizer → LLM 응답</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">ChromaDBRetriever + ReActSynthesizer</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">Router</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">RouterQueryEngine으로 도메인별 엔진 선택</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">코드/FAQ/문서별로 다른 프롬프트 적용</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">평가 자동화</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">ResponseEvaluator + 규칙 기반 검증</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">정확도·출처·포맷 평가 점수 수집</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">Observability</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">CallbackManager + OpenTelemetry</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">지연/오류/토큰 사용량 실시간 추적</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-sky-300" fill="CurrentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    구현 상세
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm md:text-base">
+                        <thead>
+                            <tr class="text-slate-100">
+                                <th class="px-4 py-3 border-b border-slate-600">항목</th>
+                                <th class="px-4 py-3 border-b border-slate-600">내용</th>
+                                <th class="px-4 py-3 border-b border-slate-600">비고</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-200">
+                            <tr>
+                                <td class="px-4 py-3 border-b border-slate-700 font-semibold">Query Pipeline</td>
+                                <td class="px-4 py-3 border-b border-slate-700">ChromaDBRetriever → ReActSynthesizer</td>
+                                <td class="px-4 py-3 border-b border-slate-700">검색·응답 통합</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-slate-700 font-semibold">Router</td>
+                                <td class="px-4 py-3 border-b border-slate-700">RouterQueryEngine으로 도메인 분기</td>
+                                <td class="px-4 py-3 border-b border-slate-700">코드/FAQ/문서별 프롬프트</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-slate-700 font-semibold">평가 자동화</td>
+                                <td class="px-4 py-3 border-b border-slate-700">ResponseEvaluator + 규칙 기반 검증</td>
+                                <td class="px-4 py-3 border-b border-slate-700">정확도·출처·포맷</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-slate-700 font-semibold">Observability</td>
+                                <td class="px-4 py-3 border-b border-slate-700">CallbackManager + OpenTelemetry</td>
+                                <td class="px-4 py-3 border-b border-slate-700">지연, 실패율, 토큰 사용량</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0012.586 2H4zm8 1.414V6a1 1 0 001 1h3.586L12 4.414z"/>
-                        </svg>
-                        설치 및 개발 방법
-                    </h2>
-                    <div class="space-y-6 text-slate-200 text-sm sm:text-base leading-relaxed">
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">1. 패키지 설치</h3>
-                            <pre><code>python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-sky-300" fill="CurrentColor" viewBox="0 0 20 20">
+                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0012.586 2H4zm8 1.414V6a1 1 0 001 1h3.586L12 4.414z" />
+                    </svg>
+                    설치 및 개발 방법
+                </h2>
+                <div class="space-y-6 text-slate-200 text-sm sm:text-base leading-relaxed">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">1. 의존성 설치</h3>
+                        <pre><code>python -m venv .venv
+source .venv/bin/activate
 pip install llama-index-core llama-index-llms-ollama
-pip install llama-index-vector-stores-chroma llama-index-embeddings-openai
-pip install pyyaml</code></pre>
-                        </div>
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">2. 파이프라인 구성</h3>
-                            <pre><code>python pipelines/build_query_engine.py \
+pip install llama-index-vector-stores-chroma llama-index-embeddings-openai pyyaml</code></pre>
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">2. 파이프라인 구성</h3>
+                        <pre><code>python pipelines/build_query_engine.py \
   --config configs/pipeline.yaml \
   --output artifacts/query_engine.json</code></pre>
-                        </div>
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">3. 평가 실행</h3>
-                            <pre><code>python evaluations/run_rag_eval.py \
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">3. 평가 실행</h3>
+                        <pre><code>python evaluations/run_rag_eval.py \
   --engine artifacts/query_engine.json \
   --dataset datasets/rag_benchmark.json \
   --metrics exact_match,faithfulness,latency</code></pre>
-                        </div>
                     </div>
-                </section>
-
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm7 4a1 1 0 10-2 0v1H9a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" clip-rule="evenodd"/>
-                        </svg>
-                        운영 체크리스트
-                    </h2>
-                    <div class="grid md:grid-cols-2 gap-4 text-slate-200 text-sm leading-relaxed">
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-blue-200 mb-2">버전 관리</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>파이프라인 설정을 Git/DVC로 버전 관리</li>
-                                <li>Retriever/LLM 조합 변경 시 릴리스 노트 작성</li>
-                                <li>Semantic Versioning으로 영향 범위 명시</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-blue-200 mb-2">배포 전략</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>Blue/Green 혹은 Canary 배포로 리스크 최소화</li>
-                                <li>배포 전 Smoke 테스트 자동 실행</li>
-                                <li>토큰 사용량 예산을 사전 정의하고 모니터링</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-blue-200 mb-2">피드백 루프</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>사용자 평점, 수정 제안을 메타데이터와 함께 저장</li>
-                                <li>부정 피드백은 주간 회의에서 원인 분석</li>
-                                <li>재학습용 데이터셋을 자동으로 수집</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-blue-200 mb-2">장애 대응</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>외부 의존성 장애 시 캐시된 응답 사용</li>
-                                <li>Trace ID를 기반으로 문제 재현 및 분석</li>
-                                <li>장애 사례를 테스트 케이스에 즉시 반영</li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
-                        </svg>
-                        다음 단계
-                    </h2>
-                    <div class="bg-gradient-to-r from-slate-900/35 to-sky-900/35 border-l-4 border-sky-500 p-4 rounded-r-xl text-slate-200 text-sm sm:text-base leading-relaxed">
-                        <p class="mb-2">오케스트레이터 구축 후 다음 단계로 이동합니다.</p>
-                        <ol class="list-decimal list-inside space-y-2">
-                            <li><strong class="text-emerald-300">FastAPI 게이트웨이</strong> – API 계층과 인증/속도 제한</li>
-                            <li><strong class="text-blue-300">Web App</strong> – 사용자 인터페이스 및 피드백 수집</li>
-                            <li><strong class="text-amber-300">Redis 캐시</strong> – 응답 캐시, 세션 관리, 레이트 리미트 저장소</li>
-                        </ol>
-                    </div>
-                </section>
-            </main>
-
-            <footer class="mt-12">
-                <div class="glass-panel px-5 sm:px-6 py-4 rounded-xl flex flex-wrap justify-center gap-3 sm:gap-4">
-                    <a href="Llama_Qwen3coder.html" class="nav-button">이전 단계 · LLM 통합</a>
-                    <a href="index.html" class="nav-button">메인 허브</a>
-                    <a href="fastapi.html" class="nav-button">다음 단계 · FastAPI →</a>
                 </div>
-            </footer>
-        </div>
+            </section>
+
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-sky-300" fill="CurrentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm7 5a1 1 0 10-2 0v1H9a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V8z" clip-rule="evenodd" />
+                    </svg>
+                    운영 체크리스트
+                </h2>
+                <div class="grid md:grid-cols-2 gap-4 text-slate-200 text-sm leading-relaxed">
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-sky-200 mb-2">버전 관리</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>파이프라인 설정 Git/DVC 버전 관리</li>
+                            <li>Retriever/LLM 변경 시 릴리스 노트</li>
+                            <li>Semantic Versioning 적용</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-sky-200 mb-2">배포 전략</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Blue/Green 혹은 Canary 배포</li>
+                            <li>배포 전 Smoke 테스트 자동 실행</li>
+                            <li>토큰 예산 및 SLA 모니터링</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-sky-200 mb-2">피드백 루프</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>사용자 평점과 수정 제안을 기록</li>
+                            <li>부정 피드백 사례 분석</li>
+                            <li>재학습 데이터셋 자동 수집</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-sky-200 mb-2">장애 대응</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>외부 서비스 장애 시 캐시 응답 활용</li>
+                            <li>Trace ID 기반 문제 재현</li>
+                            <li>장애 사례를 테스트 케이스로 추가</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="mt-12">
+            <div class="glass-panel px-5 sm:px-6 py-4 rounded-xl flex flex-wrap justify-center gap-3 sm:gap-4">
+                <a href="Llama_Qwen3coder.html" class="nav-button">이전 단계 · LLM 통합</a>
+                <a href="index.html" class="nav-button">메인 허브</a>
+                <a href="fastapi.html" class="nav-button">다음 단계 · FastAPI →</a>
+            </div>
+        </footer>
     </div>
 </body>
 </html>

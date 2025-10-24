@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -9,273 +9,241 @@
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background: radial-gradient(circle at 18% 18%, rgba(139, 92, 246, 0.28), transparent 55%), radial-gradient(circle at 80% 12%, rgba(59, 130, 246, 0.25), transparent 45%), linear-gradient(180deg, #090a12 0%, #0c1023 85%);
-            overflow-x: hidden;
-            color: #e5e7f0;
+            background: radial-gradient(circle at 18% 18%, rgba(139, 92, 246, 0.32), transparent 55%),
+                        radial-gradient(circle at 82% 12%, rgba(56, 130, 246, 0.26), transparent 45%),
+                        linear-gradient(180deg, #060616 0%, #161332 85%);
             min-height: 100vh;
+            color: #ede9fe;
+            position: relative;
+            overflow-x: hidden;
         }
+        #bg-stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        .wrapper { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 48px 20px 64px; }
         .glass-panel {
             position: relative;
-            background: linear-gradient(155deg, rgba(148, 163, 184, 0.12), rgba(129, 140, 248, 0.18));
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            border-radius: 1rem;
-            box-shadow: 0 28px 50px rgba(11, 15, 35, 0.55);
-            backdrop-filter: blur(26px) saturate(180%);
-            -webkit-backdrop-filter: blur(26px) saturate(180%);
+            background: linear-gradient(155deg, rgba(168, 85, 247, 0.16), rgba(99, 102, 241, 0.14));
+            border: 1px solid rgba(168, 85, 247, 0.35);
+            border-radius: 18px;
+            box-shadow: 0 26px 50px rgba(18, 10, 38, 0.6);
+            backdrop-filter: blur(26px) saturate(190%);
+            -webkit-backdrop-filter: blur(26px) saturate(190%);
         }
         .glass-panel::before {
             content: "";
             position: absolute;
             inset: 0;
             border-radius: inherit;
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.08) 55%, transparent 80%);
             pointer-events: none;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06) 55%, transparent 75%);
         }
         .glass-panel > * { position: relative; z-index: 1; }
-        .badge {
-            display: inline-flex;
+        .step-badge {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            display: flex;
             align-items: center;
-            gap: 0.6rem;
-            padding: 0.5rem 1.25rem;
-            border-radius: 9999px;
-            background: rgba(129, 140, 248, 0.18);
-            border: 1px solid rgba(167, 139, 250, 0.45);
-            color: #ede9fe;
-            font-size: 0.9rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: #1e1b4b;
+            box-shadow: 0 12px 28px rgba(168, 85, 247, 0.35);
         }
         .nav-button {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.75rem 1.4rem;
+            padding: 0.8rem 1.6rem;
             border-radius: 9999px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(79, 70, 229, 0.45));
+            border: 1px solid rgba(129, 140, 248, 0.6);
+            color: #f5f3ff;
             font-weight: 600;
-            background: linear-gradient(130deg, rgba(129, 140, 248, 0.3), rgba(168, 85, 247, 0.45));
-            border: 1px solid rgba(192, 132, 252, 0.55);
-            color: #ede9fe;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .nav-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 28px rgba(168, 85, 247, 0.35);
-        }
-        .section-title {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        table { border-collapse: separate; border-spacing: 0; }
-        th {
-            background: rgba(129, 140, 248, 0.15);
-            color: #f8fafc;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        td { color: #e0e7ff; }
-        .info-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
-        .info-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 18px 36px rgba(12, 19, 45, 0.55);
-        }
-        code { font-family: 'JetBrains Mono', Consolas, monospace; }
+        .nav-button:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(124, 58, 237, 0.35); }
+        th { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.75rem; }
+        @media (max-width: 640px) { .nav-button { width: 100%; justify-content: center; } }
     </style>
 </head>
 <body>
-    <div class="relative">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-            <header class="mb-10">
-                <a href="KorBERT.html" class="inline-flex items-center text-violet-200 hover:text-white font-semibold mb-6 glass-panel px-4 py-2 rounded-full">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                    이전 단계 (KorBERT)
-                </a>
-                <div class="glass-panel p-6 sm:p-8">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                        <div class="space-y-4">
-                            <span class="badge">개발 순서 3단계 · ChromaDB</span>
+    <canvas id="bg-stars"></canvas>
+    <div class="wrapper">
+        <header class="mb-10">
+            <a href="KorBERT.html" class="inline-flex items-center text-violet-200 hover:text-white font-semibold mb-6 glass-panel px-4 py-2 rounded-full">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                이전 단계 (KorBERT)
+            </a>
+            <div class="glass-panel p-6 sm:p-8">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="step-badge">3</div>
                             <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">ChromaDB 벡터 데이터베이스 구축</h1>
-                            <p class="text-base sm:text-lg md:text-xl text-slate-200 leading-relaxed">
-                                KorBERT에서 생성한 임베딩을 ChromaDB에 적재하고, 검색 인덱스를 구성하여 RAG 질의에 즉시 사용할 수 있는 환경을 구축합니다.
-                            </p>
                         </div>
-                        <div class="glass-panel px-5 py-4 rounded-2xl text-right text-slate-100">
-                            <p class="text-sm uppercase tracking-[0.25em] text-violet-200">현재 진행률</p>
-                            <p class="text-2xl font-bold text-white">70% · 인덱스 튜닝 중</p>
-                            <p class="text-sm text-slate-300 mt-2">HNSW 파라미터, 메타데이터 필터링 테스트 진행</p>
-                        </div>
+                        <p class="text-base sm:text-lg md:text-xl text-violet-100 leading-relaxed">
+                            KorBERT 임베딩과 메타데이터를 ChromaDB 컬렉션에 적재하고, HNSW 기반 인덱스를 튜닝하여 RAG 검색 품질을 극대화합니다.
+                        </p>
+                    </div>
+                    <div class="glass-panel px-5 py-4 rounded-2xl text-violet-100">
+                        <p class="text-sm uppercase tracking-[0.3em] text-violet-200">개발 순서</p>
+                        <p class="text-xl font-semibold text-white">3단계 · ChromaDB</p>
+                        <p class="text-sm text-violet-200 mt-2">컬렉션 스키마 · HNSW 파라미터 · 검색 검증</p>
                     </div>
                 </div>
-            </header>
+            </div>
+        </header>
 
-            <main class="space-y-8">
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-violet-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-6a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                        </svg>
-                        개요
-                    </h2>
-                    <div class="space-y-4 text-slate-200 leading-relaxed">
-                        <p>
-                            ChromaDB는 경량이면서 확장성이 우수한 벡터 데이터베이스로, RAG 시스템에서 임베딩 검색을 담당합니다.
-                            컬렉션 구조와 메타데이터 스키마를 명확히 정의하면, LLM 응답에 필요한 컨텍스트를 신속하고 정확하게 검색해올 수 있습니다.
-                        </p>
-                        <p>
-                            본 단계는 임베딩 등록·검색·검증까지 이어지는 자동화 파이프라인을 마련하고, HNSW 기반 인덱스를 환경에 맞게 튜닝하는 것이 핵심입니다.
-                        </p>
-                    </div>
-                </section>
+        <main class="space-y-8">
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-violet-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-6a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    단계 개요
+                </h2>
+                <div class="space-y-4 text-violet-100 leading-relaxed">
+                    <p>
+                        ChromaDB는 경량이면서 확장성이 뛰어난 벡터 데이터베이스입니다. 컬렉션 구조를 명확히 정의하고 HNSW 인덱스를 환경에 맞게 조정하면 검색 지연을 줄이면서도 높은 정확도를 유지할 수 있습니다.
+                    </p>
+                    <p>
+                        배치 적재와 스트리밍 적재를 병행하고, 쿼리 성능·Hit ratio·메모리 사용량을 지속적으로 관찰하는 것이 핵심입니다.
+                    </p>
+                </div>
+            </section>
 
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-violet-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                        </svg>
-                        구현 상세
-                    </h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm md:text-base">
-                            <thead>
-                                <tr>
-                                    <th class="px-4 py-3 border-b border-slate-600">항목</th>
-                                    <th class="px-4 py-3 border-b border-slate-600">내용</th>
-                                    <th class="px-4 py-3 border-b border-slate-600">비고</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-slate-200">
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">컬렉션 스키마</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">namespace · version · language 로 파티션</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">메타데이터: 파일 경로, 심볼, 태그</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">인덱스 타입</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">HNSW (cosine 거리)</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">M=32, ef_construction=200 권장</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">적재 파이프라인</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">배치(야간) + 스트리밍(실시간 변경)</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">Airflow / Kafka 연동 가능</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 py-3 border-b border-slate-700 font-semibold">모니터링</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">Prometheus · Grafana · Alertmanager</td>
-                                    <td class="px-4 py-3 border-b border-slate-700">쿼리 지연, Hit ratio, 메모리 사용량 추적</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-violet-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    구현 상세
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm md:text-base">
+                        <thead>
+                            <tr class="text-slate-100">
+                                <th class="px-4 py-3 border-b border-violet-600">구분</th>
+                                <th class="px-4 py-3 border-b border-violet-600">내용</th>
+                                <th class="px-4 py-3 border-b border-violet-600">비고</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-violet-100">
+                            <tr>
+                                <td class="px-4 py-3 border-b border-violet-700 font-semibold">컬렉션 구조</td>
+                                <td class="px-4 py-3 border-b border-violet-700">namespace · version · language 분리</td>
+                                <td class="px-4 py-3 border-b border-violet-700">메타데이터: 파일 경로, 심볼, 태그</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-violet-700 font-semibold">인덱스 설정</td>
+                                <td class="px-4 py-3 border-b border-violet-700">HNSW (cosine) / M=32 / ef=200</td>
+                                <td class="px-4 py-3 border-b border-violet-700">쿼리 패턴에 따라 ef_search 조정</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-violet-700 font-semibold">적재 파이프라인</td>
+                                <td class="px-4 py-3 border-b border-violet-700">배치(야간) + 스트리밍(변경 이벤트)</td>
+                                <td class="px-4 py-3 border-b border-violet-700">Airflow · Kafka 연동</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b border-violet-700 font-semibold">모니터링</td>
+                                <td class="px-4 py-3 border-b border-violet-700">Prometheus · Grafana · Alertmanager</td>
+                                <td class="px-4 py-3 border-b border-violet-700">지연 시간·Hit ratio·메모리 사용량</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-violet-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0012.586 2H4zm8 1.414V6a1 1 0 001 1h3.586L12 4.414z"/>
-                        </svg>
-                        설치 및 개발 방법
-                    </h2>
-                    <div class="space-y-6 text-slate-200 text-sm sm:text-base leading-relaxed">
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">1. ChromaDB 서버 모드 실행</h3>
-                            <pre><code># 로컬 테스트
-pip install chromadb[server] uvicorn fastapi
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-violet-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0012.586 2H4zm8 1.414V6a1 1 0 001 1h3.586L12 4.414z" />
+                    </svg>
+                    설치 및 개발 방법
+                </h2>
+                <div class="space-y-6 text-violet-100 text-sm sm:text-base leading-relaxed">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">1. 서버 실행</h3>
+                        <pre><code>pip install chromadb[server] uvicorn fastapi
 chromadb server --path ./chroma_store
 
-# Docker 예시
-docker run -d --name chroma -p 8000:8000 ghcr.io/chroma-core/chroma:latest</code></pre>
-                        </div>
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">2. 임베딩 적재 스크립트</h3>
-                            <pre><code>python pipelines/chromadb_load.py \
+# Docker
+ocker run -d --name chroma -p 8000:8000 ghcr.io/chroma-core/chroma:latest</code></pre>
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">2. 임베딩 적재</h3>
+                        <pre><code>python pipelines/chromadb_load.py \
   --collection korbert-code-v1 \
   --embedding artifacts/korbert_embeddings.jsonl \
   --metadata artifacts/metadata.json \
   --distance cosine</code></pre>
-                        </div>
-                        <div>
-                            <h3 class="text-base sm:text-lg font-semibold mb-2">3. 검색 품질 테스트</h3>
-                            <pre><code>python evaluations/search_sanity.py \
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">3. 검색 검증</h3>
+                        <pre><code>python evaluations/search_sanity.py \
   --collection korbert-code-v1 \
   --queries datasets/sample_queries.json \
   --top-k 5</code></pre>
-                        </div>
                     </div>
-                </section>
-
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-violet-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm9 4a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" clip-rule="evenodd"/>
-                        </svg>
-                        운영 체크리스트
-                    </h2>
-                    <div class="grid md:grid-cols-2 gap-4 text-slate-200 text-sm leading-relaxed">
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-violet-200 mb-2">고가용성</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>Master/Replica 구성 또는 Sharding 고려</li>
-                                <li>Persistent Volume으로 인덱스 영속화</li>
-                                <li>배포 시 Rolling Update + Health Check</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-violet-200 mb-2">보안</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>API Key 기반 접근 제어 및 IP 화이트리스트</li>
-                                <li>민감 메타데이터는 암호화 후 저장</li>
-                                <li>감사 로그(Audit Log) 정기 백업</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-violet-200 mb-2">성능 최적화</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>쿼리 패턴별 ef_search 값 튜닝</li>
-                                <li>대량 upsert 전 배치 분할 및 압축</li>
-                                <li>샤딩 시 동일 namespace 균등 분배</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-4 rounded-xl">
-                            <h3 class="text-base font-semibold text-violet-200 mb-2">품질 관리</h3>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>Top-K 검색 결과와 레이블 데이터 비교</li>
-                                <li>정기 리프레시 작업을 통해 오래된 임베딩 폐기</li>
-                                <li>백업 스냅샷 생성 및 복구 시나리오 테스트</li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="glass-panel p-5 sm:p-6 md:p-8 info-card">
-                    <h2 class="section-title text-xl sm:text-2xl font-bold text-white mb-4">
-                        <svg class="w-7 h-7 text-violet-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
-                        </svg>
-                        다음 단계
-                    </h2>
-                    <div class="bg-gradient-to-r from-slate-900/35 to-indigo-900/35 border-l-4 border-violet-500 p-4 rounded-r-xl text-slate-200 text-sm sm:text-base leading-relaxed">
-                        <p class="mb-2">ChromaDB 구축 이후 단계는 다음과 같습니다.</p>
-                        <ol class="list-decimal list-inside space-y-2">
-                            <li><strong class="text-sky-300">LLM 통합</strong> – Llama 3.3 & Qwen3 Coder 라우팅</li>
-                            <li><strong class="text-emerald-300">FastAPI 게이트웨이</strong> – API 인증/속도 제한 구성</li>
-                            <li><strong class="text-blue-300">Web App</strong> – 사용자 UI/UX 구현 및 피드백 수집</li>
-                        </ol>
-                    </div>
-                </section>
-            </main>
-
-            <footer class="mt-12">
-                <div class="glass-panel px-5 sm:px-6 py-4 rounded-xl flex flex-wrap justify-center gap-3 sm:gap-4">
-                    <a href="KorBERT.html" class="nav-button">이전 단계 · KorBERT</a>
-                    <a href="index.html" class="nav-button">메인 허브</a>
-                    <a href="Llama_Qwen3coder.html" class="nav-button">다음 단계 · LLM 통합 →</a>
                 </div>
-            </footer>
-        </div>
+            </section>
+
+            <section class="glass-panel p-5 sm:p-6 md:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                    <svg class="w-7 h-7 text-violet-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm8 5a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V8z" clip-rule="evenodd" />
+                    </svg>
+                    운영 체크리스트
+                </h2>
+                <div class="grid md:grid-cols-2 gap-4 text-violet-100 text-sm leading-relaxed">
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-violet-200 mb-2">고가용성</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Master/Replica 혹은 Sharding 구성 검토</li>
+                            <li>Persistent Volume으로 인덱스 영속화</li>
+                            <li>Rolling Update + Health Check</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-вiolet-200 mb-2">보안</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>API Key · IP 화이트리스트</li>
+                            <li>민감 메타데이터 암호화</li>
+                            <li>Audit 로그 정기 백업</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-violet-200 mb-2">성능</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>쿼리 패턴별 ef_search 튜닝</li>
+                            <li>대량 upsert 전 배치 분할</li>
+                            <li>샤딩 시 namespace 균등 배분</li>
+                        </ul>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-base font-semibold text-violet-200 mb-2">품질</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Top-K 결과 수동 검증</li>
+                            <li>오래된 임베딩 주기적 교체</li>
+                            <li>품질 지표 및 변경 기록 문서화</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="mt-12">
+            <div class="glass-panel px-5 sm:px-6 py-4 rounded-xl flex flex-wrap justify-center gap-3 sm:gap-4">
+                <a href="KorBERT.html" class="nav-button">이전 단계 · KorBERT</a>
+                <a href="index.html" class="nav-button">메인 허브</a>
+                <a href="Llama_Qwen3coder.html" class="nav-button">다음 단계 · LLM 통합 →</a>
+            </div>
+        </footer>
     </div>
+
+    <script src="bg-stars.js"></script>
 </body>
 </html>
