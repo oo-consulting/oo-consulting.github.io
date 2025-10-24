@@ -143,6 +143,22 @@
             max-width: 480px;
             white-space: normal;
         }
+        .nav-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(59, 130, 246, 0.45));
+            border: 1px solid rgba(59, 130, 246, 0.6);
+            color: #dcfce7 !important;
+        }
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(34, 197, 94, 0.35);
+        }
     </style>
 </head>
 <body>
@@ -408,13 +424,12 @@ jobs:
             </main>
 
             <!-- Footer -->
-            <footer class="mt-12 text-center">
-                <a href="index.html" class="back-button inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold glass-panel px-6 py-3 rounded-lg">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    메인으로 돌아가기
-                </a>
+            <footer class="mt-12">
+                <div class="glass-panel px-6 py-4 rounded-xl flex flex-wrap justify-center gap-4">
+                    <a href="LlamaIndex_RAG.html" class="nav-button">← 이전 페이지</a>
+                    <a href="index.html" class="nav-button">메인 허브</a>
+                    <a href="webapp.html" class="nav-button">다음 페이지 →</a>
+                </div>
             </footer>
         </div>
     </div>
