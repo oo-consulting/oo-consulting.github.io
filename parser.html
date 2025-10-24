@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parser - Tree-Sitter 구현 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(56, 97, 219, 0.35), transparent 55%), radial-gradient(circle at 80% 10%, rgba(17, 135, 189, 0.3), transparent 45%), linear-gradient(180deg, #030712 0%, #020410 80%);
+            overflow-x: hidden;
+            color: #e5e7f0;
+            min-height: 100vh;
+            position: relative;
+        }
+        #bg-stars {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+        .glass-panel {
+            position: relative;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(148, 163, 184, 0.03));
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: inherit;
+            box-shadow: 0 32px 70px rgba(3, 7, 18, 0.55);
+            backdrop-filter: blur(24px) saturate(185%);
+            -webkit-backdrop-filter: blur(24px) saturate(185%);
+            overflow: hidden;
+        }
+        .glass-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06) 45%, transparent 70%);
+            opacity: 0.9;
+        }
+        .glass-panel::after {
+            content: "";
+            position: absolute;
+            inset-inline: 0;
+            top: 0;
+            height: 1px;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0));
+            pointer-events: none;
+            opacity: 0.85;
+        }
+        .glass-panel > * {
+            position: relative;
+            z-index: 1;
+        }
+        body .text-gray-900,
+        body .text-gray-800 {
+            color: #f9fafb !important;
+        }
+        body .text-gray-700,
+        body .text-gray-600 {
+            color: #dee9ff !important;
+        }
+        body .text-gray-500 {
+            color: #c3d4ff !important;
+        }
+        .parser-badge {
+            background: linear-gradient(155deg, rgba(230, 238, 156, 0.52), rgba(230, 238, 156, 0.1));
+            border: 2px solid rgba(194, 204, 112, 0.42);
+            box-shadow: 0 4px 12px rgba(194, 204, 112, 0.3);
+        }
+        .info-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(3, 7, 18, 0.4);
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        th {
+            background: linear-gradient(155deg, rgba(230, 238, 156, 0.3), rgba(230, 238, 156, 0.05));
+            color: #f9fafb !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.875rem;
+        }
+        td {
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(148, 163, 184, 0.02));
+            color: #dee9ff !important;
+        }
+        tr:hover td {
+            background: linear-gradient(160deg, rgba(230, 238, 156, 0.15), rgba(230, 238, 156, 0.05));
+        }
+        .back-button {
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+        .language-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.3));
+            border: 1px solid rgba(99, 102, 241, 0.5);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+            font-weight: 500;
+        }
+        code {
+            background: linear-gradient(160deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #fbbf24;
+        }
+        pre {
+            background: linear-gradient(160deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.3));
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: #a5f3fc;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-stars" class="fixed inset-0 w-full h-full pointer-events-none"></canvas>
+
+    <div class="relative z-10">
+        <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+            <!-- Header -->
+            <header class="mb-8">
+                <a href="index.html" class="back-button inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold mb-6 glass-panel px-4 py-2 rounded-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    메인으로 돌아가기
+                </a>
+                
+                <div class="glass-panel p-8 rounded-2xl">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-bold text-xl shadow-lg mr-4">
+                                    1
+                                </div>
+                                <h1 class="text-4xl font-bold text-gray-900">Parser</h1>
+                            </div>
+                            <p class="text-xl text-gray-600">Tree-Sitter를 활용한 소스코드 구조 분석 및 파싱 시스템</p>
+                        </div>
+                        <div class="parser-badge px-6 py-3 rounded-lg">
+                            <p class="text-sm font-semibold" style="color: #1f2937;">개발 순서 1단계</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="space-y-8">
+                <!-- Overview Section -->
+                <section class="glass-panel p-6 rounded-xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                        </svg>
+                        개요
+                    </h2>
+                    <div class="space-y-4 text-gray-600">
+                        <p>Tree-Sitter는 소스 코드를 <strong class="text-yellow-400">AST (추상 구문 트리)</strong>로 변환하는 고성능 파싱 라이브러리입니다. RAG 시스템에서 코드의 구조적 정보를 정확하게 추출하기 위해 사용됩니다.</p>
+                        <p>단순히 텍스트로 코드를 처리하는 것이 아니라, 클래스, 메서드, 변수 등의 문법 구조를 이해하고 분석할 수 있습니다.</p>
+                    </div>
+                </section>
+
+                <!-- Details Table -->
+                <section class="glass-panel p-6 rounded-xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        구현 상세
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-3 border-b border-gray-700">구분</th>
+                                    <th class="px-4 py-3 border-b border-gray-700">내용</th>
+                                    <th class="px-4 py-3 border-b border-gray-700">상세 설명</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="px-4 py-4 border-b border-gray-800 font-semibold">핵심 엔진</td>
+                                    <td class="px-4 py-4 border-b border-gray-800">Tree-Sitter</td>
+                                    <td class="px-4 py-4 border-b border-gray-800">소스 코드를 <strong>AST (추상 구문 트리)</strong>로 변환하는 고성능 파싱 라이브러리 설치</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 border-b border-gray-800 font-semibold">구현 언어</td>
+                                    <td class="px-4 py-4 border-b border-gray-800">Python</td>
+                                    <td class="px-4 py-4 border-b border-gray-800">RAG 파이프라인(FastAPI, LlamaIndex)이 Python 기반이므로, 공식 Python 바인딩인 tree-sitter 라이브러리를 사용</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 border-b border-gray-800 font-semibold">언어 문법</td>
+                                    <td class="px-4 py-4 border-b border-gray-800">
+                                        <div class="flex flex-wrap gap-2">
+                                            <span class="language-tag">tree-sitter-java</span>
+                                            <span class="language-tag">tree-sitter-sql</span>
+                                            <span class="language-tag">tree-sitter-html</span>
+                                            <span class="language-tag">tree-sitter-css</span>
+                                            <span class="language-tag">tree-sitter-javascript</span>
+                                            <span class="language-tag">tree-sitter-dart</span>
+                                            <span class="language-tag">tree-sitter-yaml</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 border-b border-gray-800">분석 대상 언어 (Java, SQL, HTML, CSS, JavaScript, JSP, Dart, YAML 등)의 공식 문법 정의를 로드</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 font-semibold">실행 환경</td>
+                                    <td class="px-4 py-4">Linux 또는 WSL</td>
+                                    <td class="px-4 py-4">Tree-Sitter 설치 및 빌드 과정에서 C 컴파일러가 필요할 수 있으므로 Linux 환경이 가장 안정적</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Installation Guide -->
+                <section class="glass-panel p-6 rounded-xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                        </svg>
+                        설치 방법
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">1. Python Tree-Sitter 라이브러리 설치</h3>
+                            <pre><code>pip install tree-sitter</code></pre>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">2. 언어별 문법 파서 설치</h3>
+                            <pre><code># Java
+pip install tree-sitter-java
+
+# SQL
+pip install tree-sitter-sql
+
+# JavaScript
+pip install tree-sitter-javascript
+
+# HTML/CSS
+pip install tree-sitter-html tree-sitter-css
+
+# Dart
+pip install tree-sitter-dart</code></pre>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">3. 기본 사용 예제</h3>
+                            <pre><code>from tree_sitter import Language, Parser
+import tree_sitter_java as tsjava
+
+# Java 파서 초기화
+JAVA_LANGUAGE = Language(tsjava.language())
+parser = Parser(JAVA_LANGUAGE)
+
+# 코드 파싱
+source_code = b"""
+public class Example {
+    public void hello() {
+        System.out.println("Hello World");
+    }
+}
+"""
+
+tree = parser.parse(source_code)
+root_node = tree.root_node
+
+# AST 탐색
+print(root_node.sexp())</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Benefits Section -->
+                <section class="glass-panel p-6 rounded-xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        RAG 시스템에서의 장점
+                    </h2>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-blue-400 mb-2">🎯 정확한 코드 이해</h3>
+                            <p class="text-gray-600 text-sm">클래스, 메서드, 변수 등 코드의 구조적 요소를 정확하게 식별하여 더 나은 검색 결과를 제공합니다.</p>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-green-400 mb-2">⚡ 고성능 파싱</h3>
+                            <p class="text-gray-600 text-sm">대용량 코드베이스도 빠르게 분석하여 실시간 응답이 가능합니다.</p>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-purple-400 mb-2">🔍 의미론적 검색</h3>
+                            <p class="text-gray-600 text-sm">코드의 의미와 맥락을 이해하여 관련성 높은 코드 조각을 찾아냅니다.</p>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-yellow-400 mb-2">🌐 다양한 언어 지원</h3>
+                            <p class="text-gray-600 text-sm">Java, JavaScript, Python, SQL 등 50개 이상의 프로그래밍 언어를 지원합니다.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Next Steps -->
+                <section class="glass-panel p-6 rounded-xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+                        </svg>
+                        다음 단계
+                    </h2>
+                    <div class="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+                        <p class="text-gray-600 mb-2">Parser 구축이 완료되면 다음 단계로 진행합니다:</p>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-600">
+                            <li><strong class="text-cyan-400">2단계: KorBERT</strong> - 한국어 임베딩 모델 구축</li>
+                            <li><strong class="text-purple-400">3단계: ChromaDB</strong> - 벡터 데이터베이스 구축</li>
+                            <li><strong class="text-blue-400">4단계: LLM</strong> - 언어 모델 통합</li>
+                        </ol>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Footer -->
+            <footer class="mt-12 text-center">
+                <a href="index.html" class="back-button inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold glass-panel px-6 py-3 rounded-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    메인으로 돌아가기
+                </a>
+            </footer>
+        </div>
+    </div>
+
+    <script src="bg-stars.js"></script>
+</body>
+</html>
