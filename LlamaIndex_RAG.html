@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LlamaIndex Orchestrator - RAG 워크플로 구축 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(56, 97, 219, 0.35), transparent 55%), radial-gradient(circle at 80% 10%, rgba(17, 135, 189, 0.3), transparent 45%), linear-gradient(180deg, #030712 0%, #020410 80%);
+            overflow-x: hidden;
+            color: #e5e7f0;
+            min-height: 100vh;
+            position: relative;
+        }
+        #bg-stars {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+        .glass-panel {
+            position: relative;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(148, 163, 184, 0.03));
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: inherit;
+            box-shadow: 0 32px 70px rgba(3, 7, 18, 0.55);
+            backdrop-filter: blur(24px) saturate(185%);
+            -webkit-backdrop-filter: blur(24px) saturate(185%);
+            overflow: hidden;
+        }
+        .glass-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06) 45%, transparent 70%);
+            opacity: 0.9;
+        }
+        .glass-panel::after {
+            content: "";
+            position: absolute;
+            inset-inline: 0;
+            top: 0;
+            height: 1px;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0));
+            pointer-events: none;
+            opacity: 0.85;
+        }
+        .glass-panel > * {
+            position: relative;
+            z-index: 1;
+        }
+        body .text-gray-900,
+        body .text-slate-900 {
+            color: #f9fafb !important;
+        }
+        body .text-gray-800,
+        body .text-slate-800 {
+            color: #e2e8f0 !important;
+        }
+        body .text-gray-700,
+        body .text-slate-700 {
+            color: #dbeafe !important;
+        }
+        body .text-gray-600,
+        body .text-slate-600 {
+            color: #cbd5f5 !important;
+        }
+        body .text-gray-500,
+        body .text-slate-500 {
+            color: #bcd2ff !important;
+        }
+        .orchestrator-badge {
+            background: linear-gradient(155deg, rgba(14, 165, 233, 0.45), rgba(129, 140, 248, 0.35));
+            border: 2px solid rgba(129, 140, 248, 0.35);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.28);
+        }
+        .info-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.4);
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        th {
+            background: linear-gradient(155deg, rgba(129, 140, 248, 0.28), rgba(14, 165, 233, 0.18));
+            color: #f9fafb !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.875rem;
+        }
+        td {
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(148, 163, 184, 0.02));
+            color: #dee9ff !important;
+        }
+        tr:hover td {
+            background: linear-gradient(160deg, rgba(129, 140, 248, 0.2), rgba(14, 165, 233, 0.12));
+        }
+        .back-button {
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+        .step-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.35), rgba(14, 165, 233, 0.35));
+            border: 1px solid rgba(14, 165, 233, 0.5);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+            font-weight: 500;
+        }
+        code {
+            background: linear-gradient(160deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #a5b4fc;
+        }
+        pre {
+            background: linear-gradient(160deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.3));
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+        .text-nowrap {
+            white-space: nowrap;
+        }
+        .detail-col {
+            max-width: 480px;
+            white-space: normal;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-stars"></canvas>
+    <div class="relative z-10">
+        <div class="max-w-6xl mx-auto px-6 md:px-10 lg:px-12 py-12">
+            <!-- Header -->
+            <header class="mb-8">
+                <a href="index.html" class="back-button inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold mb-6 glass-panel px-4 py-2 rounded-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    메인으로 돌아가기
+                </a>
+
+                <div class="glass-panel p-8 rounded-2xl">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 via-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-xl shadow-lg mr-4">
+                                    5
+                                </div>
+                                <h1 class="text-4xl font-bold text-gray-900">LlamaIndex Orchestrator</h1>
+                            </div>
+                            <p class="text-xl text-gray-600">RAG 워크플로 자동화와 파이프라인 거버넌스 구축</p>
+                        </div>
+                        <div class="orchestrator-badge px-6 py-3 rounded-lg">
+                            <p class="text-sm font-semibold" style="color: #0f172a;">개발 순서 5단계</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="space-y-10">
+                <!-- Overview -->
+                <section class="glass-panel p-6 md:p-8 rounded-2xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-6a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        개요
+                    </h2>
+                    <div class="space-y-4 text-gray-600">
+                        <p>
+                            LlamaIndex 오케스트레이터 단계는 <span class="text-indigo-300 font-semibold">Parser → KorBERT → ChromaDB → LLM</span>
+                            로 이어지는 파이프라인을 자동화하고, 질의 처리 플로우를 일관된 워크플로로 관리합니다.
+                            QueryEngine, Evaluator, CallbackManager 등을 적절히 조합하여 재사용 가능한 모듈을 제공합니다.
+                        </p>
+                        <p>
+                            또한, 메트릭 수집과 피드백 루프를 통해 RAG 품질을 지속적으로 개선하며, 버전 관리와 배포 전략을 수립해
+                            운영 환경에서도 안정적으로 기능하도록 설계합니다.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <span class="step-tag">Query Pipeline 정의</span>
+                            <span class="step-tag">Retriever/LLM 조합</span>
+                            <span class="step-tag">메트릭 수집</span>
+                            <span class="step-tag">피드백 루프</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Implementation Details -->
+                <section class="glass-panel p-6 md:p-8 rounded-2xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                        </svg>
+                        구현 상세
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-3 border-b border-indigo-600">구분</th>
+                                    <th class="px-4 py-3 border-b border-indigo-600">내용</th>
+                                    <th class="px-4 py-3 border-b border-indigo-600">상세 설명</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-indigo-700 text-nowrap">Query Pipeline</td>
+                                    <td class="px-4 py-3 border-b border-indigo-700 text-nowrap">Retriever → Synthesizer</td>
+                                    <td class="px-4 py-3 border-b border-indigo-700 detail-col">
+                                        ChromaDBRetriever로 상위 컨텍스트를 가져오고, Llama/Qwen 응답을 ReActSynthesizer로 통합하여 답변을 생성합니다.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-indigo-700 text-nowrap">도메인 라우팅</td>
+                                    <td class="px-4 py-3 border-b border-indigo-700 text-nowrap">RouterQueryEngine 활용</td>
+                                    <td class="px-4 py-3 border-b border-indigo-700 detail-col">
+                                        질의 분류기를 통해 문서 타입(코드, 정책, 운영 가이드)에 따라 서로 다른 Retriever/LLM 조합을 선택합니다.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-indigo-700 text-nowrap">평가 자동화</td>
+                                    <td class="px-4 py-3 border-b border-indigo-700 text-nowrap">ResponseEvaluator</td>
+                                    <td class="px-4 py-3 border-b border-indigo-700 detail-col">
+                                        LLM 기반 평가(Eval LLM)와 룰 기반 검증을 결합해 정확도, 출처(grounding), 형식 준수를 점검합니다.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-indigo-700 text-nowrap">Observability</td>
+                                    <td class="px-4 py-3 border-b border-indigo-700 text-nowrap">CallbackManager 연동</td>
+                                    <td class="px-4 py-3 border-b border-indigo-700 detail-col">
+                                        OpenTelemetry 혹은 LlamaIndex Observatory와 연계하여 쿼리 파이프라인의 단계별 latency와 성공률을 추적합니다.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Installation / Development Guide -->
+                <section class="glass-panel p-6 md:p-8 rounded-2xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0012.586 2H4zm8 1.414V6a1 1 0 001 1h3.586L12 4.414z"/>
+                        </svg>
+                        설치 및 개발 방법
+                    </h2>
+                    <div class="space-y-6 text-gray-600">
+                        <div>
+                            <h3 class="text-lg font-semibold text-indigo-300 mb-2">1. LlamaIndex 및 의존성 설치</h3>
+                            <pre><code>python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+pip install llama-index-core llama-index-llms-ollama llama-index-embeddings-openai
+pip install llama-index-vector-stores-chroma pyyaml</code></pre>
+                            <p class="text-sm mt-2">
+                                LLM 백엔드에 따라 추가 패키지(예: <code>llama-index-llms-openai</code>)를 설치합니다.
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-indigo-300 mb-2">2. 파이프라인 구성 스크립트</h3>
+                            <pre><code>python pipelines/build_pipeline.py \
+  --config configs/pipeline.yaml \
+  --output artifacts/query_engine.json</code></pre>
+                            <p class="text-sm mt-2">
+                                구성 파일에는 Retriever 설정(Top-K, 거리 함수), Synthesizer 파라미터, 사용 모델 ID 등을 명시합니다.
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-indigo-300 mb-2">3. 평가 및 피드백 수집</h3>
+                            <pre><code>python evaluations/run_eval.py \
+  --query-engine artifacts/query_engine.json \
+  --benchmark datasets/kor_rag_eval.json \
+  --metrics exact_match,faithfulness,response_length</code></pre>
+                            <p class="text-sm mt-2">
+                                결과는 CSV/JSON과 대시보드용 Prometheus exporter로 동시에 저장하여 추세를 추적합니다.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Unique Panel -->
+                <section class="glass-panel p-6 md:p-8 rounded-2xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm7 4a1 1 0 10-2 0v1H9a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" clip-rule="evenodd"/>
+                        </svg>
+                        운영 거버넌스를 위한 체크리스트
+                    </h2>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                        <div class="glass-panel p-4 rounded-lg bg-slate-900/40">
+                            <h3 class="font-semibold text-indigo-200 mb-2">버전 관리</h3>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>파이프라인 설정(pipeline.yaml)을 Git과 DVC로 버저닝</li>
+                                <li>Retriever/LLM 변경 시 Semantic Versioning 적용</li>
+                                <li>릴리스 노트에 주요 개선점과 영향 범위 기록</li>
+                            </ul>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg bg-slate-900/40">
+                            <h3 class="font-semibold text-indigo-200 mb-2">배포 전략</h3>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Blue/Green 또는 Canary 배포로 영향 최소화</li>
+                                <li>파이프라인 변경 시 Smoke 테스트 자동 실행</li>
+                                <li>LLM 토큰 제한 및 예산 한도를 설정하고 모니터링</li>
+                            </ul>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg bg-slate-900/40">
+                            <h3 class="font-semibold text-indigo-200 mb-2">피드백 루프</h3>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>사용자 thumbs-up/down 피드백을 메타데이터와 함께 저장</li>
+                                <li>부정 피드백은 주간 회고에서 원인 분석</li>
+                                <li>LLM 출력과 Ground Truth 비교로 재학습 데이터 확보</li>
+                            </ul>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg bg-slate-900/40">
+                            <h3 class="font-semibold text-indigo-200 mb-2">장애 대응</h3>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>외부 의존성(LLM API) 장애 시 캐시된 응답 활용</li>
+                                <li>에러 로깅에 Trace ID를 포함해 문제 추적</li>
+                                <li>장애 재현을 위한 테스트 케이스를 즉시 추가</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Benefits -->
+                <section class="glass-panel p-6 rounded-xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        RAG 시스템에서의 장점
+                    </h2>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-indigo-200 mb-2">워크플로 일관성</h3>
+                            <p class="text-gray-600 text-sm">QueryEngine을 통해 모든 질의가 동일한 절차로 처리되어 운영 안정성이 확보됩니다.</p>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-emerald-300 mb-2">빠른 개선 속도</h3>
+                            <p class="text-gray-600 text-sm">평가 자동화와 피드백 루프를 통해 문제 지점을 신속히 파악하고 개선할 수 있습니다.</p>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-sky-300 mb-2">운영 가시성</h3>
+                            <p class="text-gray-600 text-sm">CallbackManager 기반 로깅으로 지연, 실패율, 토큰 소비량을 실시간 추적합니다.</p>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-amber-300 mb-2">확장성 확보</h3>
+                            <p class="text-gray-600 text-sm">RouterQueryEngine과 다중 Retriever 구성을 통해 서비스 영역 확장에 유연하게 대응합니다.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Next Steps -->
+                <section class="glass-panel p-6 rounded-xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+                        </svg>
+                        다음 단계
+                    </h2>
+                    <div class="bg-gradient-to-r from-indigo-900/25 to-blue-900/25 border-l-4 border-indigo-400 p-4 rounded-r-lg">
+                        <p class="text-gray-600 mb-2">오케스트레이터 구축 후 진행해야 할 주요 작업입니다.</p>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-600">
+                            <li><strong class="text-blue-400">6단계: 운영 자동화</strong> - Airflow/Argo로 정기 작업 스케줄링</li>
+                            <li><strong class="text-cyan-400">7단계: SLA 정립</strong> - 응답 시간, 가용성 SLA 문서화 및 모니터링</li>
+                            <li><strong class="text-emerald-400">8단계: 사용자 채널 확장</strong> - 챗봇/포털/IDE 플러그인 등으로 서비스 확대</li>
+                        </ol>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Footer -->
+            <footer class="mt-12 text-center">
+                <a href="index.html" class="back-button inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold glass-panel px-6 py-3 rounded-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    메인으로 돌아가기
+                </a>
+            </footer>
+        </div>
+    </div>
+
+    <script src="bg-stars.js"></script>
+</body>
+</html>
