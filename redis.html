@@ -73,14 +73,23 @@
                 이전 단계 (Web App)
             </a>
             <div class="glass-panel p-6 sm:p-8">
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="step-badge">8</div>
-                    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">Redis 기반 캐시 · 세션 · 레이트 관리</h1>
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="step-badge">8</div>
+                            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">Redis 기반 캐시 · 세션 · 레이트 관리</h1>
+                        </div>
+                        <p class="text-base sm:text-lg md:text-xl text-rose-100 leading-relaxed">
+                            Redis를 활용해 자주 반복되는 답변을 캐시하고, 사용자 세션과 레이트 리미트를 중앙에서 관리하여
+                            LLM 호출 비용을 절감하고 서비스 안정성을 높입니다.
+                        </p>
+                    </div>
+                    <div class="glass-panel px-5 py-4 rounded-2xl text-rose-100">
+                        <p class="text-sm uppercase tracking-[0.3em] text-rose-200">개발 순서</p>
+                        <p class="text-xl font-semibold text-white">8단계 · Redis 캐시</p>
+                        <p class="text-sm text-rose-200 mt-2">응답 캐시 · 세션 · 레이트 리미트</p>
+                    </div>
                 </div>
-                <p class="text-base sm:text-lg md:text-xl text-rose-100 leading-relaxed">
-                    Redis를 활용해 자주 반복되는 답변을 캐시하고, 사용자 세션과 레이트 리미트를 중앙에서 관리하여
-                    LLM 호출 비용을 절감하고 서비스 안정성을 높입니다.
-                </p>
             </div>
         </header>
 
