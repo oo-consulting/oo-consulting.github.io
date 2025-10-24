@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChromaDB - 벡터 데이터베이스 구축 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(56, 97, 219, 0.35), transparent 55%), radial-gradient(circle at 80% 10%, rgba(17, 135, 189, 0.3), transparent 45%), linear-gradient(180deg, #030712 0%, #020410 80%);
+            overflow-x: hidden;
+            color: #e5e7f0;
+            min-height: 100vh;
+            position: relative;
+        }
+        #bg-stars {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+        .glass-panel {
+            position: relative;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(148, 163, 184, 0.03));
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: inherit;
+            box-shadow: 0 32px 70px rgba(3, 7, 18, 0.55);
+            backdrop-filter: blur(24px) saturate(185%);
+            -webkit-backdrop-filter: blur(24px) saturate(185%);
+            overflow: hidden;
+        }
+        .glass-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06) 45%, transparent 70%);
+            opacity: 0.9;
+        }
+        .glass-panel::after {
+            content: "";
+            position: absolute;
+            inset-inline: 0;
+            top: 0;
+            height: 1px;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0));
+            pointer-events: none;
+            opacity: 0.85;
+        }
+        .glass-panel > * {
+            position: relative;
+            z-index: 1;
+        }
+        body .text-gray-900,
+        body .text-slate-900 {
+            color: #f9fafb !important;
+        }
+        body .text-gray-800,
+        body .text-slate-800 {
+            color: #e2e8f0 !important;
+        }
+        body .text-gray-700,
+        body .text-slate-700 {
+            color: #dbeafe !important;
+        }
+        body .text-gray-600,
+        body .text-slate-600 {
+            color: #cbd5f5 !important;
+        }
+        body .text-gray-500,
+        body .text-slate-500 {
+            color: #bcd2ff !important;
+        }
+        .chromadb-badge {
+            background: linear-gradient(155deg, rgba(168, 85, 247, 0.45), rgba(237, 223, 255, 0.45));
+            border: 2px solid rgba(168, 85, 247, 0.35);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.28);
+        }
+        .info-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.4);
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        th {
+            background: linear-gradient(155deg, rgba(168, 85, 247, 0.28), rgba(168, 85, 247, 0.08));
+            color: #f9fafb !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.875rem;
+        }
+        td {
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(148, 163, 184, 0.02));
+            color: #dee9ff !important;
+        }
+        tr:hover td {
+            background: linear-gradient(160deg, rgba(168, 85, 247, 0.18), rgba(168, 85, 247, 0.06));
+        }
+        .back-button {
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 8px 20px rgba(192, 132, 252, 0.4);
+        }
+        .step-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(124, 58, 237, 0.35));
+            border: 1px solid rgba(124, 58, 237, 0.5);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+            font-weight: 500;
+        }
+        code {
+            background: linear-gradient(160deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #d6bcfa;
+        }
+        pre {
+            background: linear-gradient(160deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.3));
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-stars"></canvas>
+    <div class="relative z-10">
+        <div class="max-w-6xl mx-auto px-6 md:px-10 lg:px-12 py-12">
+            <!-- Header -->
+            <header class="mb-8">
+                <a href="index.html" class="back-button inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold mb-6 glass-panel px-4 py-2 rounded-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    메인으로 돌아가기
+                </a>
+
+                <div class="glass-panel p-8 rounded-2xl">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg mr-4">
+                                    3
+                                </div>
+                                <h1 class="text-4xl font-bold text-gray-900">ChromaDB</h1>
+                            </div>
+                            <p class="text-xl text-gray-600">벡터 데이터베이스 구축과 검색 인덱스 최적화</p>
+                        </div>
+                        <div class="chromadb-badge px-6 py-3 rounded-lg">
+                            <p class="text-sm font-semibold" style="color: #1e1b4b;">개발 순서 3단계</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="space-y-10">
+                <!-- Overview -->
+                <section class="glass-panel p-6 md:p-8 rounded-2xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-6a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        개요
+                    </h2>
+                    <div class="space-y-4 text-gray-600">
+                        <p>
+                            ChromaDB 단계는 <span class="text-purple-300 font-semibold">KorBERT에서 생성된 임베딩</span>을
+                            고성능 벡터 데이터베이스에 적재하여 검색을 위한 인덱스를 구성하는 과정입니다.
+                            컬렉션 스키마 설계, 파티셔닝 전략, 메타데이터 필터링, 인덱스 빌드 자동화가 핵심 업무입니다.
+                        </p>
+                        <p>
+                            운영 환경에서는 벡터 데이터의 증분 적재가 자주 발생하므로, 배치 파이프라인과 실시간 파이프라인을 분리 설계하고,
+                            거리 함수(코사인, 점곱 등)와 임계값을 조정해 검색 품질을 튜닝합니다.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <span class="step-tag">컬렉션 스키마 정의</span>
+                            <span class="step-tag">벡터 인덱스 구축</span>
+                            <span class="step-tag">메타데이터 필터링</span>
+                            <span class="step-tag">증분 적재 자동화</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Implementation Details -->
+                <section class="glass-panel p-6 md:p-8 rounded-2xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                        </svg>
+                        구현 상세
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-3 border-b border-purple-600">구분</th>
+                                    <th class="px-4 py-3 border-b border-purple-600">내용</th>
+                                    <th class="px-4 py-3 border-b border-purple-600">상세 설명</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-purple-700">컬렉션 설계</td>
+                                    <td class="px-4 py-3 border-b border-purple-700">Namespace/Collection 구조</td>
+                                    <td class="px-4 py-3 border-b border-purple-700">
+                                        KorBERT 벡터를 서비스 도메인, 버전, 언어별로 분리해 컬렉션을 구성합니다.
+                                        메타 필드(파일 경로, 심볼, 태그, 임베딩 버전)를 스키마에 포함합니다.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-purple-700">적재 전략</td>
+                                    <td class="px-4 py-3 border-b border-purple-700">배치/스트리밍 파이프라인 병행</td>
+                                    <td class="px-4 py-3 border-b border-purple-700">
+                                        대량 배치는 nightly job으로, 변경 파일은 이벤트 기반 스트리밍으로 처리하여 최신 상태를 유지합니다.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-purple-700">인덱스 관리</td>
+                                    <td class="px-4 py-3 border-b border-purple-700">HNSW 파라미터 튜닝</td>
+                                    <td class="px-4 py-3 border-b border-purple-700">
+                                        M, ef_construction, ef_search 값을 데이터 규모에 맞게 조정해 검색 정확도와 속도의 균형을 맞춥니다.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-purple-700">운영 모니터링</td>
+                                    <td class="px-4 py-3 border-b border-purple-700">Latency & Recall 추적</td>
+                                    <td class="px-4 py-3 border-b border-purple-700">
+                                        Prometheus/Grafana 연동으로 쿼리 지연 시간과 재현율을 모니터링하고 임계값을 초과하면 알림을 발생시킵니다.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Installation / Development Guide -->
+                <section class="glass-panel p-6 md:p-8 rounded-2xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0012.586 2H4zm8 1.414V6a1 1 0 001 1h3.586L12 4.414z"/>
+                        </svg>
+                        설치 및 개발 방법
+                    </h2>
+                    <div class="space-y-6 text-gray-600">
+                        <div>
+                            <h3 class="text-lg font-semibold text-purple-300 mb-2">1. ChromaDB 환경 설치</h3>
+                            <pre><code># 가상환경 준비
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+# ChromaDB 및 필수 의존성 설치
+pip install chromadb[server] uvicorn fastapi
+pip install "chromadb>=0.5.0" --upgrade
+</code></pre>
+                            <p class="text-sm mt-2">
+                                서버 모드로 운영할 계획이라면 <code>chromadb[server]</code> 옵션을 사용해 REST API 구성 요소를 함께 설치합니다.
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-purple-300 mb-2">2. 컬렉션 생성 및 적재 스크립트</h3>
+                            <pre><code>python scripts/create_collection.py \
+  --collection kor-project-v1 \
+  --dimension 768 \
+  --distance cosine \
+  --metadata-schema ./schemas/korbert_metadata.json
+
+python scripts/load_embeddings.py \
+  --collection kor-project-v1 \
+  --embeddings ./artifacts/embeddings \
+  --metadata ./artifacts/metadata.json \
+  --batch-size 500
+</code></pre>
+                            <p class="text-sm mt-2">
+                                KorBERT 임베딩의 차원 수(예: 768)에 맞춰 컬렉션을 생성하고, 메타데이터 스키마 파일을 통해 필수 필드를 검증합니다.
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-purple-300 mb-2">3. 인덱스 최적화 및 테스트</h3>
+                            <pre><code>python scripts/tune_index.py \
+  --collection kor-project-v1 \
+  --index-type hnsw \
+  --m 32 \
+  --ef-construction 200 \
+  --ef-search 64
+
+python scripts/query_samples.py \
+  --collection kor-project-v1 \
+  --query "KorBERT 토큰화 전략" \
+  --top-k 5
+</code></pre>
+                            <p class="text-sm mt-2">
+                                인덱스 파라미터 튜닝 후, 대표 쿼리 샘플을 통해 평균 반응 시간과 검색 품질을 검증합니다.
+                                필수 KPI: P@5 ≥ 0.8, 평균 지연 < 200ms.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Unique Panel: 운영 아키텍처 -->
+                <section class="glass-panel p-6 md:p-8 rounded-2xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm9 4a1 1 0 10-2 0v3H8a1 1 0 100 2h4a1 1 0 001-1V7z" clip-rule="evenodd"/>
+                        </svg>
+                        운영 아키텍처 체크포인트
+                    </h2>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                        <div class="glass-panel p-4 rounded-lg bg-slate-900/40">
+                            <h3 class="font-semibold text-purple-200 mb-2">배포 토폴로지</h3>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>ChromaDB 서버 다중 인스턴스 구성 (Active-Active)</li>
+                                <li>Load Balancer를 통한 쿼리 분산과 Health Check 구성</li>
+                                <li>Persistent Volume을 사용해 노드 교체 시 데이터 유지</li>
+                            </ul>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg bg-slate-900/40">
+                            <h3 class="font-semibold text-purple-200 mb-2">보안 및 거버넌스</h3>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>API Key 기반 인증과 역할별 접근 제어(Role-based ACL)</li>
+                                <li>민감 데이터 필드를 별도 암호화 저장 (예: 고객 식별자)</li>
+                                <li>Audit Log를 S3/Blob으로 주기적 백업</li>
+                            </ul>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg bg-slate-900/40">
+                            <h3 class="font-semibold text-purple-200 mb-2">운영 자동화</h3>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>증분 임베딩 배치를 Airflow DAG으로 관리</li>
+                                <li>메타데이터 검증 실패 시 Slack/Teams 알림 발송</li>
+                                <li>주기적 백업 및 복구 시나리오 리허설</li>
+                            </ul>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg bg-slate-900/40">
+                            <h3 class="font-semibold text-purple-200 mb-2">성능 튜닝</h3>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>쿼리 캐시와 샤딩을 활용한 대량 질의 대응</li>
+                                <li>ef_search를 트래픽 패턴에 맞춰 동적으로 조정</li>
+                                <li>백오프 재시도 로직으로 장애 전파 최소화</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Benefits -->
+                <section class="glass-panel p-6 rounded-xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        RAG 시스템에서의 장점
+                    </h2>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-purple-200 mb-2">정확한 문맥 검색</h3>
+                            <p class="text-gray-600 text-sm">코드와 설명을 함께 보관해 함수 목적과 사용 예제를 동시에 반환합니다.</p>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-emerald-300 mb-2">고성능 확장성</h3>
+                            <p class="text-gray-600 text-sm">HNSW 기반 인덱스와 샤딩 구조로 대규모 임베딩을 안정적으로 처리합니다.</p>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-sky-300 mb-2">탄력적 운영</h3>
+                            <p class="text-gray-600 text-sm">배치/실시간 파이프라인을 분리해 변경 사항을 빠르게 반영하면서 가용성을 유지합니다.</p>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-amber-300 mb-2">거버넌스 대응</h3>
+                            <p class="text-gray-600 text-sm">메타데이터 기반 필터로 민감 정보 접근을 제한하고 감사 로그를 보존할 수 있습니다.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Next Steps -->
+                <section class="glass-panel p-6 rounded-xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+                        </svg>
+                        다음 단계
+                    </h2>
+                    <div class="bg-gradient-to-r from-purple-900/25 to-indigo-900/25 border-l-4 border-purple-400 p-4 rounded-r-lg">
+                        <p class="text-gray-600 mb-2">ChromaDB 구축이 완료되면 다음 과정을 진행합니다.</p>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-600">
+                            <li><strong class="text-blue-400">4단계: LLM 통합</strong> - 리트리버와 LLM을 연결해 컨텍스트 기반 답변을 생성</li>
+                            <li><strong class="text-cyan-400">5단계: 평가 및 모니터링</strong> - 쿼리 품질 측정, 피드백 루프 자동화</li>
+                            <li><strong class="text-emerald-400">6단계: 운영 자동화</strong> - 재지표 학습 스케줄링, A/B 테스트 적용</li>
+                        </ol>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Footer -->
+            <footer class="mt-12 text-center">
+                <a href="index.html" class="back-button inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold glass-panel px-6 py-3 rounded-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    메인으로 돌아가기
+                </a>
+            </footer>
+        </div>
+    </div>
+
+    <script src="bg-stars.js"></script>
+</body>
+</html>
