@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -136,6 +136,13 @@
             border-radius: 0.5rem;
             overflow-x: auto;
         }
+        .text-nowrap {
+            white-space: nowrap;
+        }
+        .detail-col {
+            max-width: 460px;
+            white-space: normal;
+        }
     </style>
 </head>
 <body>
@@ -216,31 +223,31 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td class="px-4 py-3 border-b border-purple-700">컬렉션 설계</td>
-                                    <td class="px-4 py-3 border-b border-purple-700">Namespace/Collection 구조</td>
-                                    <td class="px-4 py-3 border-b border-purple-700">
+                                    <td class="px-4 py-3 border-b border-purple-700 text-nowrap">컬렉션 설계</td>
+                                    <td class="px-4 py-3 border-b border-purple-700 text-nowrap">Namespace/Collection 구조</td>
+                                    <td class="px-4 py-3 border-b border-purple-700 detail-col">
                                         KorBERT 벡터를 서비스 도메인, 버전, 언어별로 분리해 컬렉션을 구성합니다.
                                         메타 필드(파일 경로, 심볼, 태그, 임베딩 버전)를 스키마에 포함합니다.
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="px-4 py-3 border-b border-purple-700">적재 전략</td>
-                                    <td class="px-4 py-3 border-b border-purple-700">배치/스트리밍 파이프라인 병행</td>
-                                    <td class="px-4 py-3 border-b border-purple-700">
+                                    <td class="px-4 py-3 border-b border-purple-700 text-nowrap">적재 전략</td>
+                                    <td class="px-4 py-3 border-b border-purple-700 text-nowrap">배치/스트리밍 파이프라인 병행</td>
+                                    <td class="px-4 py-3 border-b border-purple-700 detail-col">
                                         대량 배치는 nightly job으로, 변경 파일은 이벤트 기반 스트리밍으로 처리하여 최신 상태를 유지합니다.
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="px-4 py-3 border-b border-purple-700">인덱스 관리</td>
-                                    <td class="px-4 py-3 border-b border-purple-700">HNSW 파라미터 튜닝</td>
-                                    <td class="px-4 py-3 border-b border-purple-700">
+                                    <td class="px-4 py-3 border-b border-purple-700 text-nowrap">인덱스 관리</td>
+                                    <td class="px-4 py-3 border-b border-purple-700 text-nowrap">HNSW 파라미터 튜닝</td>
+                                    <td class="px-4 py-3 border-b border-purple-700 detail-col">
                                         M, ef_construction, ef_search 값을 데이터 규모에 맞게 조정해 검색 정확도와 속도의 균형을 맞춥니다.
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="px-4 py-3 border-b border-purple-700">운영 모니터링</td>
-                                    <td class="px-4 py-3 border-b border-purple-700">Latency & Recall 추적</td>
-                                    <td class="px-4 py-3 border-b border-purple-700">
+                                    <td class="px-4 py-3 border-b border-purple-700 text-nowrap">운영 모니터링</td>
+                                    <td class="px-4 py-3 border-b border-purple-700 text-nowrap">Latency & Recall 추적</td>
+                                    <td class="px-4 py-3 border-b border-purple-700 detail-col">
                                         Prometheus/Grafana 연동으로 쿼리 지연 시간과 재현율을 모니터링하고 임계값을 초과하면 알림을 발생시킵니다.
                                     </td>
                                 </tr>
