@@ -9,20 +9,20 @@
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background: radial-gradient(circle at 18% 18%, rgba(34, 197, 94, 0.3), transparent 55%),
-                        radial-gradient(circle at 80% 12%, rgba(59, 130, 246, 0.3), transparent 45%),
-                        linear-gradient(180deg, #041014 0%, #071a27 85%);
-            min-height: 100vh;
+            background: radial-gradient(circle at 18% 18%, rgba(34, 197, 94, 0.32), transparent 55%),
+                        radial-gradient(circle at 80% 12%, rgba(59, 130, 246, 0.30), transparent 45%),
+                        linear-gradient(180deg, #041014 0%, #081d2c 85%);
             color: #dcfce7;
+            min-height: 100vh;
             overflow-x: hidden;
         }
         .wrapper { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 48px 20px 64px; }
         .glass-panel {
             position: relative;
-            background: linear-gradient(155deg, rgba(34, 197, 94, 0.14), rgba(59, 130, 246, 0.16));
-            border: 1px solid rgba(59, 130, 246, 0.32);
+            background: linear-gradient(155deg, rgba(34, 197, 94, 0.16), rgba(59, 130, 246, 0.18));
+            border: 1px solid rgba(59, 130, 246, 0.35);
             border-radius: 18px;
-            box-shadow: 0 26px 50px rgba(4, 19, 24, 0.6);
+            box-shadow: 0 26px 50px rgba(4, 23, 30, 0.6);
             backdrop-filter: blur(26px) saturate(190%);
             -webkit-backdrop-filter: blur(26px) saturate(190%);
         }
@@ -31,7 +31,7 @@
             position: absolute;
             inset: 0;
             border-radius: inherit;
-            background: linear-gradient(140deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08) 55%, transparent 80%);
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08) 55%, transparent 80%);
             pointer-events: none;
         }
         .glass-panel > * { position: relative; z-index: 1; }
@@ -45,7 +45,7 @@
         .nav-button {
             display: inline-flex; align-items: center; gap: 0.5rem;
             padding: 0.8rem 1.6rem; border-radius: 9999px;
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(59, 130, 246, 0.45));
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.32), rgba(59, 130, 246, 0.42));
             border: 1px solid rgba(59, 130, 246, 0.55);
             color: #bbf7d0; font-weight: 600;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -56,6 +56,7 @@
     </style>
 </head>
 <body>
+    <canvas id="bg-stars"></canvas>
     <div class="wrapper">
         <header class="mb-10">
             <a href="LlamaIndex_RAG.html" class="inline-flex items-center text-emerald-200 hover:text-white font-semibold mb-6 glass-panel px-4 py-2 rounded-full">
@@ -65,28 +66,20 @@
                 이전 단계 (LlamaIndex Orchestrator)
             </a>
             <div class="glass-panel p-6 sm:p-8">
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-4">
-                            <div class="step-badge">6</div>
-                            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">FastAPI 기반 RAG API 게이트웨이</h1>
-                        </div>
-                        <p class="text-base sm:text-lg md:text-xl text-emerald-100 leading-relaxed">
-                            FastAPI로 LlamaIndex QueryEngine을 REST/WebSocket API로 노출하고, 인증·속도 제한·관측 기능을 통합해 안정적인 서비스 레이어를 구성합니다.
-                        </p>
-                    </div>
-                    <div class="glass-panel px-5 py-4 rounded-2xl text-emerald-100">
-                        <p class="text-sm uppercase tracking-[0.3em] text-emerald-200">개발 순서</p>
-                        <p class="text-xl font-semibold text-white">6단계 · FastAPI</p>
-                        <p class="text-sm text-emerald-200 mt-2">REST · WebSocket · 인증/권한 · Observability</p>
-                    </div>
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="step-badge">6</div>
+                    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">FastAPI 기반 RAG API 게이트웨이</h1>
                 </div>
+                <p class="text-base sm:text-lg md:text-xl text-emerald-100 leading-relaxed">
+                    LlamaIndex QueryEngine을 REST와 WebSocket API로 노출하고, OAuth2 인증, 속도 제한, 관측 기능을 통합해
+                    안정적이고 확장 가능한 서비스 레이어를 구축합니다.
+                </p>
             </div>
         </header>
 
         <main class="space-y-8">
             <section class="glass-panel p-5 sm:p-6 md:p-8">
-                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items=center gap-3">
+                <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
                     <svg class="w-7 h-7 text-emerald-300" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-6a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                     </svg>
@@ -94,10 +87,11 @@
                 </h2>
                 <div class="space-y-4 text-emerald-100 leading-relaxed">
                     <p>
-                        FastAPI 게이트웨이는 외부 애플리케이션과 RAG 백엔드 사이의 안전하고 일관된 인터페이스입니다. REST/GraphQL/WebSocket을 제공하고, OAuth2 기반 인증·속도 제한·관측 기능을 통합합니다.
+                        FastAPI 게이트웨이는 외부 애플리케이션이 RAG 기능을 안전하게 호출할 수 있도록 표준 API를 제공합니다.
+                        WebSocket 스트리밍을 통해 LLM 응답을 실시간으로 전달하고, OAuth2 기반 인증과 Rate Limit, Observability를 통합합니다.
                     </p>
                     <p>
-                        Kubernetes 배포와 CI/CD 파이프라인을 연동하여 안정성과 민첩성을 높이며, Trace ID를 활용한 관측으로 장애 대응 시간을 줄입니다.
+                        Kubernetes 배포와 CI/CD 파이프라인을 연동하여 안정적인 운영과 빠른 업데이트를 지원합니다.
                     </p>
                 </div>
             </section>
@@ -121,8 +115,8 @@
                         <tbody class="text-emerald-100">
                             <tr>
                                 <td class="px-4 py-3 border-b border-slate-700 font-semibold">엔드포인트</td>
-                                <td class="px-4 py-3 border-b border-slate-700">REST / GraphQL / WebSocket 지원</td>
-                                <td class="px-4 py-3 border-b border-slate-700">스트리밍 응답은 WebSocket 사용</td>
+                                <td class="px-4 py-3 border-b border-slate-700">REST / GraphQL / WebSocket 제공</td>
+                                <td class="px-4 py-3 border-b border-slate-700">스트리밍 응답은 WebSocket</td>
                             </tr>
                             <tr>
                                 <td class="px-4 py-3 border-b border-slate-700 font-semibold">인증/권한</td>
@@ -132,11 +126,11 @@
                             <tr>
                                 <td class="px-4 py-3 border-b border-slate-700 font-semibold">관측</td>
                                 <td class="px-4 py-3 border-b border-slate-700">Prometheus · OpenTelemetry</td>
-                                <td class="px-4 py-3 border-b border-slate-700">latency, token usage, error rate</td>
+                                <td class="px-4 py-3 border-b border-slate-700">지연, 토큰 사용량, 오류율 추적</td>
                             </tr>
                             <tr>
                                 <td class="px-4 py-3 border-b border-slate-700 font-semibold">배포</td>
-                                <td class="px-4 py-3 border-b border-slate-700">K8s Rolling Update</td>
+                                <td class="px-4 py-3 border-b border-slate-700">Kubernetes Rolling Update</td>
                                 <td class="px-4 py-3 border-b border-slate-700">ConfigMap/Secret으로 설정 관리</td>
                             </tr>
                         </tbody>
@@ -146,21 +140,21 @@
 
             <section class="glass-panel p-5 sm:p-6 md:p-8">
                 <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                    <svg class="w-7 h-7 text-emerald-300" fill="귽" viewBox="0 0 20 20">
+                    <svg class="w-7 h-7 text-emerald-300" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0012.586 2H4zm8 1.414V6a1 1 0 001 1h3.586L12 4.414z" />
                     </svg>
                     설치 및 개발 방법
                 </h2>
                 <div class="space-y-6 text-emerald-100 text-sm sm:text-base leading-relaxed">
                     <div>
-                        <h3 class="text-base sm:text-lg font-semibold mb-2">1. FastAPI 프로젝트</h3>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">1. FastAPI 프로젝트 구성</h3>
                         <pre><code>python -m venv .venv
 source .venv/bin/activate
 pip install fastapi uvicorn[standard] httpx pydantic-settings
 pip install redis sqlalchemy prometheus-client</code></pre>
                     </div>
                     <div>
-                        <h3 class="text-base sm:text-lg font-semibold mb-2">2. 라우터 작성</h3>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">2. 라우터 예시</h3>
                         <pre><code>@router.post("/rag/query")
 async def rag_query(payload: QueryRequest, engine=Depends(get_query_engine)):
     response = await engine.aquery(payload.to_prompt())
@@ -190,8 +184,8 @@ jobs:
 
             <section class="glass-panel p-5 sm:p-6 md:p-8">
                 <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                    <svg class="w-7 h-7 text-emerald-300" fill="CurrentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm3 3a1 1 0 011 1v1h2a1 1 0 010 2H9v1a1 1 0 01-2 0V9H6a1 1 0 010-2h1V7a1 1 0 011-1z" clip-rule="evenodd" />
+                    <svg class="w-7 h-7 text-emerald-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm7 5a1 1 0 10-2 0v1H9a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V8z" clip-rule="evenodd" />
                     </svg>
                     운영 체크리스트
                 </h2>
@@ -199,33 +193,33 @@ jobs:
                     <div class="glass-panel p-4 rounded-xl">
                         <h3 class="text-base font-semibold text-emerald-200 mb-2">헬스 체크</h3>
                         <ul class="list-disc list-inside space-y-1">
-                            <li>/healthz·/readyz 제공</li>
-                            <li>외부 의존성 실패 시 readiness fail</li>
-                            <li>/metrics에서 지표 노출</li>
+                            <li>/healthz · /readyz 엔드포인트 제공</li>
+                            <li>LLM/ChromaDB 연결 실패 시 readiness fail</li>
+                            <li>/metrics에서 Prometheus 지표 제공</li>
                         </ul>
                     </div>
                     <div class="glass-panel p-4 rounded-xl">
                         <h3 class="text-base font-semibold text-emerald-200 mb-2">요청 제어</h3>
                         <ul class="list-disc list-inside space-y-1">
-                            <li>IP·API Key 기반 Rate Limit</li>
-                            <li>대형 요청은 비동기 큐로 이동</li>
-                            <li>Trace ID 응답 포함</li>
+                            <li>IP · API Key 기반 Rate Limit</li>
+                            <li>대형 요청은 비동기 큐로 전환</li>
+                            <li>Trace ID를 응답에 포함</li>
                         </ul>
                     </div>
                     <div class="glass-panel p-4 rounded-xl">
                         <h3 class="text-base font-semibold text-emerald-200 mb-2">보안</h3>
                         <ul class="list-disc list-inside space-y-1">
-                            <li>TLS/mTLS 적용, 비밀 관리</li>
-                            <li>API Key·토큰 주기 교체</li>
-                            <li>민감 정보 마스킹</li>
+                            <li>TLS/mTLS 적용, 비밀 값은 Secret Manager 사용</li>
+                            <li>API Key·토큰 주기적 교체</li>
+                            <li>민감 정보 로그 마스킹</li>
                         </ul>
                     </div>
                     <div class="glass-panel p-4 rounded-xl">
                         <h3 class="text-base font-semibold text-emerald-200 mb-2">운영 지표</h3>
                         <ul class="list-disc list-inside space-y-1">
-                            <li>P95 응답 시간 1.5초 이하</li>
+                            <li>P95 응답 시간 1.5초 이하 유지</li>
                             <li>429/5xx 비율 알림</li>
-                            <li>토큰 사용량/비용 리포트</li>
+                            <li>토큰 사용량·비용 리포트</li>
                         </ul>
                     </div>
                 </div>
@@ -240,5 +234,7 @@ jobs:
             </div>
         </footer>
     </div>
+
+    <script src="bg-stars.js"></script>
 </body>
 </html>

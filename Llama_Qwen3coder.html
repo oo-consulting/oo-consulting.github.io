@@ -9,20 +9,20 @@
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background: radial-gradient(circle at 18% 16%, rgba(56, 189, 248, 0.28), transparent 55%),
-                        radial-gradient(circle at 82% 12%, rgba(236, 72, 153, 0.26), transparent 45%),
-                        linear-gradient(180deg, #060713 0%, #101433 85%);
-            min-height: 100vh;
+            background: radial-gradient(circle at 18% 16%, rgba(56, 189, 248, 0.32), transparent 55%),
+                        radial-gradient(circle at 82% 12%, rgba(236, 72, 153, 0.30), transparent 45%),
+                        linear-gradient(180deg, #050714 0%, #101434 85%);
             color: #f1f5f9;
+            min-height: 100vh;
             overflow-x: hidden;
         }
         .wrapper { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 48px 20px 64px; }
         .glass-panel {
             position: relative;
-            background: linear-gradient(155deg, rgba(148, 163, 184, 0.14), rgba(236, 72, 153, 0.18));
-            border: 1px solid rgba(236, 72, 153, 0.35);
+            background: linear-gradient(155deg, rgba(148, 163, 184, 0.16), rgba(236, 72, 153, 0.18));
+            border: 1px solid rgba(236, 72, 153, 0.32);
             border-radius: 18px;
-            box-shadow: 0 26px 50px rgba(6, 8, 22, 0.6);
+            box-shadow: 0 26px 50px rgba(6, 8, 24, 0.6);
             backdrop-filter: blur(26px) saturate(190%);
             -webkit-backdrop-filter: blur(26px) saturate(190%);
         }
@@ -31,7 +31,7 @@
             position: absolute;
             inset: 0;
             border-radius: inherit;
-            background: linear-gradient(140deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08) 55%, transparent 80%);
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08) 55%, transparent 80%);
             pointer-events: none;
         }
         .glass-panel > * { position: relative; z-index: 1; }
@@ -56,6 +56,7 @@
     </style>
 </head>
 <body>
+    <canvas id="bg-stars"></canvas>
     <div class="wrapper">
         <header class="mb-10">
             <a href="ChromaDB.html" class="inline-flex items-center text-sky-200 hover:text-white font-semibold mb-6 glass-panel px-4 py-2 rounded-full">
@@ -72,14 +73,9 @@
                             <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">Llama 3.3 & Qwen3 Coder 듀얼 통합</h1>
                         </div>
                         <p class="text-base sm:text-lg md:text-xl text-slate-200 leading-relaxed">
-                            일반 질의는 Llama 3.3이, 코드 생성·분석은 Qwen3 Coder가 담당하도록 라우팅하여
-                            정확도와 비용을 모두 확보합니다. 프롬프트 템플릿, 토큰 관리, Guardrail을 함께 설계합니다.
+                            일반 질의는 Llama 3.3이, 코드 생성과 분석은 Qwen3 Coder가 담당하도록 라우팅해
+                            품질과 효율을 모두 확보합니다. 프롬프트 체계, 컨텍스트 관리, Guardrail을 표준화합니다.
                         </p>
-                    </div>
-                    <div class="glass-panel px-5 py-4 rounded-2xl text-slate-100">
-                        <p class="text-sm uppercase tracking-[0.3em] text-fuchsia-200">개발 순서</p>
-                        <p class="text-xl font-semibold text-white">4단계 · LLM 통합</p>
-                        <p class="text-sm text-slate-300 mt-2">모델 라우팅 · 프롬프트 표준화 · 비용 모니터링</p>
                     </div>
                 </div>
             </div>
@@ -95,8 +91,8 @@
                 </h2>
                 <div class="space-y-4 text-slate-200 leading-relaxed">
                     <p>
-                        LLM 통합 단계에서는 질의 성격을 분류해 Llama 3.3과 Qwen3 Coder를 선택적으로 호출합니다.
-                        자연어 설명, 정책 문서, 요약 등은 Llama 3.3이 담당하고, 코드 생성·리팩토링·테스트 작성은 Qwen3 Coder가 담당합니다.
+                        RAG 파이프라인의 마지막 단계에서는 질의의 성격을 분류해 Llama 3.3과 Qwen3 Coder 중 적합한 모델을 선택합니다.
+                        자연어 설명·정책 문서·요약은 Llama 3.3, 코드 생성·리팩토링·테스트 작성은 Qwen3 Coder가 처리하도록 분리합니다.
                     </p>
                     <p>
                         프롬프트 템플릿을 표준화하고, 컨텍스트 길이와 금지어 정책을 정의하며, Guardrail을 설정해 안전한 응답을 보장합니다.
@@ -123,23 +119,23 @@
                         <tbody class="text-slate-200">
                             <tr>
                                 <td class="px-4 py-3 border-b border-slate-700 font-semibold">모델 라우팅</td>
-                                <td class="px-4 py-3 border-b border-slate-700">자연어 ↔ 코드 질의 분류 후 Llama/Qwen 선택</td>
-                                <td class="px-4 py-3 border-b border-slate-700">키워드, 태그, confidence 기반 규칙</td>
+                                <td class="px-4 py-3 border-b border-slate-700">자연어/코드 질의 분류 후 Llama 또는 Qwen 선택</td>
+                                <td class="px-4 py-3 border-b border-slate-700">키워드·태그·confidence 기반 규칙</td>
                             </tr>
                             <tr>
                                 <td class="px-4 py-3 border-b border-slate-700 font-semibold">프롬프트 구조</td>
                                 <td class="px-4 py-3 border-b border-slate-700">System · User 템플릿 분리</td>
-                                <td class="px-4 py-3 border-b border-slate-700">톤, 출력 포맷, 금지어 지정</td>
+                                <td class="px-4 py-3 border-b border-slate-700">톤·출력 포맷·금지어 정의</td>
                             </tr>
                             <tr>
                                 <td class="px-4 py-3 border-b border-slate-700 font-semibold">컨텍스트 관리</td>
                                 <td class="px-4 py-3 border-b border-slate-700">Top-K 슬라이싱 + 코드/주석 가중치</td>
-                                <td class="px-4 py-3 border-b border-slate-700">토큰 제한 대비 슬랙 확보</td>
+                                <td class="px-4 py-3 border-b border-slate-700">토큰 한도 대비 버퍼 확보</td>
                             </tr>
                             <tr>
                                 <td class="px-4 py-3 border-b border-slate-700 font-semibold">Guardrail</td>
-                                <td class="px-4 py-3 border-b border-slate-700">금지 패턴 필터, 백업 모델 준비</td>
-                                <td class="px-4 py-3 border-b border-slate-700">재프롬프트/빈 응답 전략</td>
+                                <td class="px-4 py-3 border-b border-slate-700">금지 패턴 필터링, 백업 모델 준비</td>
+                                <td class="px-4 py-3 border-b border-slate-700">재프롬프트/빈 응답 처리</td>
                             </tr>
                         </tbody>
                     </table>
@@ -162,14 +158,14 @@ ollama pull llama3.3
 ollama pull qwen3-coder</code></pre>
                     </div>
                     <div>
-                        <h3 class="text-base sm:text-lg font-semibold mb-2">2. 질의 라우터 서비스</h3>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">2. 라우터 서비스</h3>
                         <pre><code>python services/llm_router.py \
   --llama-endpoint http://localhost:11434/v1 \
   --qwen-endpoint http://localhost:11500/v1 \
   --rules configs/router_rules.yaml</code></pre>
                     </div>
                     <div>
-                        <h3 class="text-base sm:text-lg font-semibold mb-2">3. 프롬프트 흔들림 검사</h3>
+                        <h3 class="text-base sm:text-lg font-semibold mb-2">3. 프롬프트 검증</h3>
                         <pre><code>python tests/prompt_validation.py \
   --template templates/system_prompt.md \
   --queries datasets/llm_eval.json \
@@ -181,7 +177,7 @@ ollama pull qwen3-coder</code></pre>
             <section class="glass-panel p-5 sm:p-6 md:p-8">
                 <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
                     <svg class="w-7 h-7 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm7 4a1 1 0 10-2 0v1H9a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm7 5a1 1 0 10-2 0v1H9a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V8z" clip-rule="evenodd" />
                     </svg>
                     운영 체크리스트
                 </h2>
@@ -189,7 +185,7 @@ ollama pull qwen3-coder</code></pre>
                     <div class="glass-panel p-4 rounded-xl">
                         <h3 class="text-base font-semibold text-sky-200 mb-2">컨텍스트 리라이트</h3>
                         <ul class="list-disc list-inside space-y-1">
-                            <li>중복 문단 제거, 핵심 코드만 압축</li>
+                            <li>중복 문단 제거, 핵심 코드만 발췌</li>
                             <li>질의 임베딩으로 관련 주석 매칭</li>
                             <li>긴 컨텍스트는 슬라이딩 윈도우</li>
                         </ul>
@@ -197,25 +193,25 @@ ollama pull qwen3-coder</code></pre>
                     <div class="glass-panel p-4 rounded-xl">
                         <h3 class="text-base font-semibold text-sky-200 mb-2">Guardrail</h3>
                         <ul class="list-disc list-inside space-y-1">
-                            <li>금지 키워드/패턴 필터링</li>
-                            <li>코드 실행 예제는 샌드박스에서만</li>
-                            <li>사용자 피드백과 Trace ID 저장</li>
+                            <li>금지 키워드/패턴 필터</li>
+                            <li>코드 실행 예제는 샌드박스</li>
+                            <li>피드백 및 Trace ID 저장</li>
                         </ul>
                     </div>
                     <div class="glass-panel p-4 rounded-xl">
                         <h3 class="text-base font-semibold text-sky-200 mb-2">토큰 관리</h3>
                         <ul class="list-disc list-inside space-y-1">
                             <li>시간대별 모델/파라미터 조정</li>
-                            <li>답변 길이 제한·요약 옵션</li>
-                            <li>토큰 비용 알림 및 보고</li>
+                            <li>답변 길이 제한과 요약 설정</li>
+                            <li>토큰 비용 모니터링</li>
                         </ul>
                     </div>
                     <div class="glass-panel p-4 rounded-xl">
-                        <h3 class="text-base font-semibold text-sky-200 mb-2">장애 대비</h3>
+                        <h3 class="text-base font-semibold text-sky-200 mb-2">장애 대응</h3>
                         <ul class="list-disc list-inside space-y-1">
-                            <li>모델 지연 시 백업 모델 호출</li>
-                            <li>빈 응답 시 컨텍스트 재요청</li>
-                            <li>오류 메시지 사용자 친화적으로 변환</li>
+                            <li>지연 시 백업 모델 호출</li>
+                            <li>빈 응답 발생 시 재프롬프트</li>
+                            <li>오류 메시지를 사용자 친화적으로 변환</li>
                         </ul>
                     </div>
                 </div>
@@ -230,5 +226,7 @@ ollama pull qwen3-coder</code></pre>
             </div>
         </footer>
     </div>
+
+    <script src="bg-stars.js"></script>
 </body>
 </html>

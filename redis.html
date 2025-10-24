@@ -10,8 +10,8 @@
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background: radial-gradient(circle at 20% 16%, rgba(248, 113, 113, 0.32), transparent 55%),
-                        radial-gradient(circle at 82% 12%, rgba(248, 181, 123, 0.3), transparent 45%),
-                        linear-gradient(180deg, #12060a 0%, #241016 85%);
+                        radial-gradient(circle at 82% 12%, rgba(248, 181, 123, 0.28), transparent 45%),
+                        linear-gradient(180deg, #13070a 0%, #261117 85%);
             min-height: 100vh;
             color: #ffe4e6;
             overflow-x: hidden;
@@ -19,10 +19,10 @@
         .wrapper { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 48px 20px 64px; }
         .glass-panel {
             position: relative;
-            background: linear-gradient(155deg, rgba(248, 113, 113, 0.16), rgba(248, 181, 123, 0.18));
-            border: 1px solid rgba(248, 113, 113, 0.35);
+            background: linear-gradient(155deg, rgba(248, 113, 113, 0.18), rgba(248, 181, 123, 0.18));
+            border: 1px solid rgba(248, 181, 123, 0.35);
             border-radius: 18px;
-            box-shadow: 0 26px 50px rgba(32, 9, 12, 0.65);
+            box-shadow: 0 26px 50px rgba(40, 12, 15, 0.65);
             backdrop-filter: blur(26px) saturate(190%);
             -webkit-backdrop-filter: blur(26px) saturate(190%);
         }
@@ -31,13 +31,13 @@
             position: absolute;
             inset: 0;
             border-radius: inherit;
-            background: linear-gradient(140deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08) 55%, transparent 80%);
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08) 55%, transparent 80%);
             pointer-events: none;
         }
         .glass-panel > * { position: relative; z-index: 1; }
         .step-badge {
             width: 3rem; height: 3rem; border-radius: 50%;
-            background: linear-gradient(135deg, #f97316, #f43f5e);
+            background: linear-gradient(135deg, #f97316, #ef4444);
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 1.125rem; color: #4a0404;
             box-shadow: 0 12px 28px rgba(248, 113, 113, 0.35);
@@ -47,7 +47,7 @@
             padding: 0.8rem 1.6rem; border-radius: 9999px;
             background: linear-gradient(135deg, rgba(248, 113, 113, 0.32), rgba(248, 181, 123, 0.45));
             border: 1px solid rgba(248, 181, 123, 0.6);
-            color: #fff1f2; font-weight: 600;
+            color: #fff5f5; font-weight: 600;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .nav-button:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(248, 113, 113, 0.35); }
@@ -56,6 +56,7 @@
     </style>
 </head>
 <body>
+    <canvas id="bg-stars"></canvas>
     <div class="wrapper">
         <header class="mb-10">
             <a href="webapp.html" class="inline-flex items-center text-rose-200 hover:text-white font-semibold mb-6 glass-panel px-4 py-2 rounded-full">
@@ -65,22 +66,14 @@
                 이전 단계 (Web App)
             </a>
             <div class="glass-panel p-6 sm:p-8">
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-4">
-                            <div class="step-badge">8</div>
-                            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">Redis 기반 RAG 캐시·세션 관리</h1>
-                        </div>
-                        <p class="text-base sm:text-lg md:text-xl text-rose-100 leading-relaxed">
-                            Redis로 응답 캐시, 사용자 세션, 레이트 리미트를 관리하여 LLM 호출 비용을 절감하고 시스템 안정성을 높입니다.
-                        </p>
-                    </div>
-                    <div class="glass-panel px-5 py-4 rounded-2xl text-rose-100">
-                        <p class="text-sm uppercase tracking-[0.3em] text-rose-200">개발 순서</p>
-                        <p class="text-xl font-semibold text-white">8단계 · Redis</p>
-                        <p class="text-sm text-rose-200 mt-2">응답 캐시 · 세션 · 레이트 리미트</p>
-                    </div>
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="step-badge">8</div>
+                    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white">Redis 기반 캐시 · 세션 · 레이트 관리</h1>
                 </div>
+                <p class="text-base sm:text-lg md:text-xl text-rose-100 leading-relaxed">
+                    Redis를 활용해 자주 반복되는 답변을 캐시하고, 사용자 세션과 레이트 리미트를 중앙에서 관리하여
+                    LLM 호출 비용을 절감하고 서비스 안정성을 높입니다.
+                </p>
             </div>
         </header>
 
@@ -94,17 +87,18 @@
                 </h2>
                 <div class="space-y-4 text-rose-100 leading-relaxed">
                     <p>
-                        Redis는 RAG 시스템의 캐시, 세션, 레이트 리미트 저장소 역할을 담당합니다. 자주 반복되는 질문, 대화 세션, API 사용량을 저장해 성능과 비용을 동시에 개선합니다.
+                        Redis는 RAG 시스템의 캐시, 세션 저장소, 레이트 리미트 저장소 역할을 담당합니다. 자주 반복되는 질문과 검색 결과를 캐시하고,
+                        사용자 세션과 API 사용량을 중앙에서 추적해 응답 속도와 비용을 모두 개선합니다.
                     </p>
                     <p>
-                        Sentinel/Cluster 구성으로 고가용성을 확보하고, 백업/복구, 보안, 모니터링 정책을 세워 운영 안정성을 높입니다.
+                        Sentinel 또는 Cluster를 활용해 고가용성을 확보하고, 백업/복구 전략과 보안·모니터링 정책을 함께 운영합니다.
                     </p>
                 </div>
             </section>
 
             <section class="glass-panel p-5 sm:p-6 md:p-8">
                 <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                    <svg class="w-7 h-7 text-rose-300" fill="CurrentColor" viewBox="0 0 20 20">
+                    <svg class="w-7 h-7 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z" clip-rule="evenodd" />
                     </svg>
                     구현 상세
@@ -121,8 +115,8 @@
                         <tbody class="text-rose-100">
                             <tr>
                                 <td class="px-4 py-3 border-b border-rose-700 font-semibold">응답 캐시</td>
-                                <td class="px-4 py-3 border-b border-rose-700">질의+컨텍스트 해시를 키로 사용</td>
-                                <td class="px-4 py-3 border-b border-rose-700">TTL 5~15분, LLM 호출 감소</td>
+                                <td class="px-4 py-3 border-b border-rose-700">질의+컨텍스트 해시를 키로 사용, TTL 5~15분</td>
+                                <td class="px-4 py-3 border-b border-rose-700">LLM 호출 감소, 응답 속도 향상</td>
                             </tr>
                             <tr>
                                 <td class="px-4 py-3 border-b border-rose-700 font-semibold">세션 저장소</td>
@@ -131,13 +125,13 @@
                             </tr>
                             <tr>
                                 <td class="px-4 py-3 border-b border-rose-700 font-semibold">레이트 리미트</td>
-                                <td class="px-4 py-3 border-b border-rose-700">Lua 기반 토큰 버킷</td>
+                                <td class="px-4 py-3 border-b border-rose-700">Lua 기반 토큰 버킷 알고리즘</td>
                                 <td class="px-4 py-3 border-b border-rose-700">429 응답, 고객별 정책</td>
                             </tr>
                             <tr>
                                 <td class="px-4 py-3 border-b border-rose-700 font-semibold">고가용성</td>
-                                <td class="px-4 py-3 border-b border-rose-700">Sentinel / Cluster</td>
-                                <td class="px-4 py-3 border-b border-rose-700">Persistent Volume으로 백업</td>
+                                <td class="px-4 py-3 border-b border-rose-700">Sentinel / Cluster 구성</td>
+                                <td class="px-4 py-3 border-b border-rose-700">Persistent Volume으로 스냅샷 보관</td>
                             </tr>
                         </tbody>
                     </table>
@@ -146,8 +140,8 @@
 
             <section class="glass-panel p-5 sm:p-6 md:p-8">
                 <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                    <svg class="w-7 h-7 text-rose-300" fill="CurrentColor" viewBox="0 0 20 20">
-                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 00lë" />
+                    <svg class="w-7 h-7 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0012.586 2H4zm8 1.414V6a1 1 0 001 1h3.586L12 4.414z" />
                     </svg>
                     설치 및 개발 방법
                 </h2>
@@ -165,8 +159,8 @@ helm install redis bitnami/redis --set replica.replicaCount=2 --set auth.enabled
 redis = Redis(host=..., port=..., password=...)
 
 async def get_cache(key: str):
-    data = await redis.get(key)
-    return json.loads(data) if data else None
+    raw = await redis.get(key)
+    return json.loads(raw) if raw else None
 
 async def set_cache(key: str, value: dict, ttl: int = 600):
     await redis.set(key, json.dumps(value), ex=ttl)</code></pre>
@@ -189,7 +183,7 @@ return current
 
             <section class="glass-panel p-5 sm:p-6 md:p-8">
                 <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                    <svg class="w-7 h-7 text-rose-300" fill="CurrentColor" viewBox="0 0 20 20">
+                    <svg class="w-7 h-7 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm7 5a1 1 0 10-2 0v1H9a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V8z" clip-rule="evenodd" />
                     </svg>
                     운영 체크리스트
@@ -198,16 +192,16 @@ return current
                     <div class="glass-panel p-4 rounded-xl">
                         <h3 class="text-base font-semibold text-rose-200 mb-2">모니터링</h3>
                         <ul class="list-disc list-inside space-y-1">
-                            <li>Keyspace hits/misses 추적</li>
-                            <li>Evicted keys 알림 설정</li>
+                            <li>Keyspace hits/misses, 메모리 사용량 추적</li>
+                            <li>Evicted keys 알림 및 자동 대응</li>
                             <li>Redis Exporter + Grafana 대시보드</li>
                         </ul>
                     </div>
                     <div class="glass-panel p-4 rounded-xl">
                         <h3 class="text-base font-semibold text-rose-200 mb-2">백업/복구</h3>
                         <ul class="list-disc list-inside space-y-1">
-                            <li>RDB & AOF 병행, Object Storage 백업</li>
-                            <li>복구 시나리오 정기 리허설</li>
+                            <li>RDB와 AOF를 병행하고 Object Storage에 보관</li>
+                            <li>복구 시나리오를 주기적으로 리허설</li>
                             <li>캐시 무효화 전략 문서화</li>
                         </ul>
                     </div>
@@ -215,7 +209,7 @@ return current
                         <h3 class="text-base font-semibold text-rose-200 mb-2">보안</h3>
                         <ul class="list-disc list-inside space-y-1">
                             <li>AUTH 비밀번호, TLS 적용</li>
-                            <li>허용 서브넷만 접근 허용</li>
+                            <li>허용된 서브넷만 접근 허용</li>
                             <li>관리 명령은 ACL로 제한</li>
                         </ul>
                     </div>
@@ -239,5 +233,7 @@ return current
             </div>
         </footer>
     </div>
+
+    <script src="bg-stars.js"></script>
 </body>
 </html>
