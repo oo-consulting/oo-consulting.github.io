@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KorBERT - 한국어 임베딩 파이프라인 설계</title>
+    <title>KorBERT - 한국어 임베딩 파이프라인 가이드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -55,272 +55,283 @@
             z-index: 1;
         }
         .badge {
-            background: linear-gradient(155deg, rgba(56, 189, 248, 0.45), rgba(56, 189, 248, 0.12));
-            border: 2px solid rgba(56, 189, 248, 0.35);
-            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.22);
+            background: linear-gradient(155deg, rgba(56, 189, 248, 0.52), rgba(56, 189, 248, 0.1));
+            border: 2px solid rgba(56, 189, 248, 0.42);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.28);
+        }
+        .info-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.4);
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        th {
+            background: linear-gradient(155deg, rgba(56, 189, 248, 0.28), rgba(56, 189, 248, 0.08));
+            color: #f9fafb !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.875rem;
+        }
+        td {
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(148, 163, 184, 0.02));
+            color: #dee9ff !important;
+        }
+        tr:hover td {
+            background: linear-gradient(160deg, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0.06));
+        }
+        .back-button {
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+        .step-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(14, 165, 233, 0.35));
+            border: 1px solid rgba(14, 165, 233, 0.5);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+            font-weight: 500;
         }
         code {
-            background: linear-gradient(160deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.2));
-            padding: 0.15rem 0.4rem;
-            border-radius: 0.35rem;
+            background: linear-gradient(160deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
             font-family: 'Courier New', monospace;
-            font-size: 0.92em;
+            font-size: 0.9em;
             color: #38bdf8;
         }
         pre {
-            background: linear-gradient(160deg, rgba(3, 7, 18, 0.65), rgba(15, 23, 42, 0.55));
-            padding: 1.25rem;
-            border-radius: 0.75rem;
+            background: linear-gradient(160deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.3));
+            padding: 1rem;
+            border-radius: 0.5rem;
             overflow-x: auto;
-        }
-        .highlight {
-            color: #38bdf8;
-        }
-        .step-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 9999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(140deg, rgba(56, 189, 248, 0.35), rgba(14, 165, 233, 0.6));
-            color: white;
-            font-weight: 700;
-            font-size: 1.35rem;
-            box-shadow: 0 12px 28px rgba(14, 165, 233, 0.35);
-        }
-        .flow-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .flow-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 24px 48px rgba(14, 165, 233, 0.35);
-        }
-        .timeline-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 9999px;
-            background: linear-gradient(140deg, rgba(56, 189, 248, 0.9), rgba(14, 165, 233, 0.8));
-            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25);
-        }
-        .timeline::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            left: 1.35rem;
-            width: 2px;
-            background: linear-gradient(180deg, rgba(56, 189, 248, 0.75), transparent);
         }
     </style>
 </head>
 <body>
     <canvas id="bg-stars"></canvas>
     <div class="relative z-10">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <header class="glass-panel p-8 rounded-2xl mb-10">
+        <div class="max-w-6xl mx-auto px-6 md:px-10 lg:px-12 py-12">
+            <!-- Header -->
+            <header class="glass-panel p-8 rounded-2xl mb-12">
                 <div class="flex flex-wrap items-center justify-between gap-6">
                     <div>
-                        <div class="inline-flex items-center gap-3 badge px-5 py-2 rounded-full">
-                            <span class="text-xs uppercase tracking-[0.3em] text-slate-900 font-semibold">개발 순서 2단계</span>
+                        <div class="inline-flex items-center gap-3 badge px-6 py-2 rounded-full">
+                            <span class="text-xs uppercase tracking-[0.35em] text-slate-900 font-semibold">개발 순서 2단계</span>
                             <span class="text-sm font-medium text-slate-800">KorBERT 임베딩 파이프라인</span>
                         </div>
-                        <h1 class="text-4xl sm:text-5xl font-bold text-gray-50 mt-6">KorBERT 기반 한국어 임베딩 구축</h1>
+                        <h1 class="text-4xl md:text-5xl font-bold text-gray-50 mt-6">KorBERT 기반 한국어 텍스트 벡터화</h1>
                         <p class="text-lg text-slate-200 mt-4 leading-relaxed">
-                            Tree-Sitter로 정제된 코드와 문서를 입력으로 받아 KorBERT 임베딩을 생성하고,
-                            텍스트 벡터화를 자동화하는 파이프라인을 설계합니다. 정교한 전처리, 맥락 보존,
-                            도메인 적응을 통해 RAG 시스템에서 높은 검색 품질을 보장합니다.
+                            Tree-Sitter 파서에서 추출된 구조화 코드를 입력으로 받아 KorBERT 임베딩을 생성하고,
+                            RAG 검색 품질을 높이는 텍스트 벡터화 파이프라인을 구축합니다.
+                            도메인 적응, 메타데이터 라벨링, 배치 자동화를 통해 안정적인 운영을 목표로 합니다.
                         </p>
                     </div>
                     <div class="glass-panel px-6 py-4 rounded-xl">
-                        <p class="text-sm text-slate-300 mb-2">현재 단계 상태</p>
-                        <p class="text-xl font-semibold text-sky-200">데이터 정합성 검증 중</p>
-                        <p class="text-sm text-slate-400 mt-2">파이프라인 자동화 85% 완료</p>
+                        <p class="text-sm text-slate-300 mb-2">현재 진행 상황</p>
+                        <p class="text-xl font-semibold text-sky-200">임베딩 파이프라인 시범 운영 중</p>
+                        <p class="text-sm text-slate-400 mt-2">추론 품질 검증 70%, 배포 자동화 60% 달성</p>
                     </div>
                 </div>
             </header>
 
             <main class="space-y-10">
-                <section class="glass-panel p-6 sm:p-8 rounded-2xl">
-                    <h2 class="text-2xl font-bold text-sky-100 mb-6 flex items-center">
+                <!-- Overview -->
+                <section class="glass-panel p-6 md:p-8 rounded-2xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
                         <svg class="w-7 h-7 mr-3 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1.707-10.707a1 1 0 00-1.414-1.414L9 6.586 7.707 5.293a1 1 0 00-1.414 1.414L7.586 8 6.293 9.293a1 1 0 001.414 1.414L9 9.414l1.293 1.293a1 1 0 001.414-1.414L10.414 8l1.293-1.293z" clip-rule="evenodd"/>
+                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm2 4a1 1 0 112 0v6a1 1 0 11-2 0V7zm4 0a1 1 0 112 0v6a1 1 0 11-2 0V7zm3-1a1 1 0 100 2h1v4h-1a1 1 0 100 2h2a1 1 0 001-1V7a1 1 0 00-1-1h-2z" clip-rule="evenodd"/>
                         </svg>
-                        단계 개요
+                        개요
                     </h2>
-                    <div class="grid md:grid-cols-2 gap-6 text-slate-200">
-                        <div class="space-y-4">
-                            <p class="leading-relaxed">
-                                파서 단계에서 추출한 <span class="highlight">구조화 코드 토큰</span>과 문서 텍스트를 KorBERT 입력 포맷에 맞춰 재정렬합니다.
-                                문장 단위 정규화, OOV 토큰 처리, 도메인 어휘 증강을 통해 임베딩의 표현력을 극대화합니다.
+                    <div class="space-y-4 text-gray-600">
+                        <p>
+                            KorBERT 단계의 핵심 목표는 <span class="text-sky-300 font-semibold">한국어 문서와 코드가 혼합된 데이터</span>를
+                            의미 벡터로 변환하여 검색과 질의 응답 정확도를 높이는 것입니다. Tree-Sitter가 제공한 AST 기반 구조 정보를 이용해
+                            토큰 시퀀스를 재구성하고, 문맥 손실을 최소화한 상태에서 KorBERT 임베딩을 생성합니다.
+                        </p>
+                        <p>
+                            파이프라인은 데이터 정규화, 토크나이징, 임베딩 추론, 후처리(정규화/라벨링) 네 단계로 구성되며,
+                            벡터 품질 지표(NDCG, 코사인 유사도)를 자동 수집해 지속적인 개선이 가능하도록 설계되어 있습니다.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <span class="step-tag">AST 시퀀스 재조합</span>
+                            <span class="step-tag">KorBERT 임베딩</span>
+                            <span class="step-tag">벡터 정규화</span>
+                            <span class="step-tag">메타데이터 라벨링</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Implementation Details -->
+                <section class="glass-panel p-6 md:p-8 rounded-2xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm3 2a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h5a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                        </svg>
+                        구현 상세
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-3 border-b border-slate-600">구분</th>
+                                    <th class="px-4 py-3 border-b border-slate-600">내용</th>
+                                    <th class="px-4 py-3 border-b border-slate-600">상세 설명</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-slate-700">입력 데이터</td>
+                                    <td class="px-4 py-3 border-b border-slate-700">Tree-Sitter 구조 분석 결과</td>
+                                    <td class="px-4 py-3 border-b border-slate-700">
+                                        함수/클래스 단위 AST, 주석 블록, 관련 문서 텍스트를 묶어 문맥 단위 샘플을 구성합니다.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-slate-700">전처리</td>
+                                    <td class="px-4 py-3 border-b border-slate-700">문장 정규화 & 토큰 증강</td>
+                                    <td class="px-4 py-3 border-b border-slate-700">
+                                        불필요한 공백/HTML 태그 제거, 사용자 사전으로 KorBERT 토크나이저에 코드 전용 토큰을 추가합니다.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 border-b border-slate-700">임베딩 생성</td>
+                                    <td class="px-4 py-3 border-b border-slate-700">KorBERT 배치 추론</td>
+                                    <td class="px-4 py-3 border-b border-slate-700">
+                                        GPU 자원에 최적화된 배치 크기를 사용해 추론하며, L2 정규화 및 float16 저장으로 메모리 사용을 줄입니다.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3">결과 저장</td>
+                                    <td class="px-4 py-3">메타데이터 & 임베딩 페어</td>
+                                    <td class="px-4 py-3">
+                                        파일 경로, 심볼 이름, 태그, 버전 정보를 함께 저장해 ChromaDB 연동 시 필터링과 버전 관리를 지원합니다.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Installation / Development Guide -->
+                <section class="glass-panel p-6 md:p-8 rounded-2xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V9.414a2 2 0 00-.586-1.414l-4.414-4.414A2 2 0 0010.586 3H5zm5 3a1 1 0 011-1h.586a1 1 0 01.707.293L14 6.586A1 1 0 0114.414 7H14a1 1 0 01-1-1V6h-3z"/>
+                        </svg>
+                        설치 및 개발 방법
+                    </h2>
+                    <div class="space-y-6 text-gray-600">
+                        <div>
+                            <h3 class="text-lg font-semibold text-sky-300 mb-2">1. 환경 구성</h3>
+                            <pre><code># 가상환경 생성 및 활성화
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+# 필수 패키지 설치
+pip install torch transformers sentencepiece accelerate
+pip install git+https://github.com/SKTBrain/KoBERT.git
+</code></pre>
+                            <p class="text-sm mt-2">
+                                KorBERT 모델은 Hugging Face Transformers와 SKT KorBERT 라이브러리를 함께 사용합니다.
+                                GPU 환경에서는 <code>torch</code>를 CUDA 버전에 맞춰 설치합니다.
                             </p>
-                            <p class="leading-relaxed">
-                                임베딩 생성 이후에는 벡터 정규화, 메타데이터 라벨링, 배치 업로드를 자동화하여
-                                ChromaDB 단계에서 바로 활용할 수 있는 포맷으로 변환합니다.
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-sky-300 mb-2">2. 데이터 준비</h3>
+                            <pre><code>python scripts/export_units.py \
+  --tree-sitter-cache ./artifacts/ast \
+  --include-comments \
+  --output ./datasets/korbert_units.jsonl
+
+python scripts/normalize_units.py \
+  --input ./datasets/korbert_units.jsonl \
+  --max-length 256 \
+  --with-docstring
+</code></pre>
+                            <p class="text-sm mt-2">
+                                Parser 단계에서 생성된 AST 캐시를 기반으로 문맥 단위 샘플을 추출합니다.
+                                코드와 주석, 문서가 한 묶음으로 구분되도록 전처리합니다.
                             </p>
                         </div>
-                        <div class="bg-slate-900/40 border border-sky-600/30 rounded-xl p-6">
-                            <h3 class="text-lg font-semibold text-sky-200 mb-3">핵심 목표</h3>
-                            <ul class="space-y-2 text-sm text-slate-300">
-                                <li>• Tree-Sitter 구조 분석 결과를 KorBERT 입력으로 매핑</li>
-                                <li>• 한국어 문서/코드 혼합 데이터의 맥락 손실 최소화</li>
-                                <li>• 임베딩 추론 파이프라인을 배치·스트리밍 모드로 지원</li>
-                                <li>• 벡터 품질 평가 지표(유사도, NDCG, CLIR) 자동화</li>
-                            </ul>
+                        <div>
+                            <h3 class="text-lg font-semibold text-sky-300 mb-2">3. 임베딩 파이프라인 실행</h3>
+                            <pre><code>python pipelines/korbert_embedding.py \
+  --model-name klue/bert-base \
+  --input ./datasets/korbert_units.jsonl \
+  --batch-size 16 \
+  --output ./artifacts/embeddings \
+  --use-half-precision \
+  --metadata ./artifacts/metadata.json</code></pre>
+                            <p class="text-sm mt-2">
+                                추론 결과는 임베딩 벡터와 메타데이터 파일로 분리 저장합니다.
+                                배치 크기와 half-precision 설정은 GPU 메모리 상황에 맞춰 조절 가능합니다.
+                            </p>
                         </div>
                     </div>
                 </section>
 
-                <section class="glass-panel p-6 sm:p-8 rounded-2xl">
-                    <h2 class="text-2xl font-bold text-sky-100 mb-6 flex items-center">
+                <!-- Benefits -->
+                <section class="glass-panel p-6 rounded-xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
                         <svg class="w-7 h-7 mr-3 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 11a1 1 0 011-1h2V8a2 2 0 012-2h2V4a2 2 0 012-2h3a1 1 0 011 1v13h3a1 1 0 010 2H3a1 1 0 01-1-1v-6z"/>
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                         </svg>
-                        텍스트 벡터화 파이프라인
+                        RAG 시스템에서의 장점
                     </h2>
-                    <div class="grid lg:grid-cols-2 gap-6">
-                        <div class="space-y-4">
-                            <div class="flow-card glass-panel p-5 rounded-xl">
-                                <div class="flex items-start gap-4">
-                                    <span class="step-icon">1</span>
-                                    <div>
-                                        <h3 class="text-lg font-semibold text-sky-200 mb-1">Tree-Sitter 출력 정규화</h3>
-                                        <p class="text-sm text-slate-300 leading-relaxed">
-                                            코드의 AST 정보와 주석, 문서화 블록을 분리 저장합니다.
-                                            동일 함수/클래스 단위로 묶어 KorBERT가 문맥 흐름을 유지하도록 시퀀스를 재구성합니다.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flow-card glass-panel p-5 rounded-xl">
-                                <div class="flex items-start gap-4">
-                                    <span class="step-icon">2</span>
-                                    <div>
-                                        <h3 class="text-lg font-semibold text-sky-200 mb-1">KorBERT 토크나이징 최적화</h3>
-                                        <p class="text-sm text-slate-300 leading-relaxed">
-                                            SentencePiece 기반 서브워드 토크나이저를 활용하여 어휘 외 단어를 보정하고,
-                                            코드 전용 토큰을 사용자 사전으로 확장합니다.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flow-card glass-panel p-5 rounded-xl">
-                                <div class="flex items-start gap-4">
-                                    <span class="step-icon">3</span>
-                                    <div>
-                                        <h3 class="text-lg font-semibold text-sky-200 mb-1">임베딩 추론 & 정규화</h3>
-                                        <p class="text-sm text-slate-300 leading-relaxed">
-                                            배치 추론으로 임베딩을 생성하고, L2 정규화 후 문서/코드 메타데이터와 결합합니다.
-                                            유사도 샘플 검증으로 벡터 품질을 모니터링합니다.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-sky-200 mb-2">정밀한 컨텍스트 유지</h3>
+                            <p class="text-gray-600 text-sm">코드와 설명 문서를 묶어 임베딩하므로 함수 기능과 사용 맥락을 동시에 반영합니다.</p>
                         </div>
-                        <div class="glass-panel p-6 rounded-xl">
-                            <h3 class="text-lg font-semibold text-sky-200 mb-4">파이프라인 의사 코드</h3>
-                            <pre><code>from pipelines import TreeSitterLoader, KorBERTEncoder, VectorStoreWriter
-
-loader = TreeSitterLoader(target='src/**/*.py', include_docs=True)
-encoder = KorBERTEncoder(model='kobert-base-v1', max_length=256)
-writer = VectorStoreWriter(namespace='korbert-stage')
-
-for unit in loader.iter_units():
-    sequence = unit.to_sequence()  # 코드 + 주석 + 컨텍스트
-    embedding = encoder.encode(sequence)
-    payload = {
-        "id": unit.identifier,
-        "embedding": embedding,
-        "metadata": {
-            "file": unit.file_path,
-            "symbol": unit.symbol_name,
-            "tags": unit.tags
-        }
-    }
-    writer.write(payload)
-
-writer.flush()</code></pre>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-emerald-300 mb-2">고성능 검색</h3>
+                            <p class="text-gray-600 text-sm">KorBERT 특화 벡터로 한국어 질의에 대한 일관된 유사도 검색 결과를 제공합니다.</p>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-purple-300 mb-2">도메인 적응력</h3>
+                            <p class="text-gray-600 text-sm">사용자 사전과 파인튜닝 옵션으로 금융, 공공 등 산업별 어휘를 정밀하게 반영합니다.</p>
+                        </div>
+                        <div class="glass-panel p-4 rounded-lg">
+                            <h3 class="font-semibold text-amber-300 mb-2">운영 자동화</h3>
+                            <p class="text-gray-600 text-sm">배치 파이프라인과 품질 모니터링을 통해 재학습 스케줄링을 자동화합니다.</p>
                         </div>
                     </div>
                 </section>
 
-                <section class="glass-panel p-6 sm:p-8 rounded-2xl">
-                    <h2 class="text-2xl font-bold text-sky-100 mb-6 flex items-center">
+                <!-- Next Steps -->
+                <section class="glass-panel p-6 rounded-xl info-card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center">
                         <svg class="w-7 h-7 mr-3 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8.25 8.25a1 1 0 01-1.414 0l-4.25-4.25a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
                         </svg>
-                        품질 관리 체크리스트
+                        다음 단계
                     </h2>
-                    <div class="grid md:grid-cols-2 gap-5">
-                        <div class="glass-panel p-5 rounded-xl bg-slate-900/40">
-                            <h3 class="text-lg font-semibold text-sky-200 mb-3">임베딩 검증</h3>
-                            <ul class="space-y-2 text-sm text-slate-300 leading-relaxed">
-                                <li>• 의미적으로 유사한 함수/문서 쌍의 코사인 유사도 상시 모니터링</li>
-                                <li>• 품질 저하 시 재학습/파인튜닝 트리거 조건 자동화</li>
-                                <li>• 계층적 클러스터링으로 파싱 오류 샘플 역추적</li>
-                            </ul>
-                        </div>
-                        <div class="glass-panel p-5 rounded-xl bg-slate-900/40">
-                            <h3 class="text-lg font-semibold text-sky-200 mb-3">운영 지표</h3>
-                            <ul class="space-y-2 text-sm text-slate-300 leading-relaxed">
-                                <li>• 임베딩 추론 처리량: 초당 45~60 문장</li>
-                                <li>• 배치 파이프라인 실패율 &lt; 0.5%</li>
-                                <li>• 도메인 적합도 평가(F1): 현재 0.82 → 목표 0.9</li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="glass-panel p-6 sm:p-8 rounded-2xl">
-                    <h2 class="text-2xl font-bold text-sky-100 mb-6 flex items-center">
-                        <svg class="w-7 h-7 mr-3 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M6 3a1 1 0 011-1h6a1 1 0 011 1v3h3a1 1 0 110 2h-1.528l-.699 7.692A2 2 0 0111.78 17H8.22a2 2 0 01-1.993-1.308L5.528 8H4a1 1 0 110-2h2V3zm2 1v2h4V4H8zm-1.473 4l.667 7.333A1 1 0 008.22 16h3.56a1 1 0 00.995-.667L13.444 8H6.527z" clip-rule="evenodd"/>
-                        </svg>
-                        운영 일정 및 다음 단계
-                    </h2>
-                    <div class="relative timeline pl-14">
-                        <div class="space-y-8">
-                            <div class="relative">
-                                <div class="absolute -left-10 top-1">
-                                    <div class="timeline-dot"></div>
-                                </div>
-                                <div class="glass-panel p-5 rounded-xl bg-slate-900/40">
-                                    <h3 class="text-lg font-semibold text-sky-200">주차 1: 데이터 적재 및 정규화</h3>
-                                    <p class="text-sm text-slate-300 mt-2 leading-relaxed">
-                                        코드/문서 데이터셋을 수집하여 파서 출력과 매핑, 문장 분리 규칙 확정.
-                                        도메인 키워드 사전 수립 및 사용자 토큰 추가.
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="relative">
-                                <div class="absolute -left-10 top-1">
-                                    <div class="timeline-dot"></div>
-                                </div>
-                                <div class="glass-panel p-5 rounded-xl bg-slate-900/40">
-                                    <h3 class="text-lg font-semibold text-sky-200">주차 2: 임베딩 추론 파이프라인</h3>
-                                    <p class="text-sm text-slate-300 mt-2 leading-relaxed">
-                                        배치/스트리밍 파이프라인 구현, GPU 자원 스케줄링, 품질 지표 수집 및 대시보드 구성.
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="relative">
-                                <div class="absolute -left-10 top-1">
-                                    <div class="timeline-dot"></div>
-                                </div>
-                                <div class="glass-panel p-5 rounded-xl bg-slate-900/40">
-                                    <h3 class="text-lg font-semibold text-sky-200">주차 3: ChromaDB 연동 준비</h3>
-                                    <p class="text-sm text-slate-300 mt-2 leading-relaxed">
-                                        임베딩 스키마 확정, 벡터 라벨링 규칙 정의, ChromaDB 데이터 마이그레이션 테스트.
-                                        다음 단계(3. ChromaDB)로 전환을 위한 체크리스트 완료.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="bg-gradient-to-r from-sky-900/25 to-cyan-900/25 border-l-4 border-sky-400 p-4 rounded-r-lg">
+                        <p class="text-gray-600 mb-2">KorBERT 임베딩 파이프라인을 완료하면 다음 순서로 진행합니다.</p>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-600">
+                            <li><strong class="text-cyan-400">3단계: ChromaDB</strong> - 벡터 데이터베이스에 임베딩 적재 및 검색 인덱스 구축</li>
+                            <li><strong class="text-blue-400">4단계: LLM</strong> - 질의 응답 템플릿 및 컨텍스트 리트리버 통합</li>
+                            <li><strong class="text-indigo-400">5단계: 운영 자동화</strong> - 재학습 스케줄러와 품질 대시보드 연동</li>
+                        </ol>
                     </div>
                 </section>
             </main>
 
+            <!-- Footer -->
             <footer class="mt-12 text-center">
-                <a href="index.html" class="inline-flex items-center text-sky-300 hover:text-sky-200 font-semibold glass-panel px-6 py-3 rounded-lg transition-colors">
+                <a href="index.html" class="back-button inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold glass-panel px-6 py-3 rounded-lg">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
