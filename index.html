@@ -137,6 +137,52 @@
                 <p class="mt-2 text-lg text-gray-600">GTX 1660 6GB GPU 기반 개발환경에서 구축/개발 진행 중인 RAG 시스템의 구성 요소를 클릭하여 상세 정보를 확인하세요.</p>
             </header>
 
+            <section class="glass-panel p-6 rounded-2xl shadow-lg mb-10">
+                <h2 class="text-2xl font-bold mb-4">개발 진행 순서</h2>
+                <ol class="list-decimal list-inside space-y-4 text-base leading-relaxed">
+                    <li>
+                        <p class="font-semibold">환경 준비 및 리소스 점검</p>
+                        <ul class="list-disc list-inside ml-4 space-y-1 text-sm sm:text-base">
+                            <li>GTX 1660 6GB GPU 드라이버, CUDA, cuDNN 및 PyTorch 호환 버전 확인</li>
+                            <li>Ollama, LangChain, FastAPI 운용을 위한 Python 3.10 이상 가상환경 구성</li>
+                            <li>최소 16GB RAM과 40GB 이상의 스토리지 여유 확보, 모델 캐시 경로 분리</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <p class="font-semibold">실시간 코드 보완 시스템 (Ollama + DeepSeek-Coder 6.7B + Continue.dev)</p>
+                        <ul class="list-disc list-inside ml-4 space-y-1 text-sm sm:text-base">
+                            <li>Ollama 설치 후 <code>deepseek-coder:6.7b</code> 모델 로드 및 GPU 메모리 사용량 프로파일링</li>
+                            <li>Continue.dev 확장 프로그램에서 Ollama 로컬 엔드포인트 연결 및 프롬프트 템플릿 정의</li>
+                            <li>VS Code/JetBrains 환경에서 실시간 보완, 리팩터링, 테스트 케이스 생성 시나리오 검증</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <p class="font-semibold">오프라인 RAG 기반 문서 검색 (LangChain + ChromaDB + KorBERT + CodeLlama 7B)</p>
+                        <ul class="list-disc list-inside ml-4 space-y-1 text-sm sm:text-base">
+                            <li>내부 문서 파이프라인 정의: PDF/Markdown 파서 → 텍스트 클리닝 → 메타데이터 부착</li>
+                            <li>KorBERT 임베딩으로 청크 임베딩 생성 후 ChromaDB 로컬 스토어 구축 및 적재</li>
+                            <li>LangChain Retriever + CodeLlama 7B 조합으로 검색-생성 체인 구성 및 쿼리 벤치마킹</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <p class="font-semibold">FastAPI 백엔드 구현 (/generate → Ollama API)</p>
+                        <ul class="list-disc list-inside ml-4 space-y-1 text-sm sm:text-base">
+                            <li>FastAPI 프로젝트 구조화: <code>app/main.py</code>, <code>routers/generation.py</code>, <code>services/ollama.py</code></li>
+                            <li>비동기 HTTP 클라이언트로 Ollama REST 호출, 스트리밍 응답 처리 및 오류 핸들링 설계</li>
+                            <li>uvicorn 서비스 설정, CORS 정책 구성, API 문서화(OpenAPI) 확인</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <p class="font-semibold">통합 및 운영 자동화</p>
+                        <ul class="list-disc list-inside ml-4 space-y-1 text-sm sm:text-base">
+                            <li>실시간 코드 보완 플러그인, RAG 검색 API, FastAPI 백엔드 간 인증/권한 연동</li>
+                            <li>Docker Compose 기반 배포 템플릿 작성 및 GPU 패스스루(nvidia-container-toolkit) 검증</li>
+                            <li>Prometheus/Grafana 또는 자체 로그 수집으로 추론 대기시간과 GPU 사용량 모니터링</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
             <div class="flex justify-center mb-8">
                 <button id="simulate-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors shadow-md">
                     데이터 흐름 시뮬레이션 시작
