@@ -102,6 +102,19 @@
             opacity: 0.85;
         }
         .glass-panel > * { position: relative; z-index: 1; }
+        .frosted-panel {
+            background: linear-gradient(165deg, rgba(11, 20, 45, 0.78), rgba(7, 12, 30, 0.52));
+            border: 1px solid rgba(148, 163, 255, 0.32);
+            box-shadow: 0 25px 65px rgba(5, 11, 27, 0.55);
+        }
+        .frosted-panel::before {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.05) 45%, transparent 70%);
+            opacity: 0.7;
+        }
+        .frosted-panel::after {
+            background: linear-gradient(90deg, rgba(96, 165, 250, 0.45), rgba(255, 255, 255, 0));
+            opacity: 0.9;
+        }
         .config { background: linear-gradient(155deg, rgba(220, 239, 251, 0.55), rgba(220, 239, 251, 0.1)); border-color: rgba(166, 205, 228, 0.45); }
         .embed { background: linear-gradient(155deg, rgba(255, 224, 178, 0.52), rgba(255, 224, 178, 0.08)); border-color: rgba(230, 185, 128, 0.44); }
         .logging { background: linear-gradient(155deg, rgba(200, 230, 201, 0.5), rgba(200, 230, 201, 0.08)); border-color: rgba(151, 194, 153, 0.4); }
@@ -163,7 +176,7 @@
                 <p class="mt-2 text-lg text-gray-600">FastAPI로 구현된 Retrieval-Augmented Generation 백엔드는 설정·로깅, 코퍼스 ingestion, 임베딩, 오케스트레이션, API 계층이 촘촘하게 연결되어 동작합니다.</p>
                 <p class="mt-1 text-base text-gray-500">이 페이지는 <code>docs/rag_architecture.md</code>의 설명을 토대로 구성되었으며, 각 박스를 클릭하면 모듈별 책임과 운영 포인트를 확인할 수 있습니다.</p>
             </header>
-            <section class="glass-panel p-6 rounded-2xl shadow-lg mb-10">
+            <section class="glass-panel frosted-panel p-6 rounded-2xl shadow-lg mb-10">
                 <h2 class="text-2xl font-bold mb-4">아키텍처 개요</h2>
                 <ol class="list-decimal list-inside space-y-4 text-base leading-relaxed">
                     <li>
@@ -210,14 +223,14 @@
                 </button>
             </div>
             <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <aside class="lg:col-span-2 glass-panel bg-white p-4 rounded-xl shadow-lg">
+                <aside class="lg:col-span-2 glass-panel frosted-panel p-4 rounded-xl shadow-lg">
                     <h2 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">구성 요소</h2>
                     <nav id="component-nav" class="space-y-2">
                     </nav>
                 </aside>
-                <div class="lg:col-span-7 glass-panel diagram-container bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                <div class="lg:col-span-7 glass-panel frosted-panel diagram-container p-4 sm:p-6 rounded-xl shadow-lg">
                     <div class="flex flex-col space-y-8 w-full" id="diagram-root">
-                        <div class="glass-panel w-full max-w-4xl mx-auto p-6 rounded-2xl">
+                        <div class="glass-panel frosted-panel w-full max-w-4xl mx-auto p-6 rounded-2xl">
                             <h3 class="text-center font-semibold text-gray-500 mb-4 text-sm sm:text-base">Config & Utilities</h3>
                             <div class="flex flex-col sm:flex-row justify-around items-center space-y-4 sm:space-y-0 sm:space-x-4">
                                 <div id="A" data-id="A" class="component config p-3 rounded-lg text-center w-full sm:w-48">settings.py</div>
@@ -225,11 +238,11 @@
                                 <div id="C" data-id="C" class="component logging p-3 rounded-lg text-center w-full sm:w-48">logging_config.py</div>
                             </div>
                         </div>
-                        <div class="glass-panel w-full max-w-4xl mx-auto p-6 rounded-2xl">
+                        <div class="glass-panel frosted-panel w-full max-w-4xl mx-auto p-6 rounded-2xl">
                             <h3 class="text-center font-semibold text-gray-500 mb-4 text-sm sm:text-base">Ingestion Pipeline</h3>
                             <div class="flex flex-col items-center space-y-4">
                                 <div id="D" data-id="D" class="component ingestion p-3 rounded-lg text-center w-full sm:w-56">ingest.py</div>
-                                <div class="w-full max-w-3xl mx-auto glass-panel p-4 rounded-2xl">
+                                <div class="w-full max-w-3xl mx-auto glass-panel frosted-panel p-4 rounded-2xl">
                                     <h4 class="text-center font-semibold text-gray-400 mb-2 text-xs sm:text-sm">Preparation Stages</h4>
                                     <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
                                         <div id="F" data-id="F" class="component sources p-3 rounded-lg text-center w-full sm:w-48">ensure_*_corpus 스크립트</div>
@@ -239,7 +252,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="glass-panel w-full max-w-4xl mx-auto p-6 rounded-2xl">
+                        <div class="glass-panel frosted-panel w-full max-w-4xl mx-auto p-6 rounded-2xl">
                             <h3 class="text-center font-semibold text-gray-500 mb-3 text-sm sm:text-base">Runtime & API Layer</h3>
                             <div class="flex flex-col items-center space-y-4">
                                 <div id="H" data-id="H" class="component orchestrator p-3 rounded-lg text-center w-full sm:w-56">rag_orchestrator.py</div>
@@ -252,7 +265,7 @@
                     </div>
                 </div>
                 <div class="lg:col-span-3">
-                    <div id="info-panel" class="sticky top-8 glass-panel p-6 rounded-xl shadow-lg">
+                    <div id="info-panel" class="sticky top-8 glass-panel frosted-panel p-6 rounded-xl shadow-lg">
                         <h2 id="info-title" class="text-2xl font-bold mb-3 text-gray-900">아키텍처 개요</h2>
                         <div id="info-content" class="text-gray-700 space-y-4">
                             <p><code>docs/rag_architecture.md</code>는 FastAPI 기반 RAG 백엔드를 설정 계층, 코퍼스 ingestion, 임베딩, 런타임 서비스의 네 축으로 설명합니다. 각 모듈은 공통 설정을 공유하면서도 명확한 책임 경계를 유지합니다.</p>
@@ -270,60 +283,60 @@
                 </div>
             </main>
             <section class="mt-12 mb-8">
-                <div class="glass-panel p-6 sm:p-8 rounded-xl shadow-lg">
+                <div class="glass-panel frosted-panel p-6 sm:p-8 rounded-xl shadow-lg">
                     <h2 class="text-2xl sm:text-3xl font-bold text-center mb-2 text-gray-900">운영 플로우</h2>
                     <p class="text-center text-gray-600 mb-6">RAG 백엔드가 질의를 처리하기까지의 단계별 책임 정리</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="glass-panel p-5 rounded-lg config border-2 hover:scale-105 transition-transform duration-300">
+                        <div class="glass-panel frosted-panel p-5 rounded-lg config border-2 hover:scale-105 transition-transform duration-300">
                             <div class="flex items-center mb-3">
                                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md">1</div>
                                 <h3 class="ml-3 font-bold text-lg text-gray-900">환경 변수 로딩</h3>
                             </div>
                             <p class="text-sm text-gray-600"><code>settings.py</code>가 OLLAMA, Chroma, 사전 경로 등 공통 런타임 상수를 노출합니다.</p>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg embed border-2 hover:scale-105 transition-transform duration-300">
+                        <div class="glass-panel frosted-panel p-5 rounded-lg embed border-2 hover:scale-105 transition-transform duration-300">
                             <div class="flex items-center mb-3">
                                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-lg shadow-md">2</div>
                                 <h3 class="ml-3 font-bold text-lg text-gray-900">임베딩 구성 점검</h3>
                             </div>
                             <p class="text-sm text-gray-600"><code>embed_config.py</code>와 <code>logging_config.py</code>가 오프라인 모드와 공통 로깅 포맷을 초기화합니다.</p>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg sources border-2 hover:scale-105 transition-transform duration-300">
+                        <div class="glass-panel frosted-panel p-5 rounded-lg sources border-2 hover:scale-105 transition-transform duration-300">
                             <div class="flex items-center mb-3">
                                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-bold text-lg shadow-md">3</div>
                                 <h3 class="ml-3 font-bold text-lg text-gray-900">코퍼스 확보</h3>
                             </div>
                             <p class="text-sm text-gray-600"><code>ensure_wikipedia_corpus()</code> 등 스크립트가 데이터 최신성과 경로를 보장합니다.</p>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg parser border-2 hover:scale-105 transition-transform duration-300">
+                        <div class="glass-panel frosted-panel p-5 rounded-lg parser border-2 hover:scale-105 transition-transform duration-300">
                             <div class="flex items-center mb-3">
                                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold text-lg shadow-md">4</div>
                                 <h3 class="ml-3 font-bold text-lg text-gray-900">청크 & 코드 파싱</h3>
                             </div>
                             <p class="text-sm text-gray-600"><code>chunking.py</code>와 <code>parse_code.py</code>가 청크 메타데이터와 코드 시그니처를 구성합니다.</p>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg ingestion border-2 hover:scale-105 transition-transform duration-300">
+                        <div class="glass-panel frosted-panel p-5 rounded-lg ingestion border-2 hover:scale-105 transition-transform duration-300">
                             <div class="flex items-center mb-3">
                                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">5</div>
                                 <h3 class="ml-3 font-bold text-lg text-gray-900">ingest.py 실행</h3>
                             </div>
                             <p class="text-sm text-gray-600">CLI 진입점이 청크 로딩, 임베딩 생성, 로그 스트리밍을 순차적으로 처리합니다.</p>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg vector-store border-2 hover:scale-105 transition-transform duration-300">
+                        <div class="glass-panel frosted-panel p-5 rounded-lg vector-store border-2 hover:scale-105 transition-transform duration-300">
                             <div class="flex items-center mb-3">
                                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white font-bold text-lg shadow-md">6</div>
                                 <h3 class="ml-3 font-bold text-lg text-gray-900">Chroma 업서트</h3>
                             </div>
                             <p class="text-sm text-gray-600">기존 벡터를 삭제·갱신하고 새로운 임베딩을 upsert하여 검색 품질을 유지합니다.</p>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg orchestrator border-2 hover:scale-105 transition-transform duration-300">
+                        <div class="glass-panel frosted-panel p-5 rounded-lg orchestrator border-2 hover:scale-105 transition-transform duration-300">
                             <div class="flex items-center mb-3">
                                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-md">7</div>
                                 <h3 class="ml-3 font-bold text-lg text-gray-900">RAG 오케스트레이션</h3>
                             </div>
                             <p class="text-sm text-gray-600"><code>rag_orchestrator.ensure_ready()</code>가 모델 캐시와 인덱스를 준비합니다.</p>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg api border-2 hover:scale-105 transition-transform duration-300">
+                        <div class="glass-panel frosted-panel p-5 rounded-lg api border-2 hover:scale-105 transition-transform duration-300">
                             <div class="flex items-center mb-3">
                                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-lime-400 to-lime-600 flex items-center justify-center text-white font-bold text-lg shadow-md">8</div>
                                 <h3 class="ml-3 font-bold text-lg text-gray-900">FastAPI 응답</h3>
