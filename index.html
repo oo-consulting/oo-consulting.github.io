@@ -30,20 +30,32 @@
             position: relative;
             transition: all 0.3s ease-in-out;
             cursor: pointer;
-            color: #0f172a;
-            background: linear-gradient(165deg, rgba(255, 255, 255, 0.72), rgba(236, 240, 255, 0.22));
-            border: 1px solid rgba(255, 255, 255, 0.55);
-            box-shadow: 0 18px 32px rgba(3, 7, 18, 0.22);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            color: #eaf2ff;
+            background: rgba(9, 16, 35, 0.38);
+            border: 1px solid rgba(148, 163, 255, 0.45);
+            box-shadow: 0 26px 60px rgba(6, 11, 31, 0.55);
+            backdrop-filter: blur(28px) saturate(185%);
+            -webkit-backdrop-filter: blur(28px) saturate(185%);
         }
         .component::before {
             content: "";
             position: absolute;
-            inset: 0;
+            inset: 1px;
             border-radius: inherit;
-            background: linear-gradient(140deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05) 45%, transparent 70%);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04));
+            opacity: 0.9;
+            pointer-events: none;
+        }
+        .component::after {
+            content: "";
+            position: absolute;
+            inset-inline: 18%;
+            top: 10px;
+            height: 45%;
+            border-radius: 999px;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0));
             opacity: 0.65;
+            filter: blur(6px);
             pointer-events: none;
         }
         .component > * {
