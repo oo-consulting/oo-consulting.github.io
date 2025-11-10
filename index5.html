@@ -191,7 +191,7 @@
     participant UI as Tomcat UI
     participant API as FastAPI (api.py)
     participant Ingest as ingest.py
-    participant Chroma
+    participant Chroma DB
     participant Ollama
 
     User->>UI: 버튼 클릭 (질의 / 인제스트)
@@ -201,11 +201,11 @@
 
     API->>Ingest: (인제스트) subprocess + Redis status 갱신
     Ingest->>Sources: ensure_*_corpus()\n(Topik/MDN/Korean dict)
-    Ingest->>Chroma: upsert embeddings
+    Ingest->>Chroma DB: upsert embeddings
     Ingest-->>API: 실시간 로그 스트림
     API-->>UI: 작업 ID / 로그
 
-    API->>Chroma: (질의) similarity search
+    API->>Chroma DB: (질의) similarity search
     API->>Ollama: context + prompt
     Ollama-->>API: 답변/메타데이터
     API-->>UI: JSON 응답(답변, 출처, 토큰 사용량)
