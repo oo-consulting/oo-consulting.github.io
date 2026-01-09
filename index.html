@@ -3,521 +3,711 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastAPI RAG 백엔드 아키텍처 탐색기 (개발자:오윤석) </title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Architecture description derived from docs/rag_architecture.md -->
-    <style>
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background: radial-gradient(circle at 20% 20%, rgba(56, 97, 219, 0.35), transparent 55%), radial-gradient(circle at 80% 10%, rgba(17, 135, 189, 0.3), transparent 45%), linear-gradient(180deg, #030712 0%, #020410 80%);
-            overflow-x: hidden;
-            color: #e5e7f0;
-            min-height: 100vh;
-            position: relative;
-        }
-        body .text-gray-900,
-        body .text-slate-900 { color: #f9fafb !important; }
-        body .text-gray-800,
-        body .text-slate-800 { color: #e2e8f0 !important; }
-        body .text-gray-700,
-        body .text-slate-700 { color: #dbeafe !important; }
-        body .text-gray-600,
-        body .text-slate-600 { color: #cbd5f5 !important; }
-        body .text-gray-500,
-        body .text-slate-500 { color: #bcd2ff !important; }
-        .component {
-            position: relative;
-            transition: all 0.3s ease-in-out;
-            cursor: pointer;
-            color: #eaf2ff;
-            background: rgba(9, 16, 35, 0.38);
-            border: 1px solid rgba(148, 163, 255, 0.45);
-            box-shadow: 0 26px 60px rgba(6, 11, 31, 0.55);
-            backdrop-filter: blur(28px) saturate(185%);
-            -webkit-backdrop-filter: blur(28px) saturate(185%);
-        }
-        .component::before {
-            content: "";
-            position: absolute;
-            inset: 1px;
-            border-radius: inherit;
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04));
-            opacity: 0.9;
-            pointer-events: none;
-        }
-        .component::after {
-            content: "";
-            position: absolute;
-            inset-inline: 18%;
-            top: 10px;
-            height: 45%;
-            border-radius: 999px;
-            background: linear-gradient(120deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0));
-            opacity: 0.65;
-            filter: blur(6px);
-            pointer-events: none;
-        }
-        .component > * {
-            position: relative;
-            z-index: 1;
-        }
-        .component.selected {
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.7);
-            transform: scale(1.03);
-        }
-        .component.highlight {
-            background-color: #3b82f6 !important;
-            color: white !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-        }
-        .glass-panel {
-            position: relative;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: inherit;
-            box-shadow: 0 32px 70px rgba(3, 7, 18, 0.55);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            overflow: hidden;
-        }
-        .glass-panel::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            pointer-events: none;
-            background: linear-gradient(140deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01) 45%, transparent 70%);
-            opacity: 0.4;
-        }
-        .glass-panel::after {
-            content: "";
-            position: absolute;
-            inset-inline: 0;
-            top: 0;
-            height: 1px;
-            border-radius: inherit;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0));
-            pointer-events: none;
-            opacity: 0.85;
-        }
-        .glass-panel > * { position: relative; z-index: 1; }
-        .frosted-panel {
-            background: linear-gradient(165deg, rgba(11, 20, 45, 0.78), rgba(7, 12, 30, 0.52));
-            border: 1px solid rgba(148, 163, 255, 0.32);
-            box-shadow: 0 25px 65px rgba(5, 11, 27, 0.55);
-        }
-        .frosted-panel::before {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.05) 45%, transparent 70%);
-            opacity: 0.7;
-        }
-        .frosted-panel::after {
-            background: linear-gradient(90deg, rgba(96, 165, 250, 0.45), rgba(255, 255, 255, 0));
-            opacity: 0.9;
-        }
-        .config { background: linear-gradient(155deg, rgba(220, 239, 251, 0.55), rgba(220, 239, 251, 0.1)); border-color: rgba(166, 205, 228, 0.45); }
-        .embed { background: linear-gradient(155deg, rgba(255, 224, 178, 0.52), rgba(255, 224, 178, 0.08)); border-color: rgba(230, 185, 128, 0.44); }
-        .logging { background: linear-gradient(155deg, rgba(200, 230, 201, 0.5), rgba(200, 230, 201, 0.08)); border-color: rgba(151, 194, 153, 0.4); }
-        .sources { background: linear-gradient(155deg, rgba(255, 253, 231, 0.5), rgba(255, 253, 231, 0.08)); border-color: rgba(230, 228, 179, 0.38); }
-        .parser { background: linear-gradient(155deg, rgba(255, 243, 224, 0.52), rgba(255, 243, 224, 0.08)); border-color: rgba(230, 211, 176, 0.42); }
-        .ingestion { background: linear-gradient(155deg, rgba(243, 229, 245, 0.52), rgba(243, 229, 245, 0.1)); border-color: rgba(211, 189, 224, 0.42); }
-        .vector-store { background: linear-gradient(155deg, rgba(225, 245, 254, 0.52), rgba(225, 245, 254, 0.1)); border-color: rgba(176, 217, 230, 0.42); }
-        .orchestrator { background: linear-gradient(155deg, rgba(224, 247, 250, 0.52), rgba(224, 247, 250, 0.1)); border-color: rgba(176, 223, 230, 0.42); }
-        .api { background: linear-gradient(155deg, rgba(230, 238, 156, 0.52), rgba(230, 238, 156, 0.1)); border-color: rgba(194, 204, 112, 0.42); }
-        .llm { background: linear-gradient(155deg, rgba(209, 213, 255, 0.52), rgba(209, 213, 255, 0.1)); border-color: rgba(165, 180, 252, 0.45); }
-        #component-nav .nav-item {
-            display: block;
-            color: #dbeafe;
-            background: rgba(15, 23, 42, 0.32);
-            border: 1px solid rgba(99, 102, 241, 0.18);
-            backdrop-filter: blur(12px);
-            transition: all 0.25s ease;
-        }
-        #component-nav .nav-item:hover {
-            background: rgba(59, 130, 246, 0.28);
-            color: #ffffff;
-            border-color: rgba(59, 130, 246, 0.55);
-            transform: translateY(-1px);
-        }
-        #component-nav .nav-item.nav-active {
-            background: rgba(59, 130, 246, 0.45);
-            color: #ffffff;
-            border-color: rgba(129, 140, 248, 0.8);
-            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
-            transform: translateY(-2px);
-        }
-        @media (max-width: 1280px) {
-            #info-panel { position: static; top: auto; }
-        }
-        @media (max-width: 1024px) {
-            header h1 { font-size: 2.25rem; }
-            header p { font-size: 1.125rem; }
-            #simulate-btn { width: 100%; max-width: 22rem; }
-        }
-        @media (max-width: 768px) {
-            header h1 { font-size: 1.875rem; }
-            header p { font-size: 1rem; }
-            main > * { width: 100%; }
-            .component { font-size: 0.85rem; padding: 0.75rem; min-height: 3rem; }
-            #info-panel { margin-top: 1.5rem; box-shadow: none; }
-        }
-        @media (max-width: 480px) {
-            .component { font-size: 0.8rem; padding: 0.6rem; min-height: 2.5rem; }
-            #simulate-btn { padding-left: 1.5rem; padding-right: 1.5rem; }
-        }
-    </style>
+    <meta name="description" content="RAG(Retrieval-Augmented Generation) 시스템 - FastAPI, LlamaIndex, ChromaDB 기반의 지능형 문서 검색 및 답변 생성 플랫폼">
+    <meta name="keywords" content="RAG, AI, LLM, FastAPI, LlamaIndex, ChromaDB, Ollama, 문서검색, 인공지능">
+    <title>RAG 시스템 | 현시스템 아키텍처</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
 </head>
-<body class="dark-sky text-gray-100">
-    <canvas id="bg-stars" class="fixed inset-0 w-full h-full pointer-events-none"></canvas>
-    <div class="relative z-10">
-        <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-            <header class="text-center mb-8">
-                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">FastAPI 기반 RAG 백엔드 아키텍처 탐색기 (개발자 : 오윤석)</h1>
-                <p class="mt-2 text-lg text-gray-600">FastAPI로 구현된 Retrieval-Augmented Generation 백엔드는 설정·로깅, 코퍼스 ingestion, 임베딩, 오케스트레이션, API 계층이 촘촘하게 연결되어 동작합니다.</p>
-                <p class="mt-1 text-base text-gray-500">이 페이지는 <code>docs/rag_architecture.md</code>의 설명을 토대로 구성되었으며, 각 박스를 클릭하면 모듈별 책임과 운영 포인트를 확인할 수 있습니다.</p>
-                <p class="mt-1 text-base text-gray-500"> 사내망/내부망 즉, On-premise 구축이 가능하며,  필요한경우 연락주세요 ^^ 010-6704-2217,  구축해드립니다.</p>
-            </header>
-            <section class="glass-panel frosted-panel p-6 rounded-2xl shadow-lg mb-10">
-                <h2 class="text-2xl font-bold mb-4">아키텍처 개요</h2>
-                <ol class="list-decimal list-inside space-y-4 text-base leading-relaxed">
-                    <li>
-                        <p class="font-semibold">설정 · 로깅 공통 계층 (settings.py, embed_config.py, logging_config.py)</p>
-                        <ul class="list-disc list-inside ml-4 space-y-1 text-sm sm:text-base">
-                            <li>환경 변수와 <code>.env</code>를 통해 모델, Chroma 호스트, 사전 경로 등 런타임 상수를 선언적으로 관리합니다.</li>
-                            <li><code>embed_config.py</code>는 오프라인 모드 전환과 모델 존재 여부를 검사하고 캐시 경로를 조정합니다.</li>
-                            <li><code>logging_config.py</code>의 JSON 포맷 로그가 CLI와 FastAPI 엔드포인트에서 동일하게 사용됩니다.</li>
-                        </ul>
-                    </li>
-                    <li>
-                        <p class="font-semibold">코퍼스 확보 및 정제 (wikipedia_ingest.py, mdn_ingest.py, korean_dictionary_ingest.py)</p>
-                        <ul class="list-disc list-inside ml-4 space-y-1 text-sm sm:text-base">
-                            <li><code>ensure_*_corpus()</code> 호출로 위키백과, MDN, 국어사전 데이터를 내려받고 최신성을 검증합니다.</li>
-                            <li>다운로드된 자료는 프로젝트 구조에 맞춰 저장되고 중복 여부가 점검됩니다.</li>
-                        </ul>
-                    </li>
-                    <li>
-                        <p class="font-semibold">텍스트 · 코드 청크 구성 (chunking.py, parse_code.py)</p>
-                        <ul class="list-disc list-inside ml-4 space-y-1 text-sm sm:text-base">
-                            <li>tree-sitter 기반 파서가 클래스·함수 시그니처 등 메타데이터를 보존한 채 코드 블록을 추출합니다.</li>
-                            <li>청크화된 텍스트와 메타데이터는 인용, 하이라이트, 중복 제거에 활용됩니다.</li>
-                        </ul>
-                    </li>
-                    <li>
-                        <p class="font-semibold">임베딩 생성과 벡터 저장 (ingest.py, SentenceTransformer, Chroma)</p>
-                        <ul class="list-disc list-inside ml-4 space-y-1 text-sm sm:text-base">
-                            <li>CLI 진입점인 <code>ingest.py</code>가 청크 로딩, 임베딩 생성, Chroma 업서트를 순차적으로 수행합니다.</li>
-                            <li>SentenceTransformer 기반 KorBERT 임베딩이 오프라인 모드에서도 일관되게 생성됩니다.</li>
-                        </ul>
-                    </li>
-                    <li>
-                        <p class="font-semibold">런타임 오케스트레이션과 API 계층 (rag_orchestrator.py, api.py)</p>
-                        <ul class="list-disc list-inside ml-4 space-y-1 text-sm sm:text-base">
-                            <li><code>rag_orchestrator.py</code>는 LlamaIndex를 통해 Chroma에서 문맥을 Retrieval 하고 LLM 응답을 조합합니다.</li>
-                            <li><code>api.py</code>는 <code>/rag/query</code>, <code>/rag/ingest</code>, <code>/rag/embed-config</code> 엔드포인트를 제공하며 작업 실행 상태와 로그 스트리밍을 관리합니다.</li>
-                        </ul>
-                    </li>
-                </ol>
-            </section>
-            <div class="flex justify-center mb-8">
-                <button id="simulate-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors shadow-md">
-                    파이프라인 시뮬레이션 시작
-                </button>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🧠</span>
+                RAG System
+            </a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link active">아키텍처</a></li>
+                <li><a href="proposal.html" class="nav-link">제안서</a></li>
+                <li><a href="#tech-stack" class="nav-link">기술 스택</a></li>
+                <li><a href="#api" class="nav-link">API</a></li>
+                <li><a href="proposal.html#contact" class="nav-link nav-cta">도입 문의</a></li>
+            </ul>
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
-            <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <aside class="lg:col-span-2 glass-panel frosted-panel p-4 rounded-xl shadow-lg">
-                    <h2 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">구성 요소</h2>
-                    <nav id="component-nav" class="space-y-2">
-                    </nav>
-                </aside>
-                <div class="lg:col-span-7 glass-panel frosted-panel diagram-container p-4 sm:p-6 rounded-xl shadow-lg">
-                    <div class="flex flex-col space-y-8 w-full" id="diagram-root">
-                        <div class="glass-panel frosted-panel w-full max-w-4xl mx-auto p-6 rounded-2xl">
-                            <h3 class="text-center font-semibold text-gray-500 mb-4 text-sm sm:text-base">Config & Utilities</h3>
-                            <div class="flex flex-col sm:flex-row justify-around items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                                <div id="A" data-id="A" class="component config p-3 rounded-lg text-center w-full sm:w-48">settings.py</div>
-                                <div id="B" data-id="B" class="component embed p-3 rounded-lg text-center w-full sm:w-48">embed_config.py</div>
-                                <div id="C" data-id="C" class="component logging p-3 rounded-lg text-center w-full sm:w-48">logging_config.py</div>
-                            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <span class="hero-badge">
+                    Enterprise AI Solution
+                </span>
+                <h1 class="hero-title">
+                    지능형 문서 검색의<br>
+                    <span class="gradient-text">새로운 패러다임</span>
+                </h1>
+                <p class="hero-description">
+                    RAG(Retrieval-Augmented Generation) 시스템으로 사내 문서와 외부 지식을 통합하여 
+                    정확하고 신뢰할 수 있는 AI 기반 답변을 제공합니다.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#architecture" class="btn btn-primary">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        아키텍처 살펴보기
+                    </a>
+                    <a href="proposal.html" class="btn btn-secondary">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        제안서 보기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="section" id="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">5+</div>
+                    <div class="stat-label">Docker 서비스</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">10+</div>
+                    <div class="stat-label">지원 파일 형식</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">20+</div>
+                    <div class="stat-label">REST API 엔드포인트</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">99.9%</div>
+                    <div class="stat-label">시스템 안정성</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Section -->
+    <section class="section" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Core Features</span>
+                <h2 class="section-title">핵심 기능</h2>
+                <p class="section-description">
+                    문서 기반 질의응답부터 실시간 모니터링까지, 엔터프라이즈 환경에 최적화된 기능을 제공합니다.
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="card">
+                    <div class="card-icon">🔍</div>
+                    <h3 class="card-title">문서 기반 질의응답</h3>
+                    <p class="card-description">
+                        TOPIK 어휘, MDN, 한국어 사전, 업무 문서 등 다중 소스를 통합하여 
+                        문맥에 맞는 정확한 답변을 제공합니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📄</div>
+                    <h3 class="card-title">다양한 문서 형식</h3>
+                    <p class="card-description">
+                        PDF, DOCX, HWPX, 텍스트, 마크다운은 물론 
+                        Python, JavaScript 등 코드 파일까지 처리할 수 있습니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔒</div>
+                    <h3 class="card-title">오프라인 지원</h3>
+                    <p class="card-description">
+                        로컬 LLM(Ollama) 및 오프라인 임베딩 모드로 
+                        네트워크 제한 환경에서도 안전하게 운영 가능합니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📊</div>
+                    <h3 class="card-title">실시간 모니터링</h3>
+                    <p class="card-description">
+                        시스템 상태, 인제스트 진행률, 벡터 수를 
+                        실시간으로 확인하고 관리할 수 있습니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚡</div>
+                    <h3 class="card-title">재순위화 (Reranking)</h3>
+                    <p class="card-description">
+                        Cross-Encoder 기반 재순위화로 검색 결과의 
+                        관련성을 높여 더 정확한 컨텍스트를 제공합니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔄</div>
+                    <h3 class="card-title">증분 업데이트</h3>
+                    <p class="card-description">
+                        파일 수정 시간과 해시를 비교하여 변경된 문서만 
+                        업데이트하고 삭제된 문서는 자동 제거합니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section class="section" id="architecture">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">System Architecture</span>
+                <h2 class="section-title">시스템 아키텍처</h2>
+                <p class="section-description">
+                    3계층 구조로 설계된 확장 가능하고 안정적인 RAG 플랫폼
+                </p>
+            </div>
+            <div class="architecture-wrapper">
+                <div class="architecture-diagram">
+                    <!-- Layer 1: User Experience -->
+                    <div class="layer">
+                        <div class="layer-title">
+                            <span>🖥️</span> 사용자 경험 계층
                         </div>
-                        <div class="glass-panel frosted-panel w-full max-w-4xl mx-auto p-6 rounded-2xl">
-                            <h3 class="text-center font-semibold text-gray-500 mb-4 text-sm sm:text-base">Ingestion Pipeline</h3>
-                            <div class="flex flex-col items-center space-y-4">
-                                <div id="D" data-id="D" class="component ingestion p-3 rounded-lg text-center w-full sm:w-56">ingest.py</div>
-                                <div class="w-full max-w-3xl mx-auto glass-panel frosted-panel p-4 rounded-2xl">
-                                    <h4 class="text-center font-semibold text-gray-400 mb-2 text-xs sm:text-sm">Preparation Stages</h4>
-                                    <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                                        <div id="F" data-id="F" class="component sources p-3 rounded-lg text-center w-full sm:w-48">ensure_*_corpus 스크립트</div>
-                                        <div id="E" data-id="E" class="component parser p-3 rounded-lg text-center w-full sm:w-48">chunking.py · parse_code.py</div>
-                                        <div id="G" data-id="G" class="component vector-store p-3 rounded-lg text-center w-full sm:w-48">SentenceTransformer + Chroma</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="layer-content">
+                            <span class="layer-item highlight">Tomcat UI (:8080)</span>
+                            <span class="layer-item">index.html</span>
+                            <span class="layer-item">app.js</span>
+                            <span class="layer-item">styles.css</span>
                         </div>
-                        <div class="glass-panel frosted-panel w-full max-w-4xl mx-auto p-6 rounded-2xl">
-                            <h3 class="text-center font-semibold text-gray-500 mb-3 text-sm sm:text-base">Runtime & API Layer</h3>
-                            <div class="flex flex-col items-center space-y-4">
-                                <div id="H" data-id="H" class="component orchestrator p-3 rounded-lg text-center w-full sm:w-56">rag_orchestrator.py</div>
-                                <div class="flex flex-col sm:flex-row justify-around items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full">
-                                    <div id="I" data-id="I" class="component api p-3 rounded-lg text-center w-full sm:w-56">api.py · /rag/* endpoints</div>
-                                    <div id="J" data-id="J" class="component llm p-3 rounded-lg text-center w-full sm:w-56">Ollama LLMs (Llama 3.3 · Qwen3-coder)</div>
-                                </div>
-                            </div>
+                    </div>
+                    
+                    <!-- Arrow -->
+                    <div style="text-align: center; padding: 8px 0; color: var(--color-accent-primary);">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Layer 2: Application Backend -->
+                    <div class="layer">
+                        <div class="layer-title">
+                            <span>⚙️</span> 애플리케이션 백엔드 계층
+                        </div>
+                        <div class="layer-content">
+                            <span class="layer-item highlight">FastAPI (:8000)</span>
+                            <span class="layer-item">api.py</span>
+                            <span class="layer-item">rag_orchestrator.py</span>
+                            <span class="layer-item">ingest.py</span>
+                            <span class="layer-item">chunking.py</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Arrow -->
+                    <div style="text-align: center; padding: 8px 0; color: var(--color-accent-primary);">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Layer 3: Infrastructure -->
+                    <div class="layer">
+                        <div class="layer-title">
+                            <span>🏗️</span> 인프라 및 모델 계층
+                        </div>
+                        <div class="layer-content">
+                            <span class="layer-item highlight">ChromaDB (:8001)</span>
+                            <span class="layer-item highlight">Redis (:6379)</span>
+                            <span class="layer-item highlight">Ollama (:11434)</span>
                         </div>
                     </div>
                 </div>
-                <div class="lg:col-span-3">
-                    <div id="info-panel" class="sticky top-8 glass-panel frosted-panel p-6 rounded-xl shadow-lg">
-                        <h2 id="info-title" class="text-2xl font-bold mb-3 text-gray-900">아키텍처 개요</h2>
-                        <div id="info-content" class="text-gray-700 space-y-4">
-                            <p><code>docs/rag_architecture.md</code>는 FastAPI 기반 RAG 백엔드를 설정 계층, 코퍼스 ingestion, 임베딩, 런타임 서비스의 네 축으로 설명합니다. 각 모듈은 공통 설정을 공유하면서도 명확한 책임 경계를 유지합니다.</p>
-                            <p>왼쪽 내비게이션 또는 중앙 다이어그램의 박스를 눌러 세부 책임, 주요 의존성, 운영상의 주의점을 살펴보세요. 시뮬레이션 버튼을 누르면 대표적인 데이터 흐름을 따라가며 확인할 수 있습니다.</p>
-                            <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
-                                <h4 class="font-semibold text-blue-800 mb-2">운영 하이라이트</h4>
-                                <ul class="list-disc list-inside text-sm text-blue-700 space-y-1">
-                                    <li><code>embed_config.ensure_offline_mode()</code>로 외부 네트워크 없이도 모델 구성이 유지됩니다.</li>
-                                    <li><code>_start_ingest_job()</code>이 단일 ingest 프로세스를 보장하고 재실행 여부를 제어합니다.</li>
-                                    <li>코드 청크 메타데이터는 <code>rag_orchestrator.py</code>의 인용·하이라이트 품질을 좌우합니다.</li>
-                                </ul>
-                            </div>
+                
+                <div class="architecture-info">
+                    <div class="info-card">
+                        <div class="info-icon blue">🖥️</div>
+                        <div class="info-content">
+                            <h4>Tomcat UI</h4>
+                            <p>정적 리소스 서빙 및 REST API 호출을 통한 사용자 인터페이스 제공</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon purple">⚡</div>
+                        <div class="info-content">
+                            <h4>FastAPI + LlamaIndex</h4>
+                            <p>질의 처리, 인제스트 관리, 설정 API를 제공하는 고성능 백엔드</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon green">🗄️</div>
+                        <div class="info-content">
+                            <h4>ChromaDB</h4>
+                            <p>문서 임베딩을 저장하고 유사도 검색을 수행하는 벡터 스토어</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon orange">📮</div>
+                        <div class="info-content">
+                            <h4>Redis</h4>
+                            <p>비동기 인제스트 작업 상태 관리 및 캐시 처리</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon pink">🤖</div>
+                        <div class="info-content">
+                            <h4>Ollama LLM</h4>
+                            <p>로컬 환경에서 실행되는 대규모 언어 모델 추론 엔진</p>
                         </div>
                     </div>
                 </div>
-            </main>
-            <section class="mt-12 mb-8">
-                <div class="glass-panel frosted-panel p-6 sm:p-8 rounded-xl shadow-lg relative">
-                    <a href="index5.html" target="_blank" rel="noopener noreferrer" class="absolute top-4 right-4 z-10 inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/30 bg-slate-950/70 text-sky-300 hover:text-white hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white shadow transition-colors cursor-pointer" title="index5.html 열기">
-                        <span class="sr-only">운영 플로우 상세 보기</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-5 h-5 transition-colors" stroke="currentColor" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 1.5h4.812c.338 0 .603.27.584.607l-.123 2.119a7.5 7.5 0 0 1 1.414.815l1.825-1.055a.609.609 0 0 1 .819.223l2.406 4.164a.609.609 0 0 1-.223.819l-1.825 1.055c.066.456.1.92.1 1.385 0 .466-.034.93-.1 1.386l1.825 1.054a.609.609 0 0 1 .223.82l-2.406 4.163a.609.609 0 0 1-.819.223l-1.825-1.054a7.5 7.5 0 0 1-1.414.814l.123 2.12a.609.609 0 0 1-.584.607H9.594a.609.609 0 0 1-.584-.608l.123-2.118a7.5 7.5 0 0 1-1.414-.815L5.894 21.67a.609.609 0 0 1-.819-.223L2.669 17.28a.609.609 0 0 1 .223-.819l1.825-1.055A7.46 7.46 0 0 1 4.617 12c0-.466.034-.93.1-1.386L2.892 9.56a.609.609 0 0 1-.223-.819l2.406-4.164a.609.609 0 0 1 .819-.223l1.825 1.055a7.5 7.5 0 0 1 1.414-.814l-.123-2.12a.609.609 0 0 1 .584-.607Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="section" id="tech-stack">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Technology Stack</span>
+                <h2 class="section-title">기술 스택</h2>
+                <p class="section-description">
+                    검증된 오픈소스 기술과 최신 AI 프레임워크의 조합
+                </p>
+            </div>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="tech-icon">🚀</div>
+                    <h3 class="tech-name">FastAPI</h3>
+                    <p class="tech-version">Python 3.11+</p>
+                    <p class="tech-desc">고성능 비동기 웹 프레임워크로 REST API 엔드포인트 제공</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">🦙</div>
+                    <h3 class="tech-name">LlamaIndex</h3>
+                    <p class="tech-version">Core Framework</p>
+                    <p class="tech-desc">문서 인덱싱과 RAG 파이프라인 오케스트레이션 담당</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">🎨</div>
+                    <h3 class="tech-name">ChromaDB</h3>
+                    <p class="tech-version">Vector Store</p>
+                    <p class="tech-desc">영구 모드 벡터 저장소로 임베딩 저장 및 유사도 검색</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">🤖</div>
+                    <h3 class="tech-name">Ollama</h3>
+                    <p class="tech-version">qwen2.5, llama3.1</p>
+                    <p class="tech-desc">로컬 LLM 호스팅으로 프라이버시 보장 및 오프라인 지원</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">📐</div>
+                    <h3 class="tech-name">SentenceTransformer</h3>
+                    <p class="tech-version">multilingual-e5-base</p>
+                    <p class="tech-desc">다국어 지원 임베딩 모델로 한국어 문서 처리에 최적화</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">📮</div>
+                    <h3 class="tech-name">Redis</h3>
+                    <p class="tech-version">Cache & Queue</p>
+                    <p class="tech-desc">비동기 작업 상태 관리 및 고속 캐시 처리</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">🐳</div>
+                    <h3 class="tech-name">Docker Compose</h3>
+                    <p class="tech-version">Container Orchestration</p>
+                    <p class="tech-desc">5개 서비스를 통합 관리하는 컨테이너 오케스트레이션</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">🌳</div>
+                    <h3 class="tech-name">Tree-sitter</h3>
+                    <p class="tech-version">Code Parser</p>
+                    <p class="tech-desc">코드 파일의 구조적 파싱으로 함수/클래스 단위 추출</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Flow Section -->
+    <section class="section" id="data-flow">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Data Pipeline</span>
+                <h2 class="section-title">데이터 흐름</h2>
+                <p class="section-description">
+                    문서 수집부터 답변 생성까지의 전체 파이프라인
+                </p>
+            </div>
+            
+            <!-- Ingest Flow -->
+            <h3 style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: 8px;">
+                <span style="color: var(--color-success);">●</span> 인제스트 파이프라인
+            </h3>
+            <div class="flow-container" style="margin-bottom: var(--spacing-2xl);">
+                <div class="flow-step">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">📁</div>
+                        <div class="flow-box-title">원본 파일</div>
+                        <div class="flow-box-desc">PDF, DOCX, HWPX</div>
+                    </div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">📝</div>
+                        <div class="flow-box-title">텍스트 추출</div>
+                        <div class="flow-box-desc">pypdf, python-docx</div>
+                    </div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">✂️</div>
+                        <div class="flow-box-title">청킹</div>
+                        <div class="flow-box-desc">1200자, tree-sitter</div>
+                    </div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">🔢</div>
+                        <div class="flow-box-title">임베딩</div>
+                        <div class="flow-box-desc">SentenceTransformer</div>
+                    </div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">💾</div>
+                        <div class="flow-box-title">ChromaDB</div>
+                        <div class="flow-box-desc">증분 업데이트</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Query Flow -->
+            <h3 style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: 8px;">
+                <span style="color: var(--color-info);">●</span> 질의 파이프라인
+            </h3>
+            <div class="flow-container">
+                <div class="flow-step">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">❓</div>
+                        <div class="flow-box-title">사용자 질문</div>
+                        <div class="flow-box-desc">자연어 입력</div>
+                    </div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">🔍</div>
+                        <div class="flow-box-title">벡터 검색</div>
+                        <div class="flow-box-desc">TOP 20</div>
+                    </div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">🎯</div>
+                        <div class="flow-box-title">재순위화</div>
+                        <div class="flow-box-desc">Cross-Encoder</div>
+                    </div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">🤖</div>
+                        <div class="flow-box-title">LLM 추론</div>
+                        <div class="flow-box-desc">Ollama</div>
+                    </div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">💬</div>
+                        <div class="flow-box-title">답변 + 인용</div>
+                        <div class="flow-box-desc">출처 포함</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Section -->
+    <section class="section" id="api">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">REST API</span>
+                <h2 class="section-title">API 엔드포인트</h2>
+                <p class="section-description">
+                    FastAPI 기반의 체계적인 REST API 구조
+                </p>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>메서드</th>
+                            <th>경로</th>
+                            <th>설명</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="method-badge post">POST</span></td>
+                            <td><code>/rag/query</code></td>
+                            <td>질문 전송, 응답 및 출처 수신</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge get">GET</span></td>
+                            <td><code>/rag/status</code></td>
+                            <td>시스템 전체 헬스 상태 조회</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge post">POST</span></td>
+                            <td><code>/rag/ingest</code></td>
+                            <td>선택한 소스로 인제스트 작업 시작</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge get">GET</span></td>
+                            <td><code>/rag/ingest</code></td>
+                            <td>최근/활성 인제스트 작업 상태 조회</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge get">GET</span></td>
+                            <td><code>/rag/documents</code></td>
+                            <td>업로드된 문서 목록 조회</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge post">POST</span></td>
+                            <td><code>/rag/documents</code></td>
+                            <td>새 문서 저장 및 인제스트 트리거</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge get">GET</span></td>
+                            <td><code>/rag/embed-config</code></td>
+                            <td>임베딩 구성 조회</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge post">POST</span></td>
+                            <td><code>/rag/embed-config</code></td>
+                            <td>임베딩 모드(온라인/오프라인) 전환</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge get">GET</span></td>
+                            <td><code>/rag/ollama-models</code></td>
+                            <td>Ollama 모델 목록 조회</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge get">GET</span></td>
+                            <td><code>/health</code></td>
+                            <td>API 준비 상태 확인</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge get">GET</span></td>
+                            <td><code>/chroma/heartbeat</code></td>
+                            <td>ChromaDB 헬스체크</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge get">GET</span></td>
+                            <td><code>/chroma/vector-stream</code></td>
+                            <td>벡터 수 실시간 SSE 스트림</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Supported Formats Section -->
+    <section class="section" id="formats">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">File Support</span>
+                <h2 class="section-title">지원 파일 형식</h2>
+                <p class="section-description">
+                    다양한 문서 및 코드 파일을 처리할 수 있습니다
+                </p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="card">
+                    <div class="card-icon">📕</div>
+                    <h3 class="card-title">PDF</h3>
+                    <p class="card-description">pypdf 라이브러리를 사용하여 PDF 문서에서 텍스트를 추출합니다.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📘</div>
+                    <h3 class="card-title">DOCX</h3>
+                    <p class="card-description">python-docx로 Microsoft Word 문서의 텍스트를 추출합니다.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📗</div>
+                    <h3 class="card-title">HWPX</h3>
+                    <p class="card-description">한글 문서의 XML 파싱 또는 PrvText.txt를 통해 텍스트를 추출합니다.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📄</div>
+                    <h3 class="card-title">TXT / Markdown</h3>
+                    <p class="card-description">일반 텍스트 및 마크다운 파일을 직접 읽어 처리합니다.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🐍</div>
+                    <h3 class="card-title">Python</h3>
+                    <p class="card-description">tree-sitter로 함수/클래스 단위의 구조적 파싱을 수행합니다.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📜</div>
+                    <h3 class="card-title">JS / TS / Java / Go</h3>
+                    <p class="card-description">다양한 프로그래밍 언어의 코드를 구조적으로 분석합니다.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section">
+        <div class="container">
+            <div class="cta-section">
+                <div class="cta-content">
+                    <h2 class="cta-title">RAG 시스템 도입을 검토하고 계신가요?</h2>
+                    <p class="cta-description">
+                        제안서를 통해 도입 절차, 기대 효과, 운영 방안을 자세히 확인해보세요.
+                    </p>
+                    <a href="proposal.html" class="btn btn-primary">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        제안서 보러가기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <span>🧠</span> RAG System
+                    </div>
+                    <p class="footer-desc">
+                        FastAPI, LlamaIndex, ChromaDB 기반의 엔터프라이즈급 RAG 플랫폼. 
+                        사내 문서와 외부 지식을 통합하여 AI 기반 지능형 답변을 제공합니다.
+                    </p>
+                </div>
+                <div class="footer-nav">
+                    <h4>페이지</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">현시스템 아키텍처</a></li>
+                        <li><a href="proposal.html">제안서</a></li>
+                    </ul>
+                </div>
+                <div class="footer-nav">
+                    <h4>섹션</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">핵심 기능</a></li>
+                        <li><a href="#tech-stack">기술 스택</a></li>
+                        <li><a href="#api">API 문서</a></li>
+                    </ul>
+                </div>
+                <div class="footer-nav">
+                    <h4>리소스</h4>
+                    <ul class="footer-links">
+                        <li><a href="#data-flow">데이터 흐름</a></li>
+                        <li><a href="#formats">지원 형식</a></li>
+                        <li><a href="proposal.html#contact">도입 문의</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">
+                    © 2026 RAG System. 최종 업데이트: 2026-01
+                </p>
+                <div class="footer-social">
+                    <a href="#" aria-label="GitHub">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                         </svg>
                     </a>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-center mb-2 text-gray-900">운영 플로우</h2>
-                    <p class="text-center text-gray-600 mb-6">RAG 백엔드가 질의를 처리하기까지의 단계별 책임 정리</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="glass-panel frosted-panel p-5 rounded-lg config border-2 hover:scale-105 transition-transform duration-300">
-                            <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md">1</div>
-                                <h3 class="ml-3 font-bold text-lg text-gray-900">환경 변수 로딩</h3>
-                            </div>
-                            <p class="text-sm text-gray-600"><code>settings.py</code>가 OLLAMA, Chroma, 사전 경로 등 공통 런타임 상수를 노출합니다.</p>
-                        </div>
-                        <div class="glass-panel frosted-panel p-5 rounded-lg embed border-2 hover:scale-105 transition-transform duration-300">
-                            <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-lg shadow-md">2</div>
-                                <h3 class="ml-3 font-bold text-lg text-gray-900">임베딩 구성 점검</h3>
-                            </div>
-                            <p class="text-sm text-gray-600"><code>embed_config.py</code>와 <code>logging_config.py</code>가 오프라인 모드와 공통 로깅 포맷을 초기화합니다.</p>
-                        </div>
-                        <div class="glass-panel frosted-panel p-5 rounded-lg sources border-2 hover:scale-105 transition-transform duration-300">
-                            <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-bold text-lg shadow-md">3</div>
-                                <h3 class="ml-3 font-bold text-lg text-gray-900">코퍼스 확보</h3>
-                            </div>
-                            <p class="text-sm text-gray-600"><code>ensure_wikipedia_corpus()</code> 등 스크립트가 데이터 최신성과 경로를 보장합니다.</p>
-                        </div>
-                        <div class="glass-panel frosted-panel p-5 rounded-lg parser border-2 hover:scale-105 transition-transform duration-300">
-                            <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold text-lg shadow-md">4</div>
-                                <h3 class="ml-3 font-bold text-lg text-gray-900">청크 & 코드 파싱</h3>
-                            </div>
-                            <p class="text-sm text-gray-600"><code>chunking.py</code>와 <code>parse_code.py</code>가 청크 메타데이터와 코드 시그니처를 구성합니다.</p>
-                        </div>
-                        <div class="glass-panel frosted-panel p-5 rounded-lg ingestion border-2 hover:scale-105 transition-transform duration-300">
-                            <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">5</div>
-                                <h3 class="ml-3 font-bold text-lg text-gray-900">ingest.py 실행</h3>
-                            </div>
-                            <p class="text-sm text-gray-600">CLI 진입점이 청크 로딩, 임베딩 생성, 로그 스트리밍을 순차적으로 처리합니다.</p>
-                        </div>
-                        <div class="glass-panel frosted-panel p-5 rounded-lg vector-store border-2 hover:scale-105 transition-transform duration-300">
-                            <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white font-bold text-lg shadow-md">6</div>
-                                <h3 class="ml-3 font-bold text-lg text-gray-900">Chroma 업서트</h3>
-                            </div>
-                            <p class="text-sm text-gray-600">기존 벡터를 삭제·갱신하고 새로운 임베딩을 upsert하여 검색 품질을 유지합니다.</p>
-                        </div>
-                        <div class="glass-panel frosted-panel p-5 rounded-lg orchestrator border-2 hover:scale-105 transition-transform duration-300">
-                            <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-md">7</div>
-                                <h3 class="ml-3 font-bold text-lg text-gray-900">RAG 오케스트레이션</h3>
-                            </div>
-                            <p class="text-sm text-gray-600"><code>rag_orchestrator.ensure_ready()</code>가 모델 캐시와 인덱스를 준비합니다.</p>
-                        </div>
-                        <div class="glass-panel frosted-panel p-5 rounded-lg api border-2 hover:scale-105 transition-transform duration-300">
-                            <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-lime-400 to-lime-600 flex items-center justify-center text-white font-bold text-lg shadow-md">8</div>
-                                <h3 class="ml-3 font-bold text-lg text-gray-900">FastAPI 응답</h3>
-                            </div>
-                            <p class="text-sm text-gray-600"><code>api.py</code>가 <code>/rag/query</code>와 <code>/rag/ingest</code> 요청을 처리하고 결과를 반환합니다.</p>
-                        </div>
-                    </div>
+                    <a href="#" aria-label="Documentation">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                    </a>
                 </div>
-            </section>
+            </div>
         </div>
-    </div>
-    <script src="bg-stars.js" defer></script>
+    </footer>
+
+    <!-- Scripts -->
     <script>
-        const componentData = {
-            'A': {
-                title: 'settings.py',
-                role: '환경 변수 기반 설정 허브',
-                tech: 'Python, os.environ',
-                description: '프로젝트 전역에서 사용하는 OLLAMA, CHROMA, 사전 경로, ingest 주기 등을 선언적으로 관리합니다. 모든 모듈이 동일한 설정 객체를 가져와 일관된 런타임 구성을 유지합니다.'
-            },
-            'B': {
-                title: 'embed_config.py',
-                role: '임베딩 모델 구성 관리자',
-                tech: 'Python, Hugging Face, dotenv',
-                description: '오프라인 모드 전환, 모델 존재 여부 검증, 캐시 경로 재설정, .env 동기화를 담당합니다. FastAPI와 CLI 모두에서 임베딩 구성이 즉시 반영되도록 보조합니다.'
-            },
-            'C': {
-                title: 'logging_config.py',
-                role: '공통 로깅 포맷 제공',
-                tech: 'logging, logging.config',
-                description: 'JSON 기반 로깅 설정과 RequestId 필터를 정의하여 ingest 서브프로세스와 FastAPI 엔드포인트 로그를 동일 포맷으로 수집합니다.'
-            },
-            'F': {
-                title: 'ensure_*_corpus 스크립트',
-                role: '코퍼스 데이터 확보',
-                tech: 'httpx, mwparserfromhell, pathlib',
-                description: 'wikipedia_ingest.py, mdn_ingest.py, korean_dictionary_ingest.py가 원천 데이터를 내려받고 유효성을 검사합니다. 데이터가 최신 상태인지 확인한 뒤 ingestion 파이프라인이 사용할 디렉터리에 적재합니다.'
-            },
-            'E': {
-                title: 'chunking.py · parse_code.py',
-                role: '텍스트·코드 청크 전처리',
-                tech: 'tree-sitter, Python',
-                description: '문서와 코드 파일을 청크 단위로 분할하고 클래스/함수 시그니처, 코드 여부 등의 메타데이터를 부착합니다. 생성된 메타데이터는 인용과 검색 정확도를 높이는 데 활용됩니다.'
-            },
-            'D': {
-                title: 'ingest.py',
-                role: 'Ingestion 오케스트레이터',
-                tech: 'SentenceTransformer, chromadb, Python CLI',
-                description: 'CLI 진입점으로 실행되어 코퍼스 로딩, 임베딩 생성, 벡터 스토어 upsert를 순차적으로 수행합니다. 표준 출력 로그를 FastAPI가 스트리밍할 수 있도록 설계되었습니다.'
-            },
-            'G': {
-                title: 'SentenceTransformer + Chroma',
-                role: '임베딩 생성 및 벡터 저장',
-                tech: 'SentenceTransformer, ChromaDB',
-                description: 'KorBERT 기반 SentenceTransformer가 벡터를 생성하고 ChromaDB가 이를 저장·검색합니다. 기존 컬렉션을 정리한 뒤 새로운 임베딩을 upsert하여 최신 상태를 유지합니다.'
-            },
-            'H': {
-                title: 'rag_orchestrator.py',
-                role: 'LlamaIndex 기반 RAG 오케스트레이터',
-                tech: 'llama_index, httpx',
-                description: 'ensure_ready()로 모델과 인덱스를 준비하고, query 시 Chroma에서 문맥을 조회한 뒤 LLM 응답을 구성합니다. 모델 목록 조회 및 리로드도 담당합니다.'
-            },
-            'I': {
-                title: 'api.py',
-                role: 'FastAPI 서비스 계층',
-                tech: 'FastAPI, Python',
-                description: 'FastAPI 애플리케이션을 구성해 /rag/query, /rag/ingest, /rag/embed-config 엔드포인트를 제공합니다. ingest 실행을 단일 프로세스로 제한하고 표준 출력 로그를 스트리밍합니다.'
-            },
-            'J': {
-                title: 'Ollama LLMs (Llama 3.3 · Qwen3-coder)',
-                role: 'LLM 실행 환경',
-                tech: 'Ollama, LlamaIndex',
-                description: 'rag_orchestrator.py가 Retrieval한 문맥을 기반으로 Llama 3.3 및 Qwen3-coder 모델에 프롬프트를 전달합니다. 일반 질의와 코드 중심 질의를 각 모델로 라우팅합니다.'
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
             }
+        });
+
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Close menu when clicking on a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
         };
 
-        const flowSequence = ['A', 'B', 'C', 'F', 'E', 'D', 'G', 'H', 'I', 'J'];
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const nav = document.getElementById('component-nav');
-            const components = document.querySelectorAll('.component');
-            const infoTitle = document.getElementById('info-title');
-            const infoContent = document.getElementById('info-content');
-            const simulateBtn = document.getElementById('simulate-btn');
-
-            Object.keys(componentData).forEach(id => {
-                const data = componentData[id];
-                const navItem = document.createElement('a');
-                navItem.href = '#';
-                navItem.className = 'nav-item px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium';
-                navItem.textContent = data.title;
-                navItem.dataset.id = id;
-                nav.appendChild(navItem);
-            });
-
-            const updateInfoPanel = (id) => {
-                const data = componentData[id];
-                if (!data) return;
-                infoTitle.textContent = data.title;
-                infoContent.innerHTML = `
-                    <p><strong class="font-semibold text-gray-800">역할:</strong> ${data.role}</p>
-                    <p><strong class="font-semibold text-gray-800">주요 기술:</strong> ${data.tech}</p>
-                    <p class="mt-4 pt-4 border-t">${data.description}</p>
-                `;
-                components.forEach(comp => {
-                    comp.classList.toggle('selected', comp.dataset.id === id);
-                });
-                nav.querySelectorAll('.nav-item').forEach(item => {
-                    const isActive = item.dataset.id === id;
-                    item.classList.toggle('nav-active', isActive);
-                    if (isActive) item.setAttribute('aria-current', 'true');
-                    else item.removeAttribute('aria-current');
-                });
-            };
-
-            const selectComponent = (id) => {
-                updateInfoPanel(id);
-                document.getElementById('info-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            };
-
-            document.getElementById('diagram-root').addEventListener('click', (e) => {
-                const component = e.target.closest('.component');
-                if (component && component.dataset.id) {
-                    selectComponent(component.dataset.id);
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
                 }
             });
+        }, observerOptions);
 
-            nav.addEventListener('click', (e) => {
-                e.preventDefault();
-                const navItem = e.target.closest('a');
-                if (navItem && navItem.dataset.id) {
-                    selectComponent(navItem.dataset.id);
-                    navItem.blur();
-                }
-            });
-
-            let isSimulating = false;
-            let timeoutId;
-            simulateBtn.addEventListener('click', () => {
-                if (isSimulating) {
-                    clearTimeout(timeoutId);
-                    isSimulating = false;
-                    simulateBtn.textContent = '파이프라인 시뮬레이션 시작';
-                    simulateBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-                    simulateBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                    components.forEach(c => c.classList.remove('highlight'));
-                    return;
-                }
-                isSimulating = true;
-                simulateBtn.textContent = '시뮬레이션 중지';
-                simulateBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                simulateBtn.classList.add('bg-red-600', 'hover:bg-red-700');
-                let step = 0;
-                const runStep = () => {
-                    components.forEach(c => c.classList.remove('highlight'));
-                    if (step >= flowSequence.length) {
-                        isSimulating = false;
-                        simulateBtn.click();
-                        return;
-                    }
-                    const currentId = flowSequence[step];
-                    const currentElement = document.getElementById(currentId);
-                    if (currentElement) {
-                        currentElement.classList.add('highlight');
-                        updateInfoPanel(currentId);
-                    }
-                    step++;
-                    timeoutId = setTimeout(runStep, 1500);
-                };
-                runStep();
-            });
-
-            updateInfoPanel('A');
+        // Observe cards and sections for animation
+        document.querySelectorAll('.card, .stat-card, .tech-card, .info-card, .flow-box').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
         });
     </script>
 </body>

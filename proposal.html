@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RAG 시스템 도입 제안서 - 기대 효과, 배포 가이드, 운영 프로세스, 환경 변수 설정 및 확장 방안">
+    <meta name="keywords" content="RAG, AI, 도입 제안, 기업 AI, 문서 검색, LLM">
+    <title>RAG 시스템 | 도입 제안서</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🧠</span>
+                RAG System
+            </a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link">아키텍처</a></li>
+                <li><a href="proposal.html" class="nav-link active">제안서</a></li>
+                <li><a href="#benefits" class="nav-link">기대 효과</a></li>
+                <li><a href="#deployment" class="nav-link">배포 가이드</a></li>
+                <li><a href="#contact" class="nav-link nav-cta">도입 문의</a></li>
+            </ul>
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <span class="hero-badge">
+                    System Proposal
+                </span>
+                <h1 class="hero-title">
+                    RAG 시스템<br>
+                    <span class="gradient-text">도입 제안서</span>
+                </h1>
+                <p class="hero-description">
+                    사내 문서와 외부 지식을 통합하여 업무 효율성을 극대화하는
+                    AI 기반 지능형 검색 시스템의 도입을 제안드립니다.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#overview" class="btn btn-primary">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        제안서 확인하기
+                    </a>
+                    <a href="index.html" class="btn btn-secondary">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        아키텍처 보기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overview Section -->
+    <section class="section" id="overview">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Project Overview</span>
+                <h2 class="section-title">프로젝트 개요</h2>
+                <p class="section-description">
+                    FastAPI 기반 RAG 백엔드와 Tomcat UI를 하나의 Docker Compose 스택으로 통합한 엔터프라이즈 솔루션
+                </p>
+            </div>
+
+            <div class="architecture-wrapper">
+                <div class="architecture-info">
+                    <div class="info-card">
+                        <div class="info-icon blue">🎯</div>
+                        <div class="info-content">
+                            <h4>핵심 목표</h4>
+                            <p>문서 임베딩 + LLM 추론을 결합해 도메인 지식 기반의 정확한 답변을 제공합니다.</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon purple">📚</div>
+                        <div class="info-content">
+                            <h4>통합 지식베이스</h4>
+                            <p>사내 문서와 외부 지식을 통합하고 관리자 UI에서 인제스트, 모니터링, 질의를 간편하게 수행합니다.</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon green">🔄</div>
+                        <div class="info-content">
+                            <h4>양방향 인제스트</h4>
+                            <p>UI와 CLI 모두에서 지식 업데이트가 가능하여 최신화 주기를 단축합니다.</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon orange">🔒</div>
+                        <div class="info-content">
+                            <h4>보안 환경 대응</h4>
+                            <p>온라인/오프라인 임베딩 모드, 로컬 LLM(Ollama)으로 네트워크 제한 환경에서도 운영 가능합니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="architecture-diagram">
+                    <div class="layer"
+                        style="border-color: var(--color-success); background: rgba(16, 185, 129, 0.05);">
+                        <div class="layer-title">
+                            <span>✅</span> 주요 기능
+                        </div>
+                        <div class="layer-content" style="flex-direction: column; gap: 12px;">
+                            <span class="layer-item" style="width: 100%;">📖 문서 기반 한국어 질의응답</span>
+                            <span class="layer-item" style="width: 100%;">📦 TOPIK, MDN, 한국어 사전, 업무 문서 지원</span>
+                            <span class="layer-item" style="width: 100%;">📄 PDF, DOCX, HWPX, 텍스트, 코드 처리</span>
+                            <span class="layer-item" style="width: 100%;">🔌 오프라인 LLM 및 임베딩 모드</span>
+                            <span class="layer-item" style="width: 100%;">📊 실시간 시스템 모니터링</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="section" id="benefits">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Expected Benefits</span>
+                <h2 class="section-title">기대 효과</h2>
+                <p class="section-description">
+                    RAG 시스템 도입을 통해 얻을 수 있는 주요 이점
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <div class="card">
+                    <div class="card-icon">⚡</div>
+                    <h3 class="card-title">지식 최신화 주기 단축</h3>
+                    <p class="card-description">
+                        UI/CLI 양방향 인제스트로 새로운 문서와 지식을
+                        빠르게 시스템에 반영할 수 있습니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🛡️</div>
+                    <h3 class="card-title">운영 안정성 확보</h3>
+                    <p class="card-description">
+                        Redis 기반 작업 상태 관리와 헬스체크로
+                        시스템의 안정적인 운영을 보장합니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔐</div>
+                    <h3 class="card-title">네트워크 제한 환경 대응</h3>
+                    <p class="card-description">
+                        오프라인 임베딩 모드와 로컬 LLM으로
+                        보안이 중요한 환경에서도 사용 가능합니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📦</div>
+                    <h3 class="card-title">통합 지식베이스 구축</h3>
+                    <p class="card-description">
+                        다양한 문서 형식(PDF, DOCX, HWPX, 코드)을
+                        지원하여 모든 지식을 통합 관리합니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🎯</div>
+                    <h3 class="card-title">정확한 답변 제공</h3>
+                    <p class="card-description">
+                        재순위화(Reranking)를 통해 검색 결과의
+                        관련성을 높여 더 정확한 답변을 생성합니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📈</div>
+                    <h3 class="card-title">실시간 모니터링</h3>
+                    <p class="card-description">
+                        시스템 상태, 인제스트 진행률, 벡터 수를
+                        실시간으로 대시보드에서 확인할 수 있습니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Features Section -->
+    <section class="section" id="main-features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Core Functions</span>
+                <h2 class="section-title">주요 기능 상세</h2>
+            </div>
+
+            <!-- Query Features -->
+            <div style="margin-bottom: var(--spacing-3xl);">
+                <h3
+                    style="color: var(--color-text-primary); margin-bottom: var(--spacing-xl); display: flex; align-items: center; gap: 8px;">
+                    <span
+                        style="background: var(--color-accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🔍</span>
+                    질의 기능
+                </h3>
+                <div class="features-grid">
+                    <div class="info-card">
+                        <div class="info-icon blue">🎯</div>
+                        <div class="info-content">
+                            <h4>벡터 검색 + 재순위화</h4>
+                            <p>Chroma 벡터 검색 후 Cross-Encoder 기반 재순위화로 정확도 향상</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon purple">📎</div>
+                        <div class="info-content">
+                            <h4>출처 인용 정보</h4>
+                            <p>응답과 함께 참조된 문서의 출처 정보를 제공</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon green">🏷️</div>
+                        <div class="info-content">
+                            <h4>소스 필터링</h4>
+                            <p>특정 지식 영역만 선택하여 검색 범위 제한 가능</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon orange">💬</div>
+                        <div class="info-content">
+                            <h4>동적 프롬프트</h4>
+                            <p>시스템 프롬프트를 실시간으로 변경하여 응답 스타일 조정</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ingest Features -->
+            <div style="margin-bottom: var(--spacing-3xl);">
+                <h3
+                    style="color: var(--color-text-primary); margin-bottom: var(--spacing-xl); display: flex; align-items: center; gap: 8px;">
+                    <span
+                        style="background: var(--color-accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📥</span>
+                    인제스트 기능
+                </h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>소스</th>
+                                <th>설명</th>
+                                <th>처리 방식</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>topik_vocab</code></td>
+                                <td>TOPIK 기초 어휘 6,000개</td>
+                                <td>CSV 파싱 → 표제어/품사/예문 추출</td>
+                            </tr>
+                            <tr>
+                                <td><code>mdn</code></td>
+                                <td>MDN Web Docs</td>
+                                <td>GitHub ZIP 다운로드 → 영어 웹 문서 필터링</td>
+                            </tr>
+                            <tr>
+                                <td><code>korean_dict</code></td>
+                                <td>한국어 사전</td>
+                                <td>DBpedia + 위키낱말사전 결합 → 표제어별 문서 생성</td>
+                            </tr>
+                            <tr>
+                                <td><code>work_source</code></td>
+                                <td>업무용 소스 코드</td>
+                                <td>로컬 폴더 스캔 → tree-sitter 구조 파싱</td>
+                            </tr>
+                            <tr>
+                                <td><code>work_doc</code></td>
+                                <td>업무 문서</td>
+                                <td>PDF, DOCX, HWPX 텍스트 추출 → 청킹</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Dashboard Features -->
+            <div>
+                <h3
+                    style="color: var(--color-text-primary); margin-bottom: var(--spacing-xl); display: flex; align-items: center; gap: 8px;">
+                    <span
+                        style="background: var(--color-accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📊</span>
+                    운영 화면 (UI)
+                </h3>
+                <div class="features-grid">
+                    <div class="card">
+                        <div class="card-icon">📈</div>
+                        <h3 class="card-title">상태 대시보드</h3>
+                        <p class="card-description">API, Chroma, Redis, Ollama, GPU 상태를 실시간으로 확인합니다.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">⚙️</div>
+                        <h3 class="card-title">설정 패널</h3>
+                        <p class="card-description">임베딩 모드 전환, 시스템 프롬프트 수정 등 설정을 관리합니다.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">📋</div>
+                        <h3 class="card-title">인제스트 콘솔</h3>
+                        <p class="card-description">소스별 작업 시작 및 진행 로그를 실시간으로 확인합니다.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">📊</div>
+                        <h3 class="card-title">Chroma 벡터 수</h3>
+                        <p class="card-description">SSE 스트림을 통해 벡터 수를 실시간으로 업데이트합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deployment Section -->
+    <section class="section" id="deployment">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Deployment Guide</span>
+                <h2 class="section-title">배포 및 운용</h2>
+                <p class="section-description">
+                    Docker Compose를 활용한 간편한 배포 및 운영 방법
+                </p>
+            </div>
+
+            <div class="steps-container">
+                <div class="step-item" data-step="1">
+                    <h4 class="step-title">환경 설정</h4>
+                    <p class="step-desc">
+                        <code>.env</code> 파일을 생성하고 필요한 환경 변수를 설정합니다.
+                        OLLAMA_MODEL, EMBED_MODEL 등의 핵심 설정을 구성합니다.
+                    </p>
+                </div>
+                <div class="step-item" data-step="2">
+                    <h4 class="step-title">이미지 빌드</h4>
+                    <div class="code-block" data-lang="bash">
+                        <code>docker compose build</code>
+                    </div>
+                </div>
+                <div class="step-item" data-step="3">
+                    <h4 class="step-title">서비스 시작</h4>
+                    <div class="code-block" data-lang="bash">
+                        <code># 포그라운드 실행<br>docker compose up<br><br># 백그라운드 실행<br>docker compose up -d</code>
+                    </div>
+                </div>
+                <div class="step-item" data-step="4">
+                    <h4 class="step-title">접속 확인</h4>
+                    <div class="code-block" data-lang="bash">
+                        <code># UI 대시보드<br>http://localhost:8080/<br><br># API 상태 확인<br>curl http://localhost:8000/health<br>curl http://localhost:8000/rag/status</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GPU Environment -->
+            <div style="margin-top: var(--spacing-3xl);">
+                <h3
+                    style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: 8px;">
+                    <span>🎮</span> GPU 환경 설정
+                </h3>
+                <div class="info-card">
+                    <div class="info-icon green">💻</div>
+                    <div class="info-content">
+                        <h4>요구사항</h4>
+                        <p>
+                            • CUDA 12.x 이상<br>
+                            • NVIDIA Container Toolkit 설치<br>
+                            • docker-compose.yml의 <code>deploy.resources</code> 섹션으로 GPU 전달<br>
+                            • GPU 미사용 시 해당 섹션 제거 또는 주석 처리
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Configuration Section -->
+    <section class="section" id="config">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Configuration</span>
+                <h2 class="section-title">환경 변수 설정</h2>
+                <p class="section-description">
+                    시스템 동작을 제어하는 주요 환경 변수
+                </p>
+            </div>
+
+            <!-- LLM & Embedding -->
+            <div style="margin-bottom: var(--spacing-2xl);">
+                <h3 style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg);">LLM 및 임베딩 설정</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>변수</th>
+                                <th>설명</th>
+                                <th>기본값</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>OLLAMA_HOST</code></td>
+                                <td>Ollama 서버 주소</td>
+                                <td><code>http://ollama:11434</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>OLLAMA_MODEL</code></td>
+                                <td>사용할 LLM 모델</td>
+                                <td><code>qwen2.5:3b-instruct-q4_K_M</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>OLLAMA_NUM_CTX</code></td>
+                                <td>LLM 컨텍스트 크기</td>
+                                <td><code>4096</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>OLLAMA_REQUEST_TIMEOUT</code></td>
+                                <td>요청 타임아웃(초)</td>
+                                <td><code>240</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>EMBED_MODEL</code></td>
+                                <td>SentenceTransformer 모델</td>
+                                <td><code>intfloat/multilingual-e5-base</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>EMBED_MODEL_ALLOW_DOWNLOADS</code></td>
+                                <td>모델 다운로드 허용</td>
+                                <td><code>0</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Search Settings -->
+            <div style="margin-bottom: var(--spacing-2xl);">
+                <h3 style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg);">검색 설정</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>변수</th>
+                                <th>설명</th>
+                                <th>기본값</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>TOP_K</code></td>
+                                <td>최종 반환 문서 수</td>
+                                <td><code>5</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>MIN_RELEVANCE_SCORE</code></td>
+                                <td>최소 유사도 스코어</td>
+                                <td><code>0.75</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>RERANKER_MODEL</code></td>
+                                <td>재순위화 모델</td>
+                                <td><code>cross-encoder/ms-marco-MiniLM-L-6-v2</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>RERANKER_TOP_K</code></td>
+                                <td>재순위화 전 후보 수</td>
+                                <td><code>20</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Ingest Settings -->
+            <div>
+                <h3 style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg);">인제스트 설정</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>변수</th>
+                                <th>설명</th>
+                                <th>기본값</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>INGEST_ALLOW_DOWNLOADS</code></td>
+                                <td>원격 덤프 다운로드 허용</td>
+                                <td><code>0</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>INGEST_BATCH_SIZE</code></td>
+                                <td>Chroma 업서트 배치 크기</td>
+                                <td><code>4</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>TOPIK_VOCAB_ENABLED</code></td>
+                                <td>TOPIK 어휘 파이프라인 활성화</td>
+                                <td><code>1</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>MDN_ENABLED</code></td>
+                                <td>MDN 파이프라인 활성화</td>
+                                <td><code>1</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>KOREAN_DICT_ENABLED</code></td>
+                                <td>한국어 사전 파이프라인 활성화</td>
+                                <td><code>1</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Extension Section -->
+    <section class="section" id="extension">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Extensibility</span>
+                <h2 class="section-title">확장 포인트</h2>
+                <p class="section-description">
+                    새로운 소스 추가 및 시스템 확장 방법
+                </p>
+            </div>
+
+            <div class="steps-container">
+                <div class="step-item" data-step="1">
+                    <h4 class="step-title">모듈 작성</h4>
+                    <p class="step-desc">
+                        <code>app/</code> 디렉토리 아래에 <code>{source}_ingest.py</code> 모듈을 작성합니다.
+                    </p>
+                </div>
+                <div class="step-item" data-step="2">
+                    <h4 class="step-title">함수 구현</h4>
+                    <p class="step-desc">
+                        <code>ensure_{source}_corpus()</code> 함수를 구현하여 데이터 수집 및 전처리 로직을 작성합니다.
+                    </p>
+                </div>
+                <div class="step-item" data-step="3">
+                    <h4 class="step-title">백엔드 등록</h4>
+                    <p class="step-desc">
+                        <code>app/ingest.py</code>에 새로운 소스 선택지를 추가합니다.
+                    </p>
+                </div>
+                <div class="step-item" data-step="4">
+                    <h4 class="step-title">UI 반영</h4>
+                    <p class="step-desc">
+                        <code>frontend/app.js</code>의 소스 목록에 새로운 소스를 추가하면 UI에 자동으로 반영됩니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Operation Process Section -->
+    <section class="section" id="operation">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Operation Process</span>
+                <h2 class="section-title">운영 프로세스</h2>
+                <p class="section-description">
+                    도입 후 권장되는 운영 프로세스
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <div class="card">
+                    <div class="card-icon">📅</div>
+                    <h3 class="card-title">정기 인제스트</h3>
+                    <p class="card-description">
+                        스케줄러 또는 CLI를 통해 주기적으로 지식베이스를 갱신합니다.
+                        <code>python -m app.ingest --source work_doc</code>
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📊</div>
+                    <h3 class="card-title">헬스 모니터링</h3>
+                    <p class="card-description">
+                        UI 대시보드에서 API, Chroma, Redis, Ollama의 상태를 실시간으로 확인합니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">💡</div>
+                    <h3 class="card-title">사용자 피드백</h3>
+                    <p class="card-description">
+                        질의 결과 품질 개선을 위해 시스템 프롬프트를 튜닝하고 최적화합니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔄</div>
+                    <h3 class="card-title">모델 업그레이드</h3>
+                    <p class="card-description">
+                        Ollama 모델 교체 및 임베딩 모델 업데이트를 통해 성능을 향상시킵니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Start Section -->
+    <section class="section" id="quick-start">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Quick Start</span>
+                <h2 class="section-title">빠른 PoC 실행</h2>
+            </div>
+
+            <div class="architecture-wrapper">
+                <div class="architecture-info">
+                    <div class="info-card">
+                        <div class="info-icon blue">1️⃣</div>
+                        <div class="info-content">
+                            <h4>.env 파일 설정</h4>
+                            <p>환경 변수 파일을 생성하고 기본 설정을 구성합니다.</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon purple">2️⃣</div>
+                        <div class="info-content">
+                            <h4>Docker Compose 실행</h4>
+                            <p><code>docker compose up</code> 명령으로 전체 서비스를 시작합니다.</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon green">3️⃣</div>
+                        <div class="info-content">
+                            <h4>UI 접속</h4>
+                            <p><code>http://localhost:8080/</code>에서 UI를 확인합니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="architecture-diagram">
+                    <div class="layer" style="border-color: var(--color-info);">
+                        <div class="layer-title">
+                            <span>📁</span> 사내 문서 연동 경로
+                        </div>
+                        <div class="layer-content" style="flex-direction: column; gap: 12px;">
+                            <span class="layer-item" style="width: 100%;"><code>data/raw/WORK_Source/</code> - 소스 코드
+                                파일</span>
+                            <span class="layer-item" style="width: 100%;"><code>data/raw/WORK_DOC/</code> - 업무 문서 (PDF,
+                                DOCX, HWPX)</span>
+                        </div>
+                    </div>
+                    <div class="layer" style="border-color: var(--color-success); margin-top: var(--spacing-md);">
+                        <div class="layer-title">
+                            <span>🔒</span> 보안 구간 내 오프라인 운영
+                        </div>
+                        <div class="layer-content" style="flex-direction: column; gap: 8px;">
+                            <span class="layer-item" style="width: 100%;">•
+                                <code>EMBED_MODEL_ALLOW_DOWNLOADS=0</code></span>
+                            <span class="layer-item" style="width: 100%;">• <code>INGEST_ALLOW_DOWNLOADS=0</code></span>
+                            <span class="layer-item" style="width: 100%;">• 로컬 모델 캐시 필요</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA / Contact Section -->
+    <section class="section" id="contact">
+        <div class="container">
+            <div class="cta-section">
+                <div class="cta-content">
+                    <h2 class="cta-title">RAG 시스템 도입을 검토 중이신가요?</h2>
+                    <p class="cta-description">
+                        사내 문서 기반 AI 답변 시스템 구축에 관심이 있으시다면
+                        언제든지 문의해주세요. 상세한 기술 상담을 제공해드립니다.
+                    </p>
+                    <div style="display: flex; gap: var(--spacing-md); justify-content: center; flex-wrap: wrap;">
+                        <a href="mailto:contact@rag-system.com" class="btn btn-primary">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            이메일 문의하기
+                        </a>
+                        <a href="index.html" class="btn btn-secondary">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                            아키텍처 다시 보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <span>🧠</span> RAG System
+                    </div>
+                    <p class="footer-desc">
+                        FastAPI, LlamaIndex, ChromaDB 기반의 엔터프라이즈급 RAG 플랫폼.
+                        사내 문서와 외부 지식을 통합하여 AI 기반 지능형 답변을 제공합니다.
+                    </p>
+                </div>
+                <div class="footer-nav">
+                    <h4>페이지</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">현시스템 아키텍처</a></li>
+                        <li><a href="proposal.html">제안서</a></li>
+                    </ul>
+                </div>
+                <div class="footer-nav">
+                    <h4>제안서 섹션</h4>
+                    <ul class="footer-links">
+                        <li><a href="#overview">프로젝트 개요</a></li>
+                        <li><a href="#benefits">기대 효과</a></li>
+                        <li><a href="#deployment">배포 가이드</a></li>
+                    </ul>
+                </div>
+                <div class="footer-nav">
+                    <h4>리소스</h4>
+                    <ul class="footer-links">
+                        <li><a href="#config">환경 변수</a></li>
+                        <li><a href="#operation">운영 프로세스</a></li>
+                        <li><a href="#contact">도입 문의</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">
+                    © 2026 RAG System. 최종 업데이트: 2026-01
+                </p>
+                <div class="footer-social">
+                    <a href="#" aria-label="GitHub">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                        </svg>
+                    </a>
+                    <a href="#" aria-label="Documentation">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Close menu when clicking on a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe cards and sections for animation
+        document.querySelectorAll('.card, .stat-card, .tech-card, .info-card, .step-item, .layer').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>
