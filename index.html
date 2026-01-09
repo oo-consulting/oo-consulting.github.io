@@ -1,24 +1,34 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="RAG(Retrieval-Augmented Generation) 시스템 - FastAPI, LlamaIndex, ChromaDB 기반의 지능형 문서 검색 및 답변 생성 플랫폼">
+    <meta name="description"
+        content="RAG(Retrieval-Augmented Generation) 시스템 - FastAPI, LlamaIndex, ChromaDB 기반의 지능형 문서 검색 및 답변 생성 플랫폼">
     <meta name="keywords" content="RAG, AI, LLM, FastAPI, LlamaIndex, ChromaDB, Ollama, 문서검색, 인공지능">
     <title>RAG 시스템 | 현시스템 아키텍처</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
-    
+
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
 </head>
+
 <body>
+    <!-- AI Pattern Background Canvas (Uracle Style) -->
+    <div class="ai-canvas-container">
+        <canvas id="ai-pattern-canvas"></canvas>
+    </div>
+    <div class="circuit-overlay"></div>
+
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="container">
@@ -53,19 +63,21 @@
                     <span class="gradient-text">새로운 패러다임</span>
                 </h1>
                 <p class="hero-description">
-                    RAG(Retrieval-Augmented Generation) 시스템으로 사내 문서와 외부 지식을 통합하여 
+                    RAG(Retrieval-Augmented Generation) 시스템으로 사내 문서와 외부 지식을 통합하여
                     정확하고 신뢰할 수 있는 AI 기반 답변을 제공합니다.
                 </p>
                 <div class="hero-buttons">
                     <a href="#architecture" class="btn btn-primary">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                         아키텍처 살펴보기
                     </a>
                     <a href="proposal.html" class="btn btn-secondary">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         제안서 보기
                     </a>
@@ -113,7 +125,7 @@
                     <div class="card-icon">🔍</div>
                     <h3 class="card-title">문서 기반 질의응답</h3>
                     <p class="card-description">
-                        TOPIK 어휘, MDN, 한국어 사전, 업무 문서 등 다중 소스를 통합하여 
+                        TOPIK 어휘, MDN, 한국어 사전, 업무 문서 등 다중 소스를 통합하여
                         문맥에 맞는 정확한 답변을 제공합니다.
                     </p>
                 </div>
@@ -121,7 +133,7 @@
                     <div class="card-icon">📄</div>
                     <h3 class="card-title">다양한 문서 형식</h3>
                     <p class="card-description">
-                        PDF, DOCX, HWPX, 텍스트, 마크다운은 물론 
+                        PDF, DOCX, HWPX, 텍스트, 마크다운은 물론
                         Python, JavaScript 등 코드 파일까지 처리할 수 있습니다.
                     </p>
                 </div>
@@ -129,7 +141,7 @@
                     <div class="card-icon">🔒</div>
                     <h3 class="card-title">오프라인 지원</h3>
                     <p class="card-description">
-                        로컬 LLM(Ollama) 및 오프라인 임베딩 모드로 
+                        로컬 LLM(Ollama) 및 오프라인 임베딩 모드로
                         네트워크 제한 환경에서도 안전하게 운영 가능합니다.
                     </p>
                 </div>
@@ -137,7 +149,7 @@
                     <div class="card-icon">📊</div>
                     <h3 class="card-title">실시간 모니터링</h3>
                     <p class="card-description">
-                        시스템 상태, 인제스트 진행률, 벡터 수를 
+                        시스템 상태, 인제스트 진행률, 벡터 수를
                         실시간으로 확인하고 관리할 수 있습니다.
                     </p>
                 </div>
@@ -145,7 +157,7 @@
                     <div class="card-icon">⚡</div>
                     <h3 class="card-title">재순위화 (Reranking)</h3>
                     <p class="card-description">
-                        Cross-Encoder 기반 재순위화로 검색 결과의 
+                        Cross-Encoder 기반 재순위화로 검색 결과의
                         관련성을 높여 더 정확한 컨텍스트를 제공합니다.
                     </p>
                 </div>
@@ -153,7 +165,7 @@
                     <div class="card-icon">🔄</div>
                     <h3 class="card-title">증분 업데이트</h3>
                     <p class="card-description">
-                        파일 수정 시간과 해시를 비교하여 변경된 문서만 
+                        파일 수정 시간과 해시를 비교하여 변경된 문서만
                         업데이트하고 삭제된 문서는 자동 제거합니다.
                     </p>
                 </div>
@@ -185,14 +197,15 @@
                             <span class="layer-item">styles.css</span>
                         </div>
                     </div>
-                    
+
                     <!-- Arrow -->
                     <div style="text-align: center; padding: 8px 0; color: var(--color-accent-primary);">
                         <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                         </svg>
                     </div>
-                    
+
                     <!-- Layer 2: Application Backend -->
                     <div class="layer">
                         <div class="layer-title">
@@ -206,14 +219,15 @@
                             <span class="layer-item">chunking.py</span>
                         </div>
                     </div>
-                    
+
                     <!-- Arrow -->
                     <div style="text-align: center; padding: 8px 0; color: var(--color-accent-primary);">
                         <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                         </svg>
                     </div>
-                    
+
                     <!-- Layer 3: Infrastructure -->
                     <div class="layer">
                         <div class="layer-title">
@@ -226,7 +240,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="architecture-info">
                     <div class="info-card">
                         <div class="info-icon blue">🖥️</div>
@@ -341,9 +355,10 @@
                     문서 수집부터 답변 생성까지의 전체 파이프라인
                 </p>
             </div>
-            
+
             <!-- Ingest Flow -->
-            <h3 style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: 8px;">
+            <h3
+                style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: 8px;">
                 <span style="color: var(--color-success);">●</span> 인제스트 파이프라인
             </h3>
             <div class="flow-container" style="margin-bottom: var(--spacing-2xl);">
@@ -387,9 +402,10 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Query Flow -->
-            <h3 style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: 8px;">
+            <h3
+                style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: 8px;">
                 <span style="color: var(--color-info);">●</span> 질의 파이프라인
             </h3>
             <div class="flow-container">
@@ -446,7 +462,7 @@
                     FastAPI 기반의 체계적인 REST API 구조
                 </p>
             </div>
-            
+
             <div class="table-container">
                 <table class="data-table">
                     <thead>
@@ -533,7 +549,7 @@
                     다양한 문서 및 코드 파일을 처리할 수 있습니다
                 </p>
             </div>
-            
+
             <div class="features-grid">
                 <div class="card">
                     <div class="card-icon">📕</div>
@@ -580,7 +596,8 @@
                     </p>
                     <a href="proposal.html" class="btn btn-primary">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         제안서 보러가기
                     </a>
@@ -598,7 +615,7 @@
                         <span>🧠</span> RAG System
                     </div>
                     <p class="footer-desc">
-                        FastAPI, LlamaIndex, ChromaDB 기반의 엔터프라이즈급 RAG 플랫폼. 
+                        FastAPI, LlamaIndex, ChromaDB 기반의 엔터프라이즈급 RAG 플랫폼.
                         사내 문서와 외부 지식을 통합하여 AI 기반 지능형 답변을 제공합니다.
                     </p>
                 </div>
@@ -633,12 +650,14 @@
                 <div class="footer-social">
                     <a href="#" aria-label="GitHub">
                         <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            <path
+                                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                         </svg>
                     </a>
                     <a href="#" aria-label="Documentation">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                     </a>
                 </div>
@@ -661,7 +680,7 @@
         // Mobile menu toggle
         const menuToggle = document.getElementById('menuToggle');
         const navMenu = document.getElementById('navMenu');
-        
+
         menuToggle.addEventListener('click', () => {
             navMenu.classList.toggle('active');
         });
@@ -710,5 +729,9 @@
             observer.observe(el);
         });
     </script>
+
+    <!-- AI Pattern Background Script -->
+    <script src="bg-ai-pattern.js"></script>
 </body>
+
 </html>
