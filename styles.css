@@ -615,6 +615,7 @@ a:hover {
 
 .section-description {
     font-size: 1.125rem;
+    word-break: keep-all;
 }
 
 /* ===== Architecture Section ===== */
