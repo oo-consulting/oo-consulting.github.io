@@ -9,7 +9,7 @@
 | [rag_system_proposal.md](./rag_system_proposal.md) | 시스템 제안서 및 개요 | 의사결정자, 프로젝트 관리자 |
 | [rag_architecture.md](./rag_architecture.md) | 상세 아키텍처 및 API 레퍼런스 | 개발자, 시스템 운영자 |
 | [rag_analysis.md](./rag_analysis.md) | 기술 구조 분석 | 개발자, 아키텍트 |
-| [tobe_proposal.md](./tobe_proposal.md) | **시스템 고도화 제안서** | 기술 리더, 아키텍트 |
+| [tobe_proposal.md](./tobe_proposal.md) | **시스템 고도화 내용** | 기술 리더, 아키텍트 |
 
 ## 🚀 빠른 시작
 

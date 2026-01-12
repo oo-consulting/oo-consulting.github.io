@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RAG 시스템 고도화 제안서 - 단계별 발전 로드맵, 하이브리드 검색, LLM 최적화 및 엔터프라이즈 기능 확장">
+    <meta name="keywords" content="RAG, 고도화, 하이브리드 검색, LLM 최적화, GraphRAG, Agentic RAG">
+    <title>RAG 시스템 | 고도화 모델</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+
+<body>
+    <!-- AI Pattern Background Canvas (Uracle Style) -->
+    <div class="ai-canvas-container">
+        <canvas id="ai-pattern-canvas"></canvas>
+    </div>
+    <div class="circuit-overlay"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🧠</span>
+                RAG System
+            </a>
+            <ul class="nav-menu" id="navMenu">
+                <li class="nav-item">
+                    <a href="proposal.html" class="nav-link dropdown-trigger">제안서</a>
+                    <div class="dropdown-menu">
+                        <a href="proposal.html#overview" class="dropdown-link">프로젝트 개요</a>
+                        <a href="proposal.html#benefits" class="dropdown-link">기대 효과</a>
+                        <a href="proposal.html#main-features" class="dropdown-link">주요 기능 상세</a>
+                        <a href="proposal.html#ingest-features" class="dropdown-link">인제스트 기능</a>
+                        <a href="proposal.html#ui-features" class="dropdown-link">운영 화면 (UI)</a>
+                        <a href="proposal.html#deployment" class="dropdown-link">배포 및 운용</a>
+                        <a href="proposal.html#config" class="dropdown-link">환경 변수 설정</a>
+                        <a href="proposal.html#extension" class="dropdown-link">확장 포인트</a>
+                        <a href="proposal.html#operation" class="dropdown-link">운영 프로세스</a>
+                        <a href="proposal.html#quick-start" class="dropdown-link">빠른 PoC 실행</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="tobe_proposal.html" class="nav-link dropdown-trigger active">고도화 모델</a>
+                    <div class="dropdown-menu">
+                        <a href="tobe_proposal.html#phase1" class="dropdown-link">Phase 1: 검색 품질 강화</a>
+                        <a href="tobe_proposal.html#phase2" class="dropdown-link">Phase 2: LLM 성능 최적화</a>
+                        <a href="tobe_proposal.html#phase3" class="dropdown-link">Phase 3: 데이터 파이프라인</a>
+                        <a href="tobe_proposal.html#phase4" class="dropdown-link">Phase 4: 사용자 경험 개선</a>
+                        <a href="tobe_proposal.html#phase5" class="dropdown-link">Phase 5: 엔터프라이즈 기능</a>
+                        <a href="tobe_proposal.html#phase6" class="dropdown-link">Phase 6: 고급 RAG 기술</a>
+                        <a href="tobe_proposal.html#roadmap" class="dropdown-link">기술 스택 로드맵</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link dropdown-trigger">아키텍처</a>
+                    <div class="dropdown-menu">
+                        <a href="index.html#features" class="dropdown-link">핵심 기능</a>
+                        <a href="index.html#architecture" class="dropdown-link">시스템 아키텍처</a>
+                        <a href="index.html#tech-stack" class="dropdown-link">기술 스택</a>
+                        <a href="index.html#data-flow" class="dropdown-link">데이터 흐름</a>
+                        <a href="index.html#api" class="dropdown-link">API</a>
+                        <a href="index.html#formats" class="dropdown-link">지원 파일 형식</a>
+                    </div>
+                </li>
+                <li><a href="proposal.html#contact" class="nav-link nav-cta">도입 문의</a></li>
+            </ul>
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <span class="hero-badge">
+                    Future Roadmap
+                </span>
+                <h1 class="hero-title">
+                    RAG 시스템<br>
+                    <span class="gradient-text">고도화 모델 (To-Be)</span>
+                </h1>
+                <p class="hero-description">
+                    현재 시스템을 엔터프라이즈급 지식 플랫폼으로 발전시키기 위한
+                    6단계 단계별 고도화 방안과 기술 로드맵을 제시합니다.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#phase1" class="btn btn-primary">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        단계별 로드맵 보기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overview Section -->
+    <section class="section" id="overview">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Overview</span>
+                <h2 class="section-title">고도화 개요</h2>
+                <p class="section-description">
+                    기본적인 문서 검색 및 답변 생성 기능을 넘어, 정확도와 확장성,
+                    그리고 사용자 경험을 극대화하는 것을 목표로 합니다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Phase 1 -->
+    <section class="section" id="phase1">
+        <div class="container">
+            <div class="architecture-wrapper">
+                <div class="architecture-info">
+                    <span class="section-label">Phase 1 (1~2개월)</span>
+                    <h2 class="section-title">검색 품질 강화</h2>
+                    <p class="section-description">
+                        하이브리드 검색 도입과 쿼리 확장을 통해 정확한 매칭이 필요한 질의의 성능을 대폭 향상시킵니다.
+                    </p>
+                    <div class="info-card mt-2">
+                        <div class="info-icon blue">🔍</div>
+                        <div class="info-content">
+                            <h4>하이브리드 검색</h4>
+                            <p>벡터 유사도 검색(의미) + BM25 키워드 검색(매칭)을 결합하여 고유명사 검색 성능 개선</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon purple">🔄</div>
+                        <div class="info-content">
+                            <h4>쿼리 확장 (Query Expansion)</h4>
+                            <p>LLM을 활용해 사용자 질문을 재작성하고 유사/연관 질문으로 확장하여 검색 범위 확대</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon green">✂️</div>
+                        <div class="info-content">
+                            <h4>청킹 전략 고도화</h4>
+                            <p>단순 고정 크기 분할에서 의미 단위(Semantic) 및 계층적 청킹으로 문맥 보존 강화</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="architecture-diagram">
+                    <div class="code-block" data-lang="python">
+                        <span class="keyword">class</span> <span class="function">HybridRetriever</span>:
+                        <span class="keyword">def</span> <span class="function">search</span>(self, query: str):
+                        <span class="comment"># 1. 의미적 유사도 검색 (Dense)</span>
+                        vector_results = self.vector_search(query)
+
+                        <span class="comment"># 2. 키워드 매칭 검색 (Sparse)</span>
+                        keyword_results = self.bm25_search(query)
+
+                        <span class="comment"># 3. 상호 순위 융합 (RRF)</span>
+                        <span class="keyword">return</span> self.reciprocal_rank_fusion(
+                        vector_results, keyword_results
+                        )
+                    </div>
+                    <div class="info-card mt-2" style="background: var(--color-bg-tertiary);">
+                        <div style="font-weight: 600; margin-bottom: 8px;">🚀 기대 효과</div>
+                        <ul
+                            style="list-style: none; padding: 0; color: var(--color-text-secondary); font-size: 0.9rem;">
+                            <li>• 고유명사, 코드 변수명 검색 정확도 향상</li>
+                            <li>• 단순 키워드 매칭 실패 감소</li>
+                            <li>• 문맥 연결성 강화</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Phase 2 -->
+    <section class="section" id="phase2" style="background: var(--color-bg-secondary);">
+        <div class="container">
+            <div class="architecture-wrapper" style="direction: rtl;">
+                <div class="architecture-info" style="direction: ltr;">
+                    <span class="section-label">Phase 2 (2~3개월)</span>
+                    <h2 class="section-title">LLM 성능 최적화</h2>
+                    <p class="section-description">
+                        더 강력한 모델과 정교한 프롬프트 엔지니어링으로 답변 품질과 응답 속도를 개선합니다.
+                    </p>
+
+                    <div class="table-container mt-2">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>용도</th>
+                                    <th>현재 모델</th>
+                                    <th>권장 업그레이드</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>일반 질의</td>
+                                    <td>qwen2.5:3b</td>
+                                    <td style="color: var(--color-accent-primary);">qwen2.5:7b / llama3.1:8b</td>
+                                </tr>
+                                <tr>
+                                    <td>코드 분석</td>
+                                    <td>coder:6.7b</td>
+                                    <td style="color: var(--color-accent-primary);">deepseek-coder:16b</td>
+                                </tr>
+                                <tr>
+                                    <td>한국어 특화</td>
+                                    <td>-</td>
+                                    <td style="color: var(--color-accent-primary);">EEVE-Korean-10.8B</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="info-card mt-2">
+                        <div class="info-icon orange">⚡</div>
+                        <div class="info-content">
+                            <h4>스트리밍 응답 (SSE)</h4>
+                            <p>토큰 단위 실시간 출력으로 체감 응답 속도 50% 이상 향상</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="architecture-diagram" style="direction: ltr;">
+                    <div class="code-block" data-lang="markdown">
+                        <span class="comment"># 개선된 시스템 프롬프트 구조</span>
+
+                        1. **역할 정의 (Role Definition)**
+                        전문가 페르소나 부여
+
+                        2. **컨텍스트 활용 (Context Usage)**
+                        제공된 문서(Context) 내에서만 답변 엄수
+
+                        3. **응답 형식 (Output Format)**
+                        가독성 높은 구조화된 마크다운 포맷
+
+                        4. **인용 규칙 (Citation Rules)**
+                        [문서명](페이지) 형태의 출처 명시 필수
+
+                        5. **불확실성 표현 (Uncertainty)**
+                        정보가 부족할 경우 솔직하게 "알 수 없음" 표기
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Phase 3 -->
+    <section class="section" id="phase3">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Phase 3 (2~3개월)</span>
+                <h2 class="section-title">데이터 파이프라인 강화</h2>
+                <p class="section-description">
+                    실시간 데이터 동기화와 고품질 전처리로 지식의 최신성과 품질을 보장합니다.
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="card">
+                    <div class="card-icon">🔄</div>
+                    <h3 class="card-title">실시간 인덱싱</h3>
+                    <p class="card-description">
+                        파일 시스템 감지(FileWatcher)를 통해 문서 변경 즉시 인덱스 업데이트<br>
+                        <code>[File] → [Queue] → [Indexer] → [DB]</code>
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🏷️</div>
+                    <h3 class="card-title">메타데이터 확장</h3>
+                    <p class="card-description">
+                        작성자, 부서, 생성일, 태그, 보안 등급 등 풍부한 메타데이터 관리로 필터링 검색 지원
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📑</div>
+                    <h3 class="card-title">고급 전처리</h3>
+                    <p class="card-description">
+                        OCR(이미지 텍스트), 표 구조화, 이미지 캡션 생성으로 비정형 데이터 처리 능력 강화
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Phase 4 -->
+    <section class="section" id="phase4" style="background: var(--color-bg-secondary);">
+        <div class="container">
+            <div class="architecture-wrapper">
+                <div class="architecture-info">
+                    <span class="section-label">Phase 4 (1~2개월)</span>
+                    <h2 class="section-title">사용자 경험(UX) 개선</h2>
+                    <p class="section-description">
+                        사용자가 더 쉽고 직관적으로 정보를 탐색할 수 있는 인터페이스를 제공합니다.
+                    </p>
+                    <div class="steps-container mt-2">
+                        <div class="step-item" data-step="1">
+                            <h4 class="step-title">대화형 UI 고도화</h4>
+                            <p class="step-desc">멀티턴 대화(문맥 유지), 후속 질문 자동 제안, 답변 피드백(좋아요/싫어요)</p>
+                        </div>
+                        <div class="step-item" data-step="2">
+                            <h4 class="step-title">고급 검색 필터</h4>
+                            <p class="step-desc">소스 유형, 날짜 범위, 부서별, 태그별 상세 검색 필터 제공</p>
+                        </div>
+                        <div class="step-item" data-step="3">
+                            <h4 class="step-title">시각화 대시보드</h4>
+                            <p class="step-desc">지식베이스 통계, 자주 묻는 질문(FAQ) 트렌드, 검색어 분석</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="architecture-diagram">
+                    <div class="info-card"
+                        style="background: var(--color-bg-tertiary); height: 100%; display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 20px;">🖼️</div>
+                            <h3>Advanced Dashboard</h3>
+                            <p style="color: var(--color-text-secondary);">Knowledge Graph & Analytics View</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Phase 5 & 6 Combined -->
+    <section class="section" id="phase5">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Phase 5 & 6 (Long Term)</span>
+                <h2 class="section-title">엔터프라이즈 및 고급 기술</h2>
+                <p class="section-description">
+                    보안, 관리 기능 강화 및 최신 AI 에이전트 기술 도입
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <div class="card" style="border-color: var(--color-info);">
+                    <div class="card-icon">👮</div>
+                    <h3 class="card-title">접근 제어 (RBAC)</h3>
+                    <p class="card-description">
+                        사용자 역할(Admin, Editor, Viewer)에 따른 문서 접근 권한 및 기능 제어
+                    </p>
+                </div>
+                <div class="card" style="border-color: var(--color-info);">
+                    <div class="card-icon">📜</div>
+                    <h3 class="card-title">감사 로깅</h3>
+                    <p class="card-description">
+                        누가, 언제, 무엇을 검색했고 어떤 문서를 열람했는지에 대한 전체 감사 로그 기록
+                    </p>
+                </div>
+                <div class="card" style="border-color: var(--color-success);">
+                    <div class="card-icon">🤖</div>
+                    <h3 class="card-title">Agentic RAG</h3>
+                    <p class="card-description">
+                        질문 계획(Planner) → 단계별 검색 → 자체 검증(Reflection)을 수행하는 자율 에이전트
+                    </p>
+                </div>
+                <div class="card" style="border-color: var(--color-success);">
+                    <div class="card-icon">🕸️</div>
+                    <h3 class="card-title">GraphRAG</h3>
+                    <p class="card-description">
+                        문서 간 관계를 지식 그래프로 구축하여 복잡한 연결 고리를 추론하고 설명
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Table -->
+    <section class="section" id="roadmap">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Technology Roadmap</span>
+                <h2 class="section-title">기술 스택 업그레이드 로드맵</h2>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>구성요소</th>
+                            <th>현재 (As-Is)</th>
+                            <th>Phase 1-2 (Near Term)</th>
+                            <th>Phase 3-6 (Long Term)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>벡터 DB</td>
+                            <td>ChromaDB</td>
+                            <td>ChromaDB + BM25</td>
+                            <td>Milvus / Qdrant</td>
+                        </tr>
+                        <tr>
+                            <td>LLM</td>
+                            <td>Ollama (로컬 기본)</td>
+                            <td>Ollama + vLLM</td>
+                            <td>분산 추론 클러스터</td>
+                        </tr>
+                        <tr>
+                            <td>캐싱</td>
+                            <td>Redis</td>
+                            <td>Redis Cluster</td>
+                            <td>Redis + Semantic Cache</td>
+                        </tr>
+                        <tr>
+                            <td>검색 기술</td>
+                            <td>벡터 검색</td>
+                            <td>하이브리드 검색</td>
+                            <td>GraphRAG + Agentic</td>
+                        </tr>
+                        <tr>
+                            <td>모니터링</td>
+                            <td>기본 헬스체크</td>
+                            <td>Prometheus / Grafana</td>
+                            <td>Full Observability Stack</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section">
+        <div class="container">
+            <div class="cta-section">
+                <div class="cta-content">
+                    <h2 class="cta-title">차세대 시스템 구축을 준비하세요</h2>
+                    <p class="cta-description">
+                        현재의 RAG 시스템을 기반으로 엔터프라이즈 환경에 최적화된
+                        지식 플랫폼으로의 진화를 도와드립니다.
+                    </p>
+                    <div style="display: flex; gap: var(--spacing-md); justify-content: center;">
+                        <a href="proposal.html#contact" class="btn btn-primary">
+                            도입 문의하기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <span>🧠</span> RAG System
+                    </div>
+                    <p class="footer-desc">
+                        FastAPI, LlamaIndex, ChromaDB 기반의 엔터프라이즈급 RAG 플랫폼.
+                        사내 문서와 외부 지식을 통합하여 AI 기반 지능형 답변을 제공합니다.
+                    </p>
+                </div>
+                <div class="footer-nav">
+                    <h4>메뉴</h4>
+                    <ul class="footer-links">
+                        <li><a href="proposal.html">제안서</a></li>
+                        <li><a href="tobe_proposal.html">고도화 모델</a></li>
+                        <li><a href="index.html">아키텍처</a></li>
+                    </ul>
+                </div>
+                <div class="footer-nav">
+                    <h4>고도화 섹션</h4>
+                    <ul class="footer-links">
+                        <li><a href="#phase1">Phase 1: 검색 강화</a></li>
+                        <li><a href="#phase2">Phase 2: LLM 최적화</a></li>
+                        <li><a href="#phase3">Phase 3: 데이터 파이프라인</a></li>
+                    </ul>
+                </div>
+                <div class="footer-nav">
+                    <h4>리소스</h4>
+                    <ul class="footer-links">
+                        <li><a href="#roadmap">기술 로드맵</a></li>
+                        <li><a href="proposal.html#contact">도입 문의</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">
+                    © 2026 RAG System. 최종 업데이트: 2026-01
+                </p>
+                <div class="footer-social">
+                    <a href="#" aria-label="GitHub">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Background AI Pattern
+        // Copy functionality from other pages if bg-ai-pattern.js is loaded
+    </script>
+    <script src="bg-ai-pattern.js"></script>
+    <script>
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card, .stat-card, .tech-card, .info-card, .step-item').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>
