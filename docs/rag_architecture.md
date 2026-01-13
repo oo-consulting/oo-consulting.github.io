@@ -11,7 +11,7 @@
 | 서비스 | 컨테이너 이름 | 역할 | 아티팩트/폴더 | 호스트 포트 |
 | --- | --- | --- | --- | --- |
 | `api` | `rag-api` | FastAPI 백엔드. 인제스트, 질의, 설정, 상태 모니터링 API 제공. LlamaIndex, SentenceTransformers, Chroma 클라이언트 사용 | `Dockerfile`, `app/` | 8000 |
-| `ui` | `rag-ui` | Tomcat 10 정적 리소스 제공. `frontend/index.html`, `app.js`, `styles.css`가 API 호출 | `docker/tomcat/Dockerfile`, `frontend/` | 8080 |
+| `ui` | `rag-ui` | Tomcat 10 정적 리소스 제공. `frontend/proposal.html`, `app.js`, `styles.css`가 API 호출 | `docker/tomcat/Dockerfile`, `frontend/` | 8080 |
 | `chroma` | `rag-chroma` | 영구 모드의 Chroma DB. 문서 임베딩을 저장·검색 | `docker/chroma/` | 8001 |
 | `redis` | `rag-redis` | 비동기 인제스트 작업 상태 및 캐시 | `docker/redis/` | 6379 |
 | `ollama` | `rag-ollama` | LLM 호스팅(Ollama). 기본 `qwen2.5:3b-instruct-q4_K_M` | `docker/ollama/` | 11434 |
