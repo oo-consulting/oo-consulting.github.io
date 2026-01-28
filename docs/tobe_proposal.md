@@ -6,23 +6,71 @@
 
 ---
 
-## Phase 1: 검색 품질 강화 (1~2개월)
+## Phase 1: PostgreSQL + pgvector 마이그레이션 (2~3주)
 
-### 1.1 하이브리드 검색 도입
+### 1.1 PostgreSQL + pgvector 도입
 
-**현황**: 벡터 유사도 검색만 사용  
-**개선**: 벡터 검색 + 키워드 검색(BM25) 결합
+**현황**: ChromaDB 기반 벡터 검색  
+**개선**: PostgreSQL + pgvector로 전환 (벡터/키워드/메타데이터 통합)
+
+```sql
+-- pgvector 확장 활성화
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- 문서 청크 테이블
+CREATE TABLE document_chunks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    content TEXT NOT NULL,
+    embedding vector(768),
+    content_tsv tsvector GENERATED ALWAYS AS (
+        to_tsvector('simple', content)
+    ) STORED,
+    source_type VARCHAR(50) NOT NULL
+);
+```
+
+### 1.2 ChromaDB 데이터 폐기 및 재인제스트
+
+**현황**: ChromaDB에 기존 임베딩 저장  
+**개선**: ChromaDB 제거 후 PostgreSQL로 전체 재인제스트
+
+```
+1. PostgreSQL 배포 및 스키마 생성
+2. 인제스트/검색 코드 PostgreSQL로 전환
+3. 기존 ChromaDB 데이터 삭제
+4. 전체 데이터 재인제스트
+5. ChromaDB 컨테이너 제거
+```
+
+**기대효과**: 데이터 정합성 확보, 운영 복잡도 감소, 엔터프라이즈급 백업/복구 지원
+
+---
+
+## Phase 2: 하이브리드 검색 구현 (1~2주)
+
+### 2.1 하이브리드 검색 (pgvector + tsvector)
+
+**현황**: 벡터 유사도 검색 단독 사용  
+**개선**: 벡터 검색 + 전문 검색 결합 (RRF)
 
 ```python
 # 제안 구현 방향
 class HybridRetriever:
     def search(self, query: str):
-        vector_results = self.vector_search(query)  # 의미 유사도
-        keyword_results = self.bm25_search(query)   # 키워드 매칭
+        vector_results = self.pgvector_search(query_embedding)
+        keyword_results = self.fulltext_search(query)
         return self.reciprocal_rank_fusion(vector_results, keyword_results)
 ```
 
-**기대효과**: 고유명사, 코드 변수명 등 정확한 매칭이 필요한 쿼리 정확도 향상
+### 2.2 가중치 튜닝
+
+```python
+VECTOR_WEIGHT = 0.7
+KEYWORD_WEIGHT = 0.3
+RRF_K = 60
+```
+
+**기대효과**: 고유명사/코드 변수명 정확도 향상, 검색 누락 감소
 
 ### 1.2 쿼리 확장 (Query Expansion)
 
@@ -44,9 +92,9 @@ class HybridRetriever:
 
 ---
 
-## Phase 2: LLM 성능 최적화 (2~3개월)
+## Phase 3: LLM 성능 최적화 (2~3주)
 
-### 2.1 모델 업그레이드
+### 3.1 모델 업그레이드
 
 | 용도 | 현재 | 권장 |
 |------|------|------|
@@ -54,7 +102,7 @@ class HybridRetriever:
 | 코드 분석 | deepseek-coder:6.7b | deepseek-coder-v2:16b |
 | 한국어 특화 | - | EEVE-Korean-10.8B |
 
-### 2.2 프롬프트 엔지니어링
+### 3.2 프롬프트 엔지니어링
 
 ```markdown
 # 개선된 시스템 프롬프트 구조
@@ -65,25 +113,25 @@ class HybridRetriever:
 5. 불확실성 표현 (Uncertainty Expression)
 ```
 
-### 2.3 스트리밍 응답
+### 3.3 스트리밍 응답
 
 **현황**: 전체 응답 완료 후 반환  
 **개선**: Server-Sent Events로 토큰 단위 스트리밍
 
 ---
 
-## Phase 3: 데이터 파이프라인 강화 (2~3개월)
+## Phase 4: 데이터 파이프라인 강화 (3~4주)
 
-### 3.1 실시간 인덱싱
+### 4.1 실시간 인덱싱
 
 ```
 현재: 수동 인제스트 → 배치 처리
 개선: 파일 변경 감지 → 자동 증분 인덱싱
 
-[FileWatcher] → [Change Queue] → [Incremental Indexer] → [ChromaDB]
+    [FileWatcher] → [Change Queue] → [Incremental Indexer] → [PostgreSQL]
 ```
 
-### 3.2 메타데이터 확장
+### 4.2 메타데이터 확장
 
 ```python
 # 현재 메타데이터
@@ -103,7 +151,7 @@ class HybridRetriever:
 }
 ```
 
-### 3.3 문서 전처리 파이프라인
+### 4.3 문서 전처리 파이프라인
 
 ```
 원본 문서
@@ -121,16 +169,16 @@ class HybridRetriever:
 
 ---
 
-## Phase 4: 사용자 경험 개선 (1~2개월)
+## Phase 5: 사용자 경험 개선 (2~3주)
 
-### 4.1 대화형 UI
+### 5.1 대화형 UI
 
 - 멀티턴 대화 지원 (대화 이력 관리)
 - 후속 질문 자동 제안
 - 답변 피드백 (좋아요/싫어요)
 - 소스 하이라이팅
 
-### 4.2 고급 검색 인터페이스
+### 5.2 고급 검색 인터페이스
 
 ```
 [검색창]
@@ -139,7 +187,7 @@ class HybridRetriever:
 └── 뷰: 카드 | 리스트 | 타임라인
 ```
 
-### 4.3 시각화 대시보드
+### 5.3 시각화 대시보드
 
 - 지식베이스 통계 (문서 수, 청크 수, 카테고리별 분포)
 - 질의 분석 (자주 묻는 질문, 트렌드)
@@ -147,9 +195,9 @@ class HybridRetriever:
 
 ---
 
-## Phase 5: 엔터프라이즈 기능 (3~4개월)
+## Phase 6: 엔터프라이즈 기능 (4~6주)
 
-### 5.1 접근 제어 (RBAC)
+### 6.1 접근 제어 (RBAC)
 
 ```yaml
 roles:
@@ -164,7 +212,7 @@ roles:
     - read: [topik_vocab, mdn]
 ```
 
-### 5.2 감사 로깅
+### 6.2 감사 로깅
 
 ```json
 {
@@ -177,7 +225,7 @@ roles:
 }
 ```
 
-### 5.3 API 게이트웨이
+### 6.3 API 게이트웨이
 
 - Rate Limiting
 - API Key 관리
@@ -186,9 +234,9 @@ roles:
 
 ---
 
-## Phase 6: 고급 RAG 기술 (4~6개월)
+## Phase 7: 고급 RAG 기술 (장기)
 
-### 6.1 Agentic RAG
+### 7.1 Agentic RAG
 
 ```
 사용자 질문
@@ -204,7 +252,7 @@ roles:
 최종 응답
 ```
 
-### 6.2 GraphRAG
+### 7.2 GraphRAG
 
 ```
 문서 → 엔티티 추출 → 관계 그래프 구축
@@ -214,7 +262,7 @@ roles:
     그래프 검색 + 벡터 검색 결합
 ```
 
-### 6.3 Corrective RAG (CRAG)
+### 7.3 Corrective RAG (CRAG)
 
 - 검색 결과 품질 자동 평가
 - 저품질 결과 시 웹 검색 폴백
@@ -222,29 +270,29 @@ roles:
 
 ---
 
-## 기술 스택 업그레이드 로드맵
+## 기술 스택 업그레이드 로드맵 (Phase 1~6 기준)
 
-| 구성요소 | 현재 | Phase 1-2 | Phase 3-6 |
+| 구성요소 | 현재 | Phase 1-2 | Phase 3-4 | Phase 5-6 |
 |---------|------|-----------|-----------|
-| 벡터DB | ChromaDB | ChromaDB + BM25 | Milvus/Qdrant |
-| LLM | Ollama (로컬) | Ollama + vLLM | 분산 추론 클러스터 |
-| 캐싱 | Redis | Redis Cluster | Redis + Semantic Cache |
-| 검색 | 벡터 검색 | 하이브리드 검색 | GraphRAG |
-| 모니터링 | 기본 헬스체크 | Prometheus/Grafana | 전체 관측성 스택 |
+| 벡터DB | ChromaDB | PostgreSQL + pgvector | PostgreSQL (파티셔닝) | PostgreSQL 클러스터 |
+| LLM | Ollama (로컬) | Ollama (qwen2.5:7b) | Ollama + vLLM | 분산 추론 클러스터 |
+| 캐싱 | Redis | Redis | Redis Cluster | Redis + Semantic Cache |
+| 검색 | 벡터 검색 | 하이브리드 검색 (pgvector + tsvector) | 쿼리 확장 + 재순위화 | GraphRAG + Agentic |
+| 모니터링 | 기본 헬스체크 | Prometheus/Grafana | APM 통합 | 전체 관측성 스택 |
+| 보안 | 없음 | 기본 인증 | RBAC | SSO + 감사 로깅 |
 
 ---
 
-## 우선순위 및 예상 효과
+## 우선순위 및 예상 효과 (Phase 1~6)
 
 | 우선순위 | 개선 항목 | 난이도 | 효과 |
 |---------|----------|--------|------|
-| ⭐⭐⭐ | 하이브리드 검색 | 중 | 검색 정확도 30%↑ |
-| ⭐⭐⭐ | 청킹 전략 개선 | 중 | 답변 품질 25%↑ |
-| ⭐⭐⭐ | 스트리밍 응답 | 하 | 응답 체감 속도 50%↑ |
-| ⭐⭐ | 모델 업그레이드 | 하 | 답변 품질 20%↑ |
-| ⭐⭐ | 멀티턴 대화 | 중 | 사용자 만족도 향상 |
-| ⭐ | GraphRAG | 상 | 복잡한 질의 처리 |
-| ⭐ | 접근 제어 | 중 | 엔터프라이즈 요구 충족 |
+| ⭐⭐⭐⭐⭐ | PostgreSQL + pgvector 마이그레이션 | 중 | 운영 안정성 + 확장성 확보 |
+| ⭐⭐⭐⭐⭐ | 하이브리드 검색 | 중 | 검색 정확도 30%↑ |
+| ⭐⭐⭐⭐ | LLM 최적화 | 중 | 답변 품질 20~30%↑ |
+| ⭐⭐⭐ | 데이터 파이프라인 강화 | 중 | 최신성/정합성 개선 |
+| ⭐⭐⭐ | UX 개선 | 중 | 사용자 만족도 향상 |
+| ⭐⭐ | 엔터프라이즈 기능 | 중 | 보안/감사 요구 충족 |
 
 ---
 
@@ -253,13 +301,13 @@ roles:
 본 고도화 제안은 **6개 Phase**로 구성되며, 각 단계는 독립적으로 진행 가능합니다.
 
 **1단계 권장 사항** (즉시 적용 가능):
-1. 하이브리드 검색 (BM25 추가)
-2. 스트리밍 응답 구현
-3. 청킹 전략 최적화
+1. PostgreSQL + pgvector 마이그레이션
+2. 하이브리드 검색 구현 (pgvector + tsvector)
+3. LLM 스트리밍 응답 적용
 
 이를 통해 현재 시스템 대비 **검색 정확도 30% 향상**, **응답 체감 속도 50% 개선**을 기대할 수 있습니다.
 
 ---
 
-*작성일: 2026-01-08*  
-*버전: 1.0*
+*작성일: 2026-01-28*  
+*버전: 2.0*
