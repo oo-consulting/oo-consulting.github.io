@@ -486,12 +486,46 @@
                 </table>
             </div>
             <div class="table-container mt-2">
+                <h3 style="margin: 0 0 12px; color: var(--color-text-primary);">개발자 역할 및 책임</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>개발자</th>
+                            <th>역할</th>
+                            <th>책임</th>
+                            <th>주 작업 범위</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>a 개발자</td>
+                            <td>백엔드</td>
+                            <td>데이터 저장/검색, API, 인제스트, 인프라 기반</td>
+                            <td>PostgreSQL/pgvector, 검색 API, 파이프라인, 보안/로그</td>
+                        </tr>
+                        <tr>
+                            <td>b 개발자</td>
+                            <td>프론트</td>
+                            <td>사용자 경험, 화면 설계, 대시보드</td>
+                            <td>대화형 UI, 스트리밍 응답 UI, 검색 필터, 대시보드</td>
+                        </tr>
+                        <tr>
+                            <td>c 개발자</td>
+                            <td>ML</td>
+                            <td>임베딩/LLM 최적화, 프롬프트, 평가</td>
+                            <td>모델 업그레이드, 프롬프트 표준화, 검색 품질 평가</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-container mt-2">
                 <h3 style="margin: 0 0 12px; color: var(--color-text-primary);">Phase 실행 계획</h3>
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>Phase</th>
                             <th>우선순위</th>
+                            <th>담당 개발자</th>
                             <th>핵심 실행 계획</th>
                             <th>예상 기간</th>
                         </tr>
@@ -500,38 +534,44 @@
                         <tr>
                             <td>Phase 1</td>
                             <td>최우선</td>
+                            <td>a 개발자</td>
                             <td>PostgreSQL 배포 → 스키마 생성 → 전체 재인제스트 → ChromaDB 제거</td>
-                            <td>2~3주</td>
+                            <td>단기</td>
                         </tr>
                         <tr>
                             <td>Phase 2</td>
                             <td>최우선</td>
+                            <td>a 개발자, c 개발자</td>
                             <td>pgvector + tsvector 하이브리드 검색 구현 → 가중치 튜닝</td>
-                            <td>1~2주</td>
+                            <td>단기</td>
                         </tr>
                         <tr>
                             <td>Phase 3</td>
                             <td>높음</td>
-                            <td>LLM 업그레이드 → SSE 스트리밍 → 프롬프트 표준화</td>
-                            <td>2~3주</td>
+                            <td>c 개발자, a 개발자</td>
+                            <td>LLM 업그레이드 → SSE 스트리밍 API → 프롬프트 표준화</td>
+                            <td>단기</td>
                         </tr>
                         <tr>
                             <td>Phase 4</td>
                             <td>중간</td>
-                            <td>FileWatcher 인덱싱 → 메타데이터 확장 → OCR/표 추출</td>
-                            <td>3~4주</td>
+                            <td>b 개발자</td>
+                            <td>멀티턴 UI → 스트리밍 UI → 피드백 수집</td>
+                            <td>단기~중기</td>
                         </tr>
                         <tr>
                             <td>Phase 5</td>
                             <td>중간</td>
-                            <td>멀티턴 UI → 고급 필터 → 시각화 대시보드</td>
-                            <td>2~3주</td>
+                            <td>a 개발자, c 개발자</td>
+                            <td>FileWatcher 인덱싱 → 메타데이터 확장 → OCR/표 추출</td>
+                            <td>중기</td>
                         </tr>
                         <tr>
                             <td>Phase 6</td>
                             <td>장기</td>
+                            <td>a 개발자, c 개발자</td>
                             <td>RBAC/감사 로깅 → Agentic RAG → GraphRAG</td>
-                            <td>4~6주</td>
+                            <td>장기</td>
                         </tr>
                     </tbody>
                 </table>
