@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RAG 시스템 Rocky Linux 9.7 마이그레이션 상세 계획서</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 24px;
+      background: #0b0f14;
+      color: #e6edf3;
+    }
+    #content { max-width: 1100px; margin: 0 auto; }
+    pre, code { background: #161b22; color: #e6edf3; border-radius: 6px; }
+    pre { padding: 12px; overflow: auto; }
+    code { padding: 2px 6px; }
+    img, svg { max-width: 100%; height: auto; }
+    .mermaid { background: #0b0f14; padding: 12px; border-radius: 8px; }
+    a { color: #58a6ff; }
+    @media (prefers-color-scheme: light) {
+      body { background: #ffffff; color: #1f2328; }
+      pre, code { background: #f6f8fa; color: #1f2328; }
+      a { color: #0969da; }
+      .mermaid { background: #f6f8fa; }
+    }
+  </style>
+</head>
+<body>
+  <div id="content">로딩 중...</div>
+
+  <script id="md-source" type="text/markdown">
+# RAG 시스템 Rocky Linux 9.7 마이그레이션 상세 계획서
+
+<!-- markdownlint-disable MD022 MD024 MD031 MD032 MD034 MD040 MD058 MD060 -->
+
+## 환경 정보
+
+| 항목 | 현재 환경 | 대상 환경 |
+| --- | --- | --- |
+| **운영체제** | Windows 10 | Rocky Linux 9.7 (Blue Onyx) |
+| **서버 IP** | localhost | 192.168.2.11 |
+| **GPU** | (현재 GPU) | RTX 6000 (24GB VRAM) |
+| **네트워크** | - | 온라인 환경 |
+| **데이터 마이그레이션** | - | ❌ 안 함 (Linux에서 새로 ingest) |
+| **소스 전송 방식** | - | FileZilla FTP |
+
+## 접속 URL 정보
+
+| 접속자 | URL | 설명 |
+| --- | --- | --- |
+| **일반 사용자** | <http://192.168.2.11:8080/index1.html> | 사용자 전용 인터페이스 |
+| **운영 관리자** | <http://192.168.2.11:8080> | 관리자 전용 인터페이스 (index.html) |
+
+---
+
+## 마이그레이션 작업 흐름도
+
+```mermaid
+flowchart TB
+    subgraph Phase1[1단계: 서버 기본 설정]
+        A1[시스템 업데이트] --> A2[필수 패키지 설치]
+        A2 --> A3[Docker 설치]
+        A3 --> A4[NVIDIA 드라이버 설치]
+        A4 --> A5[NVIDIA Container Toolkit 설치]
+        A5 --> A6[방화벽 포트 열기]
+    end
+    
+    subgraph Phase2[2단계: 소스 코드 전송]
+        B1[FileZilla FTP 설정] --> B2[프로젝트 파일 전송]
+        B2 --> B3[디렉토리 구조 확인]
+        B3 --> B4[파일 권한 설정]
+    end
+    
+    subgraph Phase3[3단계: 환경 설정]
+        C1[.env 파일 수정] --> C2[docker-compose.yml 확인]
+        C2 --> C3[디렉토리 생성]
+    end
+    
+    subgraph Phase4[4단계: Docker 빌드 및 실행]
+        D1[Docker 이미지 빌드] --> D2[서비스 시작]
+        D2 --> D3[GPU 인식 확인]
+        D3 --> D4[로그 확인]
+    end
+    
+    subgraph Phase5[5단계: 검증 및 테스트]
+        E1[헬스체크] --> E2[API 테스트]
+        E2 --> E3[UI 접속 테스트]
+        E3 --> E4[초기 데이터 Ingest]
+    end
+    
+    Phase1 --> Phase2 --> Phase3 --> Phase4 --> Phase5
+```
+
+---
+
+## 1단계: Rocky Linux 9.7 서버 기본 설정
+
+### 1.1 시스템 업데이트 및 필수 패키지 설치
+
+```bash
+# 시스템 업데이트
+sudo dnf update -y
+
+# EPEL 저장소 활성화
+sudo dnf install -y epel-release
+
+# 필수 유틸리티 설치
+sudo dnf install -y git curl wget vim tar unzip net-tools
+
+# 설치 확인
+echo "=== 설치된 유틸리티 확인 ==="
+which git curl wget vim tar unzip
+```
+
+**설명**:
+- `dnf update -y`: 모든 패키지를 최신 버전으로 업데이트
+- `epel-release`: Extra Packages for Enterprise Linux 저장소 추가 (추가 패키지 설치용)
+- 기본 유틸리티들은 파일 관리, 다운로드, 편집 등에 필수
+
+---
+
+### 1.2 Docker 설치
+
+```bash
+# 1. 기존 Docker 패키지 제거 (이미 설치된 경우)
+sudo dnf remove -y docker \
+    docker-client \
+    docker-client-latest \
+    docker-common \
+    docker-latest \
+    docker-latest-logrotate \
+    docker-logrotate \
+    docker-engine
+
+# 2. Docker CE 저장소 추가 (Rocky Linux 9.x / RHEL9 계열)
+sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+
+# 3. Docker 패키지 설치
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# 4. Docker 서비스 시작 및 자동 시작 설정
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# 5. Docker 상태 확인
+sudo systemctl status docker
+
+# 6. 현재 사용자를 docker 그룹에 추가
+sudo usermod -aG docker $USER
+
+# 7. 그룹 변경 적용 (재로그인 없이 적용)
+newgrp docker
+
+# 8. Docker 설치 확인
+docker --version
+docker compose version
+```
+
+**설명**:
+- `docker-ce`: Docker Community Edition 엔진
+- `docker-ce-cli`: Docker 명령줄 인터페이스
+- `containerd.io`: 컨테이너 런타임
+- `docker-buildx-plugin`: 향상된 빌드 기능
+- `docker-compose-plugin`: Docker Compose V2 플러그인
+- `usermod -aG docker $USER`: 현재 사용자가 sudo 없이 docker 명령 실행 가능
+
+**확인 명령**:
+
+```bash
+# Docker 정상 동작 테스트
+docker run hello-world
+```
+
+---
+
+### 1.3 NVIDIA 드라이버 설치
+
+```bash
+# 1. 커널 개발 도구 설치
+sudo dnf install -y kernel-devel kernel-headers gcc make dkms
+
+# 2. Nouveau 드라이버 비활성화 (NVIDIA 드라이버와 충돌 방지)
+sudo bash -c 'cat > /etc/modprobe.d/blacklist-nouveau.conf << EOF
+blacklist nouveau
+options nouveau modeset=0
+EOF'
+
+# 3. 초기 램디스크 재생성
+sudo dracut --force
+
+# 4. NVIDIA CUDA 저장소 추가 (Rocky Linux 9용)
+sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo
+
+# 5. 저장소 캐시 갱신
+sudo dnf clean all
+sudo dnf makecache
+
+# 6. NVIDIA 드라이버 설치
+sudo dnf module install -y nvidia-driver:latest-dkms
+
+# 7. 재부팅
+echo "=== 시스템 재부팅이 필요합니다 ==="
+sudo reboot
+```
+
+**재부팅 후 확인**:
+
+```bash
+# NVIDIA 드라이버 확인
+nvidia-smi
+```
+
+**예상 출력** (RTX 6000 기준):
+
+```text
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 550.xx.xx    Driver Version: 550.xx.xx    CUDA Version: 12.x     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  NVIDIA RTX 6000 Ada...  |   00000000:xx:00.0 Off|                  Off |
+|  0%   30C    P8    20W / 300W|      0MiB / 49140MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+```
+
+---
+
+### 1.4 NVIDIA Container Toolkit 설치
+
+```bash
+# 1. NVIDIA Container Toolkit 저장소 추가
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo | \
+    sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
+
+# 2. 저장소 캐시 갱신
+sudo dnf clean all
+sudo dnf makecache
+
+# 3. NVIDIA Container Toolkit 설치
+sudo dnf install -y nvidia-container-toolkit
+
+# 4. Docker 런타임 설정
+sudo nvidia-ctk runtime configure --runtime=docker
+
+# 5. Docker 서비스 재시작
+sudo systemctl restart docker
+
+# 6. GPU 인식 테스트 (Rocky Linux 9 계열 이미지 사용)
+docker run --rm --gpus all nvidia/cuda:12.1.1-base-rockylinux9 nvidia-smi
+```
+
+**설명**:
+
+- `nvidia-container-toolkit`: Docker 컨테이너 내에서 GPU를 사용할 수 있게 해주는 도구
+- `nvidia-ctk runtime configure`: Docker 데몬이 NVIDIA 런타임을 사용하도록 설정
+- `--gpus all`: 모든 GPU를 컨테이너에 할당
+
+**예상 출력**: 위의 `nvidia-smi`와 동일한 출력이 Docker 컨테이너 내에서 표시됨
+
+---
+
+### 1.5 방화벽 포트 설정
+
+```bash
+# 1. 방화벽 상태 확인
+sudo systemctl status firewalld
+
+# 2. 필요한 포트 열기
+# API 서버 포트 (FastAPI)
+sudo firewall-cmd --permanent --add-port=8000/tcp
+
+# UI 서버 포트 (Tomcat) - 사용자/관리자 접속용
+sudo firewall-cmd --permanent --add-port=8080/tcp
+
+# PostgreSQL 포트 (내부 사용, 필요시)
+sudo firewall-cmd --permanent --add-port=5432/tcp
+
+# Redis 포트 (내부 사용, 필요시)
+sudo firewall-cmd --permanent --add-port=6379/tcp
+
+# Ollama 포트 (내부 사용, 필요시)
+sudo firewall-cmd --permanent --add-port=11434/tcp
+
+# 3. 방화벽 설정 적용
+sudo firewall-cmd --reload
+
+# 4. 열린 포트 확인
+sudo firewall-cmd --list-ports
+```
+
+**설명**:
+
+- `--permanent`: 재부팅 후에도 설정 유지
+- `--reload`: 새 설정을 즉시 적용
+- 포트 8080은 외부에서 접속해야 하므로 반드시 열어야 함
+
+---
+
+### 1.6 SELinux 설정 (Docker 호환)
+
+```bash
+# SELinux 상태 확인
+getenforce
+
+# Docker가 정상 동작하도록 SELinux 설정
+# 옵션 A: SELinux를 Permissive 모드로 변경 (권장)
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+# 옵션 B: Docker 관련 SELinux 정책 허용 (더 보안적)
+# sudo setsebool -P container_manage_cgroup on
+```
+
+**설명**:
+
+- SELinux가 Enforcing 모드일 때 Docker 볼륨 마운트에서 권한 문제 발생 가능
+- Permissive 모드는 정책 위반을 로그만 남기고 차단하지 않음
+
+---
+
+## 2단계: FileZilla FTP로 소스 코드 전송
+
+### 2.1 Rocky Linux 서버에서 프로젝트 디렉토리 생성
+
+```bash
+# SSH로 서버 접속 후 실행
+# 프로젝트 루트 디렉토리 생성
+mkdir -p ~/rag
+
+# 데이터 디렉토리 생성 (빈 디렉토리)
+mkdir -p ~/rag/data/postgres
+mkdir -p ~/rag/data/raw
+mkdir -p ~/rag/data/models
+mkdir -p ~/rag/data/ollama
+
+# 디렉토리 구조 확인
+tree ~/rag -d 2>/dev/null || ls -la ~/rag/
+```
+
+---
+
+### 2.2 FileZilla 설정
+
+**Windows에서 FileZilla 설정**:
+
+1. **FileZilla 실행**
+
+2. **새 사이트 추가**:
+   - 메뉴: `파일` → `사이트 관리자` (Ctrl+S)
+   - `새 사이트` 클릭
+
+3. **연결 정보 입력**:
+
+   ```text
+   호스트: 192.168.2.11
+   포트: 22
+   프로토콜: SFTP - SSH File Transfer Protocol
+   로그온 유형: 일반
+   사용자: [Linux 사용자명]
+   비밀번호: [Linux 비밀번호]
+   ```
+
+4. **연결** 클릭
+
+---
+
+### 2.3 전송해야 할 파일 및 디렉토리 목록
+
+| 파일/디렉토리        | 전송 여부 | 설명                                       |
+| -------------------- | --------- | ------------------------------------------ |
+| `app/`               | ✅ 필수   | Python 애플리케이션 코드                   |
+| `docker/`            | ✅ 필수   | 서브 서비스 Dockerfile                     |
+| `frontend/`          | ✅ 필수   | Tomcat UI (index.html, index1.html 포함)   |
+| `assets/`            | ✅ 필수   | TOPIK 어휘 등 정적 자산                    |
+| `Dockerfile`         | ✅ 필수   | API 이미지 빌드                            |
+| `docker-compose.yml` | ✅ 필수   | 온라인 환경 컴포즈                         |
+| `requirements.txt`   | ✅ 필수   | Python 의존성                              |
+| `.env`               | ✅ 필수   | 환경 변수 설정                             |
+| `.dockerignore`      | ✅ 권장   | Docker 빌드 제외 파일                      |
+| `data/`              | ❌ 제외   | 데이터는 전송 안 함 (새로 ingest)          |
+| `__pycache__/`       | ❌ 제외   | Python 캐시                                |
+| `.git/`              | ❌ 제외   | Git 저장소                                 |
+
+---
+
+### 2.4 FileZilla로 파일 전송
+
+**전송 순서**:
+
+1. **왼쪽 패널 (로컬)**: `C:\ooo\rag` 디렉토리로 이동
+
+2. **오른쪽 패널 (원격)**: `/home/[사용자명]/rag` 디렉토리로 이동
+
+3. **파일 전송** (드래그 앤 드롭 또는 더블클릭):
+
+   ```text
+   전송할 항목:
+   ├── app/                    → ~/rag/app/
+   ├── docker/                 → ~/rag/docker/
+   ├── frontend/               → ~/rag/frontend/
+   ├── assets/                 → ~/rag/assets/
+   ├── Dockerfile              → ~/rag/Dockerfile
+   ├── docker-compose.yml      → ~/rag/docker-compose.yml
+   ├── requirements.txt        → ~/rag/requirements.txt
+   ├── .env                    → ~/rag/.env
+   └── .dockerignore           → ~/rag/.dockerignore
+   ```
+
+4. **전송 완료 확인**: FileZilla 하단의 전송 로그에서 오류 없이 완료되었는지 확인
+
+---
+
+### 2.5 전송 후 파일 권한 설정
+
+```bash
+# SSH로 서버 접속
+ssh [사용자명]@192.168.2.11
+
+# 프로젝트 디렉토리로 이동
+cd ~/rag
+
+# 전송된 파일 확인
+ls -la
+
+# 실행 권한 설정
+chmod +x docker/tomcat/entrypoint.sh
+
+# .env 파일 보안 설정
+chmod 600 .env
+
+# 디렉토리 권한 설정
+chmod -R 755 app/
+chmod -R 755 docker/
+chmod -R 755 frontend/
+chmod -R 755 assets/
+
+# 데이터 디렉토리 권한 설정
+chmod -R 755 data/
+```
+
+---
+
+## 3단계: 환경 설정 수정
+
+### 3.1 .env 파일 수정
+
+```bash
+# .env 파일 편집
+vi ~/rag/.env
+```
+
+**수정할 내용**:
+
+```env
+# ===== 기본 설정 (변경 없음) =====
+EMBED_MODEL=intfloat/multilingual-e5-base
+EMBEDDING_DIM=768
+
+# ===== 온라인 환경 설정 (다운로드 허용) =====
+EMBED_MODEL_ALLOW_DOWNLOADS=1
+HF_HUB_OFFLINE=0
+TRANSFORMERS_OFFLINE=0
+HF_DATASETS_OFFLINE=0
+INGEST_ALLOW_DOWNLOADS=1
+
+# ===== 모델 로컬 경로 (초기에는 비워둠, 다운로드 후 자동 설정됨) =====
+EMBED_MODEL_LOCAL_PATH=
+RERANKER_MODEL=
+
+# ===== RTX 6000 (24GB VRAM) 최적화 설정 =====
+# 컨텍스트 길이 증가 (VRAM 여유분 활용)
+OLLAMA_NUM_CTX=4096
+
+# 배치 크기 증가 (GPU 병렬처리 강화)
+INGEST_BATCH_SIZE=8
+
+# ===== 성능 설정 =====
+MIN_RELEVANCE_SCORE=0.65
+QUERY_EXPANSION_ENABLED=0
+STRUCTURED_ANSWER_ENABLED=1
+
+# ===== TOPIK 어휘 설정 =====
+TOPIK_VOCAB_ENABLED=1
+TOPIK_VOCAB_SOURCE_FILE=topik_basic_6000.csv
+TOPIK_VOCAB_DOWNLOAD_URL=file:///app/assets/topik/topik_basic_6000.csv
+TOPIK_VOCAB_REFRESH_HOURS=168
+
+# ===== 한국어 사전 설정 =====
+KOREAN_DICT_ENABLED=1
+KOREAN_DICT_REFRESH_HOURS=168
+KOREAN_DICT_MAX_ENTRIES=0
+
+# ===== 메타데이터 설정 =====
+METADATA_DEFAULT_DEPARTMENT=내일채움공제
+METADATA_DEFAULT_DEPARTMENT_BY_SOURCE=topik_vocab=한국어,mdn=외부,korean_dict=외부,work_source=개발,work_doc=내일채움공제
+```
+
+**변경 요약**:
+
+| 설정 | 이전 값 | 새 값 | 이유 |
+| --- | --- | --- | --- |
+| `EMBED_MODEL_LOCAL_PATH` | 긴 경로 | (빈값) | 새로 다운로드할 것이므로 |
+| `RERANKER_MODEL` | 긴 경로 | (빈값) | 새로 다운로드할 것이므로 |
+| `EMBED_MODEL_ALLOW_DOWNLOADS` | 1 | 1 | 온라인 환경, 다운로드 허용 |
+| `OLLAMA_NUM_CTX` | 2048 | 4096 | RTX 6000 VRAM 활용 |
+| `INGEST_BATCH_SIZE` | 4 | 8 | GPU 성능 활용 |
+
+---
+
+### 3.2 PostgreSQL 데이터 디렉토리 권한 설정
+
+```bash
+# PostgreSQL 컨테이너가 사용할 데이터 디렉토리 권한 설정
+# PostgreSQL 컨테이너 내부 UID는 999
+sudo chown -R 999:999 ~/rag/data/postgres
+
+# 또는 모든 사용자에게 쓰기 권한 (테스트용)
+chmod -R 777 ~/rag/data/postgres
+```
+
+---
+
+## 4단계: Docker 이미지 빌드 및 서비스 시작
+
+### 4.1 Docker 이미지 빌드
+
+```bash
+# 프로젝트 디렉토리로 이동
+cd ~/rag
+
+# Docker Compose로 모든 이미지 빌드
+docker compose build
+
+# 빌드 로그를 자세히 보려면
+docker compose build --progress=plain
+
+# 빌드된 이미지 확인
+docker images | grep rag
+```
+
+**예상 출력**:
+
+```text
+REPOSITORY     TAG       IMAGE ID       CREATED          SIZE
+rag-api        latest    xxxxxxxxxxxx   xx seconds ago   x.xxGB
+rag-ui         latest    xxxxxxxxxxxx   xx seconds ago   xxxMB
+rag-redis      latest    xxxxxxxxxxxx   xx seconds ago   xxxMB
+rag-ollama     latest    xxxxxxxxxxxx   xx seconds ago   xxxMB
+```
+
+**빌드 시간**: 첫 빌드는 약 10-20분 소요 (네트워크 속도에 따라 다름)
+
+---
+
+### 4.2 서비스 시작
+
+```bash
+# 백그라운드에서 모든 서비스 시작
+docker compose up -d
+
+# 시작 상태 확인
+docker compose ps
+```
+
+**예상 출력**:
+
+```text
+NAME           IMAGE                    COMMAND                  STATUS          PORTS
+rag-api        rag-api:latest           "uvicorn app.api:ap…"   Up xx seconds   0.0.0.0:8000->8000/tcp
+rag-ui         rag-ui:latest            "/entrypoint.sh"         Up xx seconds   0.0.0.0:8080->8080/tcp
+rag-postgres   pgvector/pgvector:pg16   "docker-entrypoint.…"   Up xx seconds   0.0.0.0:5432->5432/tcp
+rag-redis      rag-redis:latest         "docker-entrypoint.…"   Up xx seconds   0.0.0.0:6379->6379/tcp
+rag-ollama     rag-ollama:latest        "/bin/ollama serve"      Up xx seconds   0.0.0.0:11434->11434/tcp
+```
+
+---
+
+### 4.3 실시간 로그 확인
+
+```bash
+# 모든 서비스 로그 실시간 확인
+docker compose logs -f
+
+# 특정 서비스 로그만 확인
+docker compose logs -f api        # API 서버 로그
+docker compose logs -f ui         # UI 서버 로그
+docker compose logs -f ollama     # Ollama LLM 로그
+docker compose logs -f postgres   # PostgreSQL 로그
+```
+
+**API 서버 정상 시작 로그 예시**:
+
+```text
+rag-api  | INFO:     Started server process [1]
+rag-api  | INFO:     Waiting for application startup.
+rag-api  | INFO:     Application startup complete.
+rag-api  | INFO:     Uvicorn running on http://0.0.0.0:8000
+```
+
+---
+
+### 4.4 GPU 인식 확인
+
+```bash
+# API 컨테이너 내부에서 GPU 확인
+docker exec rag-api nvidia-smi
+
+# Ollama 컨테이너 내부에서 GPU 확인
+docker exec rag-ollama nvidia-smi
+
+# PyTorch GPU 인식 확인 (API 컨테이너)
+docker exec rag-api python3 -c "import torch; print(f'CUDA Available: {torch.cuda.is_available()}'); print(f'Device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"N/A\"}')"
+```
+
+**예상 출력**:
+
+```text
+CUDA Available: True
+Device: NVIDIA RTX 6000 Ada Generation
+```
+
+---
+
+### 4.5 Ollama 모델 다운로드
+
+```bash
+# Ollama 컨테이너에서 기본 모델 다운로드
+docker exec -it rag-ollama ollama pull qwen2.5:3b-instruct-q4_K_M
+
+# 다운로드 진행 상황 확인 (다른 터미널에서)
+docker exec rag-ollama ollama list
+```
+
+**설명**:
+
+- 모델 다운로드는 네트워크 속도에 따라 5-15분 소요
+- `qwen2.5:3b-instruct-q4_K_M`은 약 2GB 크기
+
+---
+
+## 5단계: 검증 및 테스트
+
+### 5.1 서비스 헬스체크
+
+```bash
+# API 서버 헬스체크
+curl http://localhost:8000/health
+
+# 또는 서버 IP로 확인
+curl http://192.168.2.11:8000/health
+```
+
+**예상 응답**:
+```json
+{"status":"healthy","components":{"postgres":"ok","redis":"ok","ollama":"ok"}}
+```
+
+---
+
+### 5.2 웹 UI 접속 테스트
+
+**관리자 페이지 테스트** (브라우저에서):
+
+```text
+http://192.168.2.11:8080
+```
+
+**사용자 페이지 테스트** (브라우저에서):
+
+```text
+http://192.168.2.11:8080/index1.html
+```
+
+---
+
+### 5.3 API 직접 테스트
+
+```bash
+# RAG 쿼리 테스트 (데이터 ingest 전에는 결과 없을 수 있음)
+curl -X POST http://192.168.2.11:8000/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "테스트 질문입니다"}'
+```
+
+---
+
+### 5.4 PostgreSQL 연결 확인
+
+```bash
+# PostgreSQL 접속 테스트
+docker exec -it rag-postgres psql -U rag_user -d rag -c "SELECT version();"
+
+# pgvector 확장 확인
+docker exec -it rag-postgres psql -U rag_user -d rag -c "SELECT * FROM pg_extension WHERE extname = 'vector';"
+
+# 테이블 목록 확인 (초기에는 비어있을 수 있음)
+docker exec -it rag-postgres psql -U rag_user -d rag -c "\dt"
+```
+
+---
+
+## 6단계: 초기 데이터 Ingest
+
+데이터 마이그레이션을 하지 않으므로, 새로운 환경에서 데이터를 처음부터 ingest해야 합니다.
+
+### 6.1 자동 Ingest (TOPIK 어휘 + 한국어 사전)
+
+`.env`에서 `TOPIK_VOCAB_ENABLED=1`과 `KOREAN_DICT_ENABLED=1`로 설정되어 있으면, API 서버 시작 시 자동으로 ingest가 시작됩니다.
+
+```bash
+# Ingest 진행 상황 확인
+docker compose logs -f api | grep -i ingest
+```
+
+### 6.2 수동 Ingest 트리거
+
+```bash
+# API를 통한 수동 ingest (필요시)
+curl -X POST http://192.168.2.11:8000/ingest/trigger
+```
+
+### 6.3 Ingest 완료 확인
+
+```bash
+# 임베딩 데이터 개수 확인
+docker exec -it rag-postgres psql -U rag_user -d rag -c "SELECT COUNT(*) FROM embeddings;"
+
+# 소스 유형별 데이터 개수
+docker exec -it rag-postgres psql -U rag_user -d rag -c "SELECT source_type, COUNT(*) FROM embeddings GROUP BY source_type;"
+```
+
+---
+
+## 7단계: 서비스 관리 스크립트
+
+### 7.1 시작 스크립트 생성
+
+```bash
+# 스크립트 디렉토리 생성
+mkdir -p ~/rag/scripts
+
+# 시작 스크립트 작성
+cat > ~/rag/scripts/start.sh << 'EOF'
+#!/bin/bash
+cd "$(dirname "$0")/.."
+echo "RAG 서비스를 시작합니다..."
+docker compose up -d
+echo ""
+echo "서비스 상태:"
+docker compose ps
+echo ""
+echo "접속 URL:"
+echo "  - 관리자: http://192.168.2.11:8080"
+echo "  - 사용자: http://192.168.2.11:8080/index1.html"
+echo "  - API:    http://192.168.2.11:8000"
+EOF
+
+chmod +x ~/rag/scripts/start.sh
+```
+
+### 7.2 중지 스크립트 생성
+
+```bash
+cat > ~/rag/scripts/stop.sh << 'EOF'
+#!/bin/bash
+cd "$(dirname "$0")/.."
+echo "RAG 서비스를 중지합니다..."
+docker compose down
+echo "서비스가 중지되었습니다."
+EOF
+
+chmod +x ~/rag/scripts/stop.sh
+```
+
+### 7.3 재시작 스크립트 생성
+
+```bash
+cat > ~/rag/scripts/restart.sh << 'EOF'
+#!/bin/bash
+cd "$(dirname "$0")/.."
+echo "RAG 서비스를 재시작합니다..."
+docker compose restart
+echo ""
+echo "서비스 상태:"
+docker compose ps
+EOF
+
+chmod +x ~/rag/scripts/restart.sh
+```
+
+### 7.4 로그 확인 스크립트 생성
+
+```bash
+cat > ~/rag/scripts/logs.sh << 'EOF'
+#!/bin/bash
+cd "$(dirname "$0")/.."
+SERVICE=${1:-""}
+if [ -z "$SERVICE" ]; then
+    echo "모든 서비스 로그를 표시합니다. (Ctrl+C로 종료)"
+    docker compose logs -f
+else
+    echo "${SERVICE} 서비스 로그를 표시합니다. (Ctrl+C로 종료)"
+    docker compose logs -f $SERVICE
+fi
+EOF
+
+chmod +x ~/rag/scripts/logs.sh
+```
+
+### 7.5 스크립트 사용법
+
+```bash
+# 서비스 시작
+~/rag/scripts/start.sh
+
+# 서비스 중지
+~/rag/scripts/stop.sh
+
+# 서비스 재시작
+~/rag/scripts/restart.sh
+
+# 모든 로그 확인
+~/rag/scripts/logs.sh
+
+# 특정 서비스 로그 확인
+~/rag/scripts/logs.sh api
+~/rag/scripts/logs.sh ollama
+```
+
+---
+
+## 트러블슈팅
+
+### 문제 1: NVIDIA 드라이버가 인식되지 않음
+
+**증상**: `nvidia-smi` 명령이 실패
+
+**해결 방법**:
+```bash
+# 1. 드라이버 설치 확인
+rpm -qa | grep nvidia
+
+# 2. 커널 모듈 로드 확인
+lsmod | grep nvidia
+
+# 3. 드라이버 재설치
+sudo dnf remove -y nvidia-driver*
+sudo dnf module reset nvidia-driver
+sudo dnf module install -y nvidia-driver:latest-dkms
+sudo reboot
+```
+
+---
+
+### 문제 2: Docker 컨테이너에서 GPU가 인식되지 않음
+
+**증상**: `docker run --gpus all ...` 실패
+
+**해결 방법**:
+```bash
+# 1. NVIDIA Container Toolkit 재설정
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+
+# 2. Docker 데몬 설정 확인
+cat /etc/docker/daemon.json
+
+# 예상 내용:
+# {
+#     "runtimes": {
+#         "nvidia": {
+#             "path": "nvidia-container-runtime",
+#             "runtimeArgs": []
+#         }
+#     }
+# }
+
+# 3. 수동으로 설정 추가 (필요시)
+sudo tee /etc/docker/daemon.json <<EOF
+{
+    "runtimes": {
+        "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    },
+    "default-runtime": "nvidia"
+}
+EOF
+
+sudo systemctl restart docker
+```
+
+---
+
+### 문제 3: PostgreSQL 권한 오류
+
+**증상**: `Permission denied` 또는 `could not open file`
+
+**해결 방법**:
+```bash
+# 데이터 디렉토리 권한 수정
+sudo chown -R 999:999 ~/rag/data/postgres
+sudo chmod -R 700 ~/rag/data/postgres
+
+# 컨테이너 재시작
+docker compose restart postgres
+```
+
+---
+
+### 문제 4: 포트가 이미 사용 중
+
+**증상**: `bind: address already in use`
+
+**해결 방법**:
+```bash
+# 사용 중인 포트 확인
+sudo ss -tulpn | grep -E ':8000|:8080|:5432|:6379|:11434'
+
+# 해당 프로세스 종료 (PID 확인 후)
+sudo kill -9 [PID]
+
+# 또는 Docker 컨테이너가 남아있다면
+docker ps -a
+docker rm -f [컨테이너ID]
+```
+
+---
+
+### 문제 5: Docker Compose 빌드 실패 (네트워크 문제)
+
+**증상**: 패키지 다운로드 중 타임아웃
+
+**해결 방법**:
+```bash
+# Docker DNS 설정
+sudo tee /etc/docker/daemon.json <<EOF
+{
+    "dns": ["8.8.8.8", "8.8.4.4"]
+}
+EOF
+
+sudo systemctl restart docker
+
+# 빌드 재시도
+docker compose build --no-cache
+```
+
+---
+
+### 문제 6: Ollama 모델 다운로드 실패
+
+**증상**: `Error: pull model manifest` 또는 타임아웃
+
+**해결 방법**:
+```bash
+# 1. Ollama 컨테이너 로그 확인
+docker compose logs ollama
+
+# 2. 컨테이너 재시작 후 재시도
+docker compose restart ollama
+sleep 10
+docker exec -it rag-ollama ollama pull qwen2.5:3b-instruct-q4_K_M
+
+# 3. 직접 다운로드 (호스트에서)
+# Ollama 설치 후 다운로드하여 data/ollama로 복사
+```
+
+---
+
+### 문제 7: UI 페이지 접속 불가
+
+**증상**: 브라우저에서 접속 시 연결 거부
+
+**해결 방법**:
+```bash
+# 1. 컨테이너 상태 확인
+docker compose ps
+
+# 2. UI 컨테이너 로그 확인
+docker compose logs ui
+
+# 3. 방화벽 확인
+sudo firewall-cmd --list-ports
+
+# 4. 포트 열기
+sudo firewall-cmd --permanent --add-port=8080/tcp
+sudo firewall-cmd --reload
+
+# 5. SELinux 확인
+getenforce
+# Enforcing이면 Permissive로 변경
+sudo setenforce 0
+```
+
+---
+
+## 마이그레이션 체크리스트
+
+### 1단계: 서버 기본 설정
+- [ ] Rocky Linux 9.7 시스템 업데이트 완료
+- [ ] EPEL 저장소 및 필수 패키지 설치
+- [ ] Docker CE 및 Docker Compose 설치
+- [ ] `docker --version` 및 `docker compose version` 확인
+- [ ] NVIDIA 드라이버 설치 및 재부팅
+- [ ] `nvidia-smi`로 GPU 인식 확인 (RTX 6000)
+- [ ] NVIDIA Container Toolkit 설치
+- [ ] `docker run --gpus all` GPU 테스트 통과
+- [ ] 방화벽 포트 8000, 8080 열기
+- [ ] SELinux Permissive 모드 설정
+
+### 2단계: 소스 코드 전송
+- [ ] FileZilla SFTP 연결 설정
+- [ ] `~/rag` 디렉토리 생성
+- [ ] `app/` 디렉토리 전송
+- [ ] `docker/` 디렉토리 전송
+- [ ] `frontend/` 디렉토리 전송
+- [ ] `assets/` 디렉토리 전송
+- [ ] `Dockerfile` 전송
+- [ ] `docker-compose.yml` 전송
+- [ ] `requirements.txt` 전송
+- [ ] `.env` 전송
+- [ ] `.dockerignore` 전송
+- [ ] 파일 권한 설정 완료
+
+### 3단계: 환경 설정
+- [ ] `.env` 파일 수정 (온라인 모드, 경로 초기화)
+- [ ] 데이터 디렉토리 생성 및 권한 설정
+
+### 4단계: Docker 빌드 및 실행
+- [ ] `docker compose build` 완료
+- [ ] 모든 이미지 생성 확인 (rag-api, rag-ui, rag-redis, rag-ollama)
+- [ ] `docker compose up -d` 서비스 시작
+- [ ] 모든 컨테이너 Running 상태 확인
+- [ ] API 컨테이너 GPU 인식 확인
+- [ ] Ollama 컨테이너 GPU 인식 확인
+- [ ] Ollama 모델 다운로드 완료
+
+### 5단계: 검증 및 테스트
+- [ ] API 헬스체크 통과 (`/health`)
+- [ ] 관리자 UI 접속 확인 (http://192.168.2.11:8080)
+- [ ] 사용자 UI 접속 확인 (http://192.168.2.11:8080/index1.html)
+- [ ] PostgreSQL 연결 확인
+- [ ] 초기 데이터 Ingest 완료
+- [ ] RAG 쿼리 테스트 통과
+
+### 6단계: 운영 준비
+- [ ] 관리 스크립트 생성 (start.sh, stop.sh, restart.sh, logs.sh)
+- [ ] 서비스 자동 시작 설정 (선택사항)
+
+---
+
+## 아키텍처 다이어그램
+
+```mermaid
+graph TB
+    subgraph Network["네트워크 192.168.2.x"]
+        subgraph Server["Rocky Linux 9.7 서버 192.168.2.11"]
+            subgraph DockerEngine["Docker Engine"]
+                API["rag-api\nFastAPI + Uvicorn\nPort 8000"]
+                UI["rag-ui\nTomcat 9\nPort 8080"]
+                PG["rag-postgres\nPostgreSQL 16 + pgvector\nPort 5432"]
+                REDIS["rag-redis\nRedis 7\nPort 6379"]
+                OLLAMA["rag-ollama\nOllama LLM\nPort 11434"]
+            end
+
+            GPU["RTX 6000\n24GB VRAM"]
+            NVIDIA["NVIDIA Container Toolkit"]
+            FIREWALL["방화벽\nPorts 8000, 8080"]
+        end
+    end
+
+    ADMIN["운영 관리자"] -->|"http://192.168.2.11:8080"| FIREWALL
+    USER["일반 사용자"] -->|"http://192.168.2.11:8080/index1.html"| FIREWALL
+
+    FIREWALL --> UI
+    UI --> API
+    API --> PG
+    API --> REDIS
+    API --> OLLAMA
+
+    GPU --> NVIDIA
+    NVIDIA --> API
+    NVIDIA --> OLLAMA
+```
+
+---
+
+## 서비스 구성도
+
+```mermaid
+flowchart LR
+    subgraph Clients["클라이언트"]
+        Admin["운영 관리자"]
+        User["일반 사용자"]
+    end
+
+    subgraph Tomcat["Tomcat UI Port 8080"]
+        Index["index.html\n관리자 페이지"]
+        Index1["index1.html\n사용자 페이지"]
+    end
+
+    subgraph FastAPI["FastAPI Port 8000"]
+        Query["/query\nRAG 질의"]
+        Health["/health\n헬스체크"]
+        Ingest["/ingest\n데이터 적재"]
+    end
+
+    subgraph DataLayer["데이터 레이어"]
+        PGVector["PostgreSQL + pgvector\n벡터 저장소"]
+        Redis["Redis\n캐시"]
+    end
+
+    subgraph AILayer["AI 레이어"]
+        Embed["HuggingFace\n임베딩 모델"]
+        Rerank["Cross-Encoder\n리랭커"]
+        LLM["Ollama\nqwen2.5:3b"]
+    end
+
+    Admin --> Index
+    User --> Index1
+    Index --> Query
+    Index1 --> Query
+
+    Query --> Embed
+    Query --> PGVector
+    Query --> Rerank
+    Query --> LLM
+    Query --> Redis
+
+    Ingest --> Embed
+    Ingest --> PGVector
+```
+
+---
+
+## 부록: 유용한 명령어 모음
+
+### Docker 관련
+
+```bash
+# 모든 컨테이너 상태 확인
+docker compose ps
+
+# 특정 서비스 재시작
+docker compose restart api
+
+# 컨테이너 쉘 접속
+docker exec -it rag-api /bin/bash
+docker exec -it rag-postgres psql -U rag_user -d rag
+
+# 이미지 재빌드 (캐시 무시)
+docker compose build --no-cache
+
+# 모든 데이터 삭제 후 재시작
+docker compose down -v
+docker compose up -d
+
+# 사용하지 않는 리소스 정리
+docker system prune -af
+```
+
+### GPU 모니터링
+
+```bash
+# 실시간 GPU 사용량 모니터링
+watch -n 1 nvidia-smi
+
+# GPU 메모리 사용량만 확인
+nvidia-smi --query-gpu=memory.used,memory.total --format=csv
+```
+
+### 로그 관리
+
+```bash
+# 최근 100줄 로그 확인
+docker compose logs --tail=100 api
+
+# 특정 시간 이후 로그
+docker compose logs --since="2024-01-01T00:00:00" api
+
+# 로그 파일로 저장
+docker compose logs > ~/rag_logs_$(date +%Y%m%d).txt
+```
+
+### 데이터베이스 관리
+
+```bash
+# 임베딩 통계
+docker exec -it rag-postgres psql -U rag_user -d rag -c "
+SELECT 
+    source_type,
+    COUNT(*) as count,
+    AVG(LENGTH(content)) as avg_content_length
+FROM embeddings 
+GROUP BY source_type;"
+
+# 데이터베이스 크기
+docker exec -it rag-postgres psql -U rag_user -d rag -c "
+SELECT pg_size_pretty(pg_database_size('rag'));"
+```
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    const md = document.getElementById('md-source').textContent;
+    marked.setOptions({ gfm: true, breaks: true });
+    const html = marked.parse(md);
+    const container = document.getElementById('content');
+    container.innerHTML = html;
+
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'default' : 'dark'
+    });
+
+    const mermaidBlocks = Array.from(container.querySelectorAll('code.language-mermaid'));
+    for (const block of mermaidBlocks) {
+      const parent = block.parentElement;
+      const diagram = document.createElement('div');
+      diagram.className = 'mermaid';
+      diagram.textContent = block.textContent;
+      parent.replaceWith(diagram);
+    }
+    mermaid.run({ querySelector: '.mermaid' });
+  </script>
+</body>
+</html>
