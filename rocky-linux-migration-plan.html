@@ -27,6 +27,33 @@
             margin-bottom: 1.5rem;
         }
 
+        .code-block code {
+            white-space: pre-wrap;
+            display: block;
+            line-height: 1.6;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--color-text-secondary);
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
         .mermaid {
             background: rgba(30, 41, 59, 0.5);
             padding: 2rem;
@@ -654,6 +681,26 @@ docker exec -it rag-postgres psql -U rag_user -d rag \
 
     <!-- Scripts -->
     <script>
+        // Add Copy Buttons
+        document.querySelectorAll('.code-block').forEach(block => {
+            const btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.innerHTML = '📋 Copy';
+
+            btn.addEventListener('click', async () => {
+                const code = block.querySelector('code').innerText;
+                try {
+                    await navigator.clipboard.writeText(code);
+                    btn.innerHTML = '✅ Copied!';
+                    setTimeout(() => btn.innerHTML = '📋 Copy', 2000);
+                } catch (err) {
+                    console.error('Failed to copy', err);
+                    btn.innerHTML = '❌ Error';
+                }
+            });
+            block.appendChild(btn);
+        });
+
         // Initialize Mermaid
         mermaid.initialize({
             startOnLoad: true,
