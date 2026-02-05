@@ -27,6 +27,12 @@
             margin-bottom: 1.5rem;
         }
 
+        /* Hide language label (BASH, etc) to prevent overlap with copy button */
+        .code-block::before {
+            content: none !important;
+            display: none !important;
+        }
+
         .code-block code {
             white-space: pre-wrap;
             display: block;
