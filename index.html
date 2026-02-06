@@ -429,29 +429,34 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><code>topik_vocab</code></td>
-                                <td>TOPIK 기초 어휘 6,000개</td>
-                                <td>CSV 파싱 → 표제어/품사/예문 추출</td>
+                                <td><code>hr_onboarding</code></td>
+                                <td>인사 규정 및 온보딩 가이드</td>
+                                <td>신규 입사자용 PDF/PPT 파일 텍스트 추출 → Q&A 생성</td>
                             </tr>
                             <tr>
-                                <td><code>mdn</code></td>
-                                <td>MDN Web Docs</td>
-                                <td>GitHub ZIP 다운로드 → 영어 웹 문서 필터링</td>
+                                <td><code>finance_policy</code></td>
+                                <td>비용 집행 및 구매 규정</td>
+                                <td>지출 결의서 및 규정집의 조항 단위 파싱 → 검색 최적화</td>
                             </tr>
                             <tr>
-                                <td><code>korean_dict</code></td>
-                                <td>한국어 사전</td>
-                                <td>DBpedia + 위키낱말사전 결합 → 표제어별 문서 생성</td>
+                                <td><code>rnd_reports</code></td>
+                                <td>연구 논문 및 실험 보고서</td>
+                                <td>전문 용어/수식 포함 문서의 멀티모달(OCR) 인덱싱</td>
                             </tr>
                             <tr>
-                                <td><code>work_source</code></td>
-                                <td>업무용 소스 코드</td>
-                                <td>로컬 폴더 스캔 → tree-sitter 구조 파싱</td>
+                                <td><code>it_helpdesk</code></td>
+                                <td>IT 장애 처리 매뉴얼 (FAQ)</td>
+                                <td>장애 유형별(증상/원인/해결) 구조화된 데이터 파싱</td>
                             </tr>
                             <tr>
-                                <td><code>work_doc</code></td>
-                                <td>업무 문서</td>
-                                <td>PDF, DOCX, HWPX 텍스트 추출 → 청킹</td>
+                                <td><code>biz_erp</code></td>
+                                <td>ERP/CRM 사용자 매뉴얼</td>
+                                <td>시스템 화면 캡처 및 기능 설명 텍스트 매핑</td>
+                            </tr>
+                            <tr>
+                                <td><code>safe_sop</code></td>
+                                <td>현장 안전 및 표준 작업 절차(SOP)</td>
+                                <td>작업 단계별 절차서의 순서 유지 및 체크리스트 추출</td>
                             </tr>
                         </tbody>
                     </table>
