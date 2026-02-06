@@ -135,81 +135,105 @@
     <section class="section" id="overview">
         <div class="container">
             <div class="section-header">
-                <span class="section-label">Project Overview</span>
-                <h2 class="section-title">프로젝트 개요</h2>
+                <span class="section-label">Why RAG?</span>
+                <h2 class="section-title">왜 RAG 시스템이 필요한가요?</h2>
                 <p class="section-description">
-                    회사 내부 문서나 매뉴얼을 AI 벡터 검색 + AI가 지능형 지식으로 답변해주는 시스템
+                    "문서는 쌓여가는데, 정작 필요한 정보는 찾기 어렵지 않으신가요?"<br>
+                    단순 검색을 넘어, AI가 문서를 '이해'하고 '답변'해주는 새로운 업무 경험을 제안합니다.
                 </p>
+            </div>
 
-                <div class="target-audience-box"
-                    style="margin-top: 2rem; background: rgba(6, 182, 212, 0.05); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 12px; padding: 1.5rem; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
-                    <h3
-                        style="font-size: 1.2rem; font-weight: 700; color: var(--color-text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="color: var(--color-primary);">💡</span>
-                        그래서 누가, 어디에 쓰면 좋은가요?
-                    </h3>
-                    <ul
-                        style="display: flex; flex-direction: column; gap: 0.8rem; color: var(--color-text-secondary); padding: 0; list-style: none;">
-                        <li style="display: flex; align-items: flex-start; gap: 0.75rem; line-height: 1.6;">
-                            <span style="color: var(--color-success); margin-top: 2px; flex-shrink: 0;">✔</span>
-                            <span>대기업 / 금융 / 공공기관 등 기존 키워드 기반 시스템을 이미 오래 쓰고 있는 조직에서 최신 AI 기반 지능형 지식 검색 기능을 빠르게 추가</span>
-                        </li>
-                        <li style="display: flex; align-items: flex-start; gap: 0.75rem; line-height: 1.6;">
-                            <span style="color: var(--color-success); margin-top: 2px; flex-shrink: 0;">✔</span>
-                            <span>내부 지식 검색, FAQ 챗봇, 규정·법령 질의, 기술문서 검색, 고객센터 지식베이스 등에 활용</span>
-                        </li>
-                        <li style="display: flex; align-items: flex-start; gap: 0.75rem; line-height: 1.6;">
-                            <span style="color: var(--color-success); margin-top: 2px; flex-shrink: 0;">✔</span>
-                            <span>보안 때문에 외부 LLM에 회사 문서를 절대 보낼 수 없는 환경</span>
-                        </li>
-                    </ul>
+            <div class="target-audience-box" style="margin-top: 2rem; margin-bottom: 3rem;">
+                <div class="features-grid" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <!-- Traditional Search -->
+                    <div class="card"
+                        style="border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
+                        <h3 class="card-title" style="color: #ef4444; margin-bottom: 1rem;">❌ 기존 키워드 검색의 한계</h3>
+                        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                            <li style="display: flex; gap: 10px;">
+                                <span>😓</span>
+                                <div>
+                                    <strong>정확한 단어를 모르면 검색 불가</strong><br>
+                                    <span style="font-size: 0.9em; opacity: 0.8;">"그.. 작년에 했던 프로젝트 이름이 뭐지?" (검색
+                                        실패)</span>
+                                </div>
+                            </li>
+                            <li style="display: flex; gap: 10px;">
+                                <span>📄</span>
+                                <div>
+                                    <strong>수십 개의 문서 파일을 일일이 열람</strong><br>
+                                    <span style="font-size: 0.9em; opacity: 0.8;">검색된 20개 첨부파일을 하나씩 열어서 내용 확인</span>
+                                </div>
+                            </li>
+                            <li style="display: flex; gap: 10px;">
+                                <span>🧩</span>
+                                <div>
+                                    <strong>정보의 파편화</strong><br>
+                                    <span style="font-size: 0.9em; opacity: 0.8;">규정과 지침이 여러 문서에 흩어져 있어 종합적 판단
+                                        불가능</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- RAG Search -->
+                    <div class="card"
+                        style="border: 1px solid rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05);">
+                        <h3 class="card-title" style="color: #10b981; margin-bottom: 1rem;">⭕ RAG 시스템의 해결책</h3>
+                        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                            <li style="display: flex; gap: 10px;">
+                                <span>🗣️</span>
+                                <div>
+                                    <strong>사람에게 묻듯이 자연어로 질문</strong><br>
+                                    <span style="font-size: 0.9em; opacity: 0.8;">"작년 금융 프로젝트 이슈 사항 요약해줘" (의도 파악
+                                        성공)</span>
+                                </div>
+                            </li>
+                            <li style="display: flex; gap: 10px;">
+                                <span>💡</span>
+                                <div>
+                                    <strong>핵심 내용만 즉도 요약 답변</strong><br>
+                                    <span style="font-size: 0.9em; opacity: 0.8;">문서를 열 필요 없이 AI가 내용을 읽고 3줄로 요약</span>
+                                </div>
+                            </li>
+                            <li style="display: flex; gap: 10px;">
+                                <span>🔗</span>
+                                <div>
+                                    <strong>근거 문서 자동 제시</strong><br>
+                                    <span style="font-size: 0.9em; opacity: 0.8;">대답의 근거가 되는 페이지를 바로 링크로 제공하여 신뢰도
+                                        확보</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
             <div class="architecture-wrapper">
-                <div class="architecture-info">
-                    <div class="info-card">
-                        <div class="info-icon blue">🎯</div>
-                        <div class="info-content">
-                            <h4>핵심 목표</h4>
-                            <p>문서 임베딩 + LLM 추론을 결합해 도메인 지식 기반의 정확한 답변을 제공합니다.</p>
+                <div class="architecture-info"
+                    style="width: 100%; text-align: center; max-width: 800px; margin: 0 auto;">
+                    <h3 class="section-title" style="font-size: 1.5rem; margin-bottom: 1.5rem;">어떤 조직에 필요한가요?</h3>
+                    <div class="features-grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div class="info-card" style="text-align: left;">
+                            <div class="info-icon blue">🏢</div>
+                            <div class="info-content">
+                                <h4>신규 입사자가 많은 조직</h4>
+                                <p>"회사 규정이 뭐예요?" 반복되는 질문에 자동 응답하여 온보딩 시간 50% 단축</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-icon purple">📚</div>
-                        <div class="info-content">
-                            <h4>통합 지식베이스</h4>
-                            <p>사내 문서와 외부 지식을 통합하고 관리자 UI에서 인제스트, 모니터링, 질의를 간편하게 수행합니다.</p>
+                        <div class="info-card" style="text-align: left;">
+                            <div class="info-icon purple">⚖️</div>
+                            <div class="info-content">
+                                <h4>규정이 복잡한 금융/공공</h4>
+                                <p>수천 페이지의 법령과 내규를 AI가 실시간으로 비교 분석하여 업무 리스크 감소</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-icon green">🔄</div>
-                        <div class="info-content">
-                            <h4>양방향 인제스트</h4>
-                            <p>UI와 CLI 모두에서 지식 업데이트가 가능하여 최신화 주기를 단축합니다.</p>
-                        </div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-icon orange">🔒</div>
-                        <div class="info-content">
-                            <h4>보안 환경 대응</h4>
-                            <p>온라인/오프라인 임베딩 모드, 로컬 LLM(Ollama)으로 네트워크 제한 환경(인터넷이 차단된 사내망)에서도 운영 가능합니다.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="architecture-diagram">
-                    <div class="layer"
-                        style="border-color: var(--color-success); background: rgba(16, 185, 129, 0.05);">
-                        <div class="layer-title">
-                            <span>✅</span> 주요 기능
-                        </div>
-                        <div class="layer-content" style="flex-direction: column; gap: 12px;">
-                            <span class="layer-item" style="width: 100%;">📖 문서 기반 한국어 질의응답</span>
-                            <span class="layer-item" style="width: 100%;">📦 TOPIK, MDN, 한국어 사전, 업무 문서 지원</span>
-                            <span class="layer-item" style="width: 100%;">📄 PDF, DOCX, HWPX, 텍스트, 코드 처리</span>
-                            <span class="layer-item" style="width: 100%;">🔌 오프라인 LLM 및 임베딩 모드</span>
-                            <span class="layer-item" style="width: 100%;">📊 실시간 시스템 모니터링</span>
+                        <div class="info-card" style="text-align: left;">
+                            <div class="info-icon green">🛠️</div>
+                            <div class="info-content">
+                                <h4>기술 문서가 방대한 연구소</h4>
+                                <p>과거 실험 데이터와 트러블슈팅 이력을 즉시 찾아내어 중복 연구 방지</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -221,60 +245,60 @@
     <section class="section" id="benefits">
         <div class="container">
             <div class="section-header">
-                <span class="section-label">Expected Benefits</span>
-                <h2 class="section-title">기대 효과</h2>
+                <span class="section-label">User Value</span>
+                <h2 class="section-title">조직과 사용자에게 어떤 변화가 생기나요?</h2>
                 <p class="section-description">
-                    RAG 시스템 도입을 통해 얻을 수 있는 주요 이점
+                    단순한 기술 도입이 아닙니다. 일하는 방식을 혁신하고 조직의 지식 자산을 보호합니다.
                 </p>
             </div>
 
             <div class="features-grid">
                 <div class="card">
                     <div class="card-icon">⚡</div>
-                    <h3 class="card-title">지식 최신화 주기 단축</h3>
+                    <h3 class="card-title">업무 생산성 극대화</h3>
                     <p class="card-description">
-                        UI/CLI 양방향 인제스트로 새로운 문서와 지식을
-                        빠르게 시스템에 반영할 수 있습니다.
+                        자료 조사 시간을 90% 단축합니다. 하루 1시간 이상 걸리던 문서 탐색을
+                        단 1번의 질문으로 해결하고, 본질적인 업무에 집중할 수 있습니다.
                     </p>
                 </div>
                 <div class="card">
-                    <div class="card-icon">🛡️</div>
-                    <h3 class="card-title">운영 안정성 확보</h3>
+                    <div class="card-icon">🧠</div>
+                    <h3 class="card-title">지식 자산의 영구화</h3>
                     <p class="card-description">
-                        Redis 기반 작업 상태 관리와 헬스체크로
-                        시스템의 안정적인 운영을 보장합니다.
+                        퇴사자로 인해 유실되던 업무 노하우와 히스토리를 AI가 학습하여 보존합니다.
+                        어느 누가 질문해도 숙련된 전문가 수준의 답변을 얻을 수 있습니다.
                     </p>
                 </div>
                 <div class="card">
-                    <div class="card-icon">🔐</div>
-                    <h3 class="card-title">네트워크 제한 환경 대응</h3>
+                    <div class="card-icon">⚖️</div>
+                    <h3 class="card-title">정확한 의사결정 지원</h3>
                     <p class="card-description">
-                        오프라인 임베딩 모드와 로컬 LLM으로
-                        보안이 중요한 환경에서도 사용 가능합니다.
+                        "감이 아닌 데이터"에 기반한 의사결정을 돕습니다.
+                        수많은 보고서와 통계 자료에서 연관된 팩트만을 추출하여 판단 근거로 제시합니다.
                     </p>
                 </div>
                 <div class="card">
-                    <div class="card-icon">📦</div>
-                    <h3 class="card-title">통합 지식베이스 구축</h3>
+                    <div class="card-icon">🤝</div>
+                    <h3 class="card-title">부서 간 사일로 해소</h3>
                     <p class="card-description">
-                        다양한 문서 형식(PDF, DOCX, HWPX, 코드)을
-                        지원하여 모든 지식을 통합 관리합니다.
+                        다른 팀의 업무 문서를 찾기 위해 전화하고 메일을 보낼 필요가 없습니다.
+                        권한이 허용된 모든 부서의 지식을 통합 검색하여 협업 장벽을 허뭅니다.
                     </p>
                 </div>
                 <div class="card">
-                    <div class="card-icon">🎯</div>
-                    <h3 class="card-title">정확한 답변 제공</h3>
+                    <div class="card-icon">🔒</div>
+                    <h3 class="card-title">완벽한 보안 환경</h3>
                     <p class="card-description">
-                        재순위화(Reranking)를 통해 검색 결과의
-                        관련성을 높여 더 정확한 답변을 생성합니다.
+                        외부 유출 걱정 제로. 인터넷이 차단된 사내망에서도 100% 동작하며,
+                        회사의 기밀 문서는 그 어떤 외부 AI 서버로도 전송되지 않습니다.
                     </p>
                 </div>
                 <div class="card">
-                    <div class="card-icon">📈</div>
-                    <h3 class="card-title">실시간 모니터링</h3>
+                    <div class="card-icon">🎓</div>
+                    <h3 class="card-title">교육 및 온보딩 혁신</h3>
                     <p class="card-description">
-                        시스템 상태, 인제스트 진행률, 벡터 수를
-                        실시간으로 대시보드에서 확인할 수 있습니다.
+                        두꺼운 매뉴얼을 외울 필요가 없습니다.
+                        신입 사원은 AI 선임에게 언제든 편하게 물어보고 즉시 업무에 투입될 수 있습니다.
                     </p>
                 </div>
             </div>
