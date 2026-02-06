@@ -69,6 +69,7 @@
                         <a href="tobe_proposal.html#phase2" class="dropdown-link">Phase 2: 하이브리드 검색</a>
                         <a href="tobe_proposal.html#phase3" class="dropdown-link">Phase 3: LLM 성능 최적화</a>
                         <a href="tobe_proposal.html#phase4" class="dropdown-link">Phase 4: 데이터 파이프라인</a>
+                        <a href="tobe_proposal.html#phase4-5" class="dropdown-link">Phase 4.5: Text-to-SQL</a>
                         <a href="tobe_proposal.html#phase5" class="dropdown-link">Phase 5: 사용자 경험 개선</a>
                         <a href="tobe_proposal.html#phase6" class="dropdown-link">Phase 6: 엔터프라이즈 & 고급 RAG</a>
                         <a href="tobe_proposal.html#roadmap" class="dropdown-link">기술 스택 로드맵</a>
@@ -398,6 +399,76 @@
         </div>
     </section>
 
+    <!-- Phase 4.5: Text-to-SQL (New) -->
+    <section class="section" id="phase4-5">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Structured Data Analysis</span>
+                <h2 class="section-title">Phase 4.5: Text-to-SQL 구현 (정형 데이터 분석)</h2>
+                <p class="section-description">
+                    비정형 문서뿐만 아니라, DB에 저장된 정형 데이터(매출, 재고, 인사 등)를 자연어로 조회하고 시각화합니다.
+                </p>
+            </div>
+
+            <div class="architecture-wrapper">
+                <div class="architecture-info">
+                    <div class="tech-card">
+                        <div class="tech-icon" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">🤖</div>
+                        <div class="tech-content">
+                            <h4>SQL Generation LLM</h4>
+                            <p>CodeLlama, Phind 등 코드 생성에 특화된 LLM을 사용하여 정확한 SQL 쿼리를 생성합니다.</p>
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">🛡️</div>
+                        <div class="tech-content">
+                            <h4>Safe Execution Sandbox</h4>
+                            <p>생성된 SQL은 읽기 전용(Read-Only) 권한의 샌드박스 환경에서 실행하여 데이터 위변조를 원천 차단합니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="architecture-diagram">
+                    <div class="flow-container">
+                        <div class="flow-box">
+                            <div class="flow-box-icon">🗣️</div>
+                            <div class="flow-box-title">자연어 질의</div>
+                            <div class="flow-box-desc">"지난달 A팀 매출?"</div>
+                        </div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-box active">
+                            <div class="flow-box-icon">🧠</div>
+                            <div class="flow-box-title">Schema 분석</div>
+                            <div class="flow-box-desc">테이블/컬럼 매핑</div>
+                        </div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-box active">
+                            <div class="flow-box-icon">📝</div>
+                            <div class="flow-box-title">SQL 생성</div>
+                            <div class="flow-box-desc">Dialect 맞춤 변환</div>
+                        </div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-box">
+                            <div class="flow-box-icon">📊</div>
+                            <div class="flow-box-title">시각화</div>
+                            <div class="flow-box-desc">Chart.js / Table</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="checklist-box mt-2">
+                <h3 class="checklist-title">✅ 구현 체크리스트</h3>
+                <ul class="checklist-items">
+                    <li><span class="check-icon">⬜</span> DB 스키마 정보(DDL)를 LLM 프롬프트에 주입하는 컨텍스트 관리 모듈 개발</li>
+                    <li><span class="check-icon">⬜</span> Few-shot 프롬프팅으로 복잡한 조인(JOIN) 및 집계(GROUP BY) 쿼리 정확도 향상</li>
+                    <li><span class="check-icon">⬜</span> 실행 불가능한 SQL 생성 시 자동 수정(Self-Correction) 로직 구현</li>
+                    <li><span class="check-icon">⬜</span> python-sql 라이브러리 연동 및 차트 시각화 프론트엔드 컴포넌트 개발</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
     <!-- Phase 5 & 6 Combined -->
     <section class="section" id="phase6">
         <div class="container">
@@ -580,6 +651,13 @@
                             <td>b 개발자</td>
                             <td>멀티턴 UI → 스트리밍 UI → 피드백 수집</td>
                             <td>단기~중기</td>
+                        </tr>
+                        <tr>
+                            <td>Phase 4.5</td>
+                            <td>중간</td>
+                            <td>a 개발자</td>
+                            <td>Text-to-SQL → 차트 시각화 → 쿼리 샌드박스</td>
+                            <td>중기</td>
                         </tr>
                         <tr>
                             <td>Phase 5</td>
