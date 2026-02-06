@@ -301,8 +301,8 @@
                     <div class="info-card">
                         <div class="info-icon blue">🎯</div>
                         <div class="info-content">
-                            <h4>벡터 검색 + 재순위화</h4>
-                            <p>Chroma 벡터 검색 후 Cross-Encoder 기반 재순위화로 정확도 향상</p>
+                            <h4>하이브리드 검색 + 재순위화</h4>
+                            <p>벡터 검색과 키워드 검색을 결합(RRF)하고 Cross-Encoder로 최종 순위를 조정</p>
                         </div>
                     </div>
                     <div class="info-card">
@@ -389,7 +389,7 @@
                     <div class="card">
                         <div class="card-icon">📈</div>
                         <h3 class="card-title">상태 대시보드</h3>
-                        <p class="card-description">API, Chroma, Redis, Ollama, GPU 상태를 실시간으로 확인합니다.</p>
+                        <p class="card-description">API, PostgreSQL, Redis, Ollama, GPU 상태를 실시간으로 확인합니다.</p>
                     </div>
                     <div class="card">
                         <div class="card-icon">⚙️</div>
@@ -403,8 +403,8 @@
                     </div>
                     <div class="card">
                         <div class="card-icon">📊</div>
-                        <h3 class="card-title">Chroma 벡터 수</h3>
-                        <p class="card-description">SSE 스트림을 통해 벡터 수를 실시간으로 업데이트합니다.</p>
+                        <h3 class="card-title">문서/청크 수</h3>
+                        <p class="card-description">PostgreSQL에 저장된 전체 문서와 청크 수를 실시간으로 확인합니다.</p>
                     </div>
                 </div>
             </div>

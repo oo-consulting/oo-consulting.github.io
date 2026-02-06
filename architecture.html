@@ -280,7 +280,7 @@
                             <span>🏗️</span> 인프라 및 모델 계층
                         </div>
                         <div class="layer-content">
-                            <span class="layer-item highlight">ChromaDB (:8001)</span>
+                            <span class="layer-item highlight">PostgreSQL (:5432)</span>
                             <span class="layer-item highlight">Redis (:6379)</span>
                             <span class="layer-item highlight">Ollama (:11434)</span>
                         </div>
@@ -305,8 +305,8 @@
                     <div class="info-card">
                         <div class="info-icon green">🗄️</div>
                         <div class="info-content">
-                            <h4>ChromaDB</h4>
-                            <p>문서 임베딩을 저장하고 유사도 검색을 수행하는 벡터 스토어</p>
+                            <h4>PostgreSQL + pgvector</h4>
+                            <p>벡터, 키워드, 메타데이터를 통합 저장하고 하이브리드 검색을 수행하는 통합 DB</p>
                         </div>
                     </div>
                     <div class="info-card">
@@ -352,10 +352,10 @@
                     <p class="tech-desc">문서 인덱싱과 RAG 파이프라인 오케스트레이션 담당</p>
                 </div>
                 <div class="tech-card">
-                    <div class="tech-icon">🎨</div>
-                    <h3 class="tech-name">ChromaDB</h3>
-                    <p class="tech-version">Vector Store</p>
-                    <p class="tech-desc">영구 모드 벡터 저장소로 임베딩 저장 및 유사도 검색</p>
+                    <div class="tech-icon">🐘</div>
+                    <h3 class="tech-name">PostgreSQL</h3>
+                    <p class="tech-version">15+ with pgvector</p>
+                    <p class="tech-desc">벡터 저장소 및 관계형 데이터 관리를 위한 통합 데이터베이스</p>
                 </div>
                 <div class="tech-card">
                     <div class="tech-icon">🤖</div>
@@ -442,9 +442,9 @@
                 <span class="flow-arrow">→</span>
                 <div class="flow-step">
                     <div class="flow-box">
-                        <div class="flow-box-icon">💾</div>
-                        <div class="flow-box-title">ChromaDB</div>
-                        <div class="flow-box-desc">증분 업데이트</div>
+                        <div class="flow-box-icon">🐘</div>
+                        <div class="flow-box-title">PostgreSQL</div>
+                        <div class="flow-box-desc">Vector + Metadata</div>
                     </div>
                 </div>
             </div>
@@ -466,8 +466,8 @@
                 <div class="flow-step">
                     <div class="flow-box">
                         <div class="flow-box-icon">🔍</div>
-                        <div class="flow-box-title">벡터 검색</div>
-                        <div class="flow-box-desc">TOP 20</div>
+                        <div class="flow-box-title">하이브리드 검색</div>
+                        <div class="flow-box-desc">Vector + Keyword</div>
                     </div>
                 </div>
                 <span class="flow-arrow">→</span>
