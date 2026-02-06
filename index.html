@@ -496,59 +496,99 @@
     <section class="section" id="deployment">
         <div class="container">
             <div class="section-header">
-                <span class="section-label">Deployment Guide</span>
-                <h2 class="section-title">배포 및 운용</h2>
+                <span class="section-label">Deployment Architecture</span>
+                <h2 class="section-title">컨테이너 기반 운영 아키텍처</h2>
                 <p class="section-description">
-                    Docker Compose를 활용한 간편한 배포 및 운영 방법
+                    복잡한 설치 과정 없이 컨테이너 기술로 즉시 도입하고, 엔터프라이즈 환경으로 유연하게 확장합니다.
                 </p>
             </div>
 
-            <div class="steps-container">
-                <div class="step-item" data-step="1">
-                    <h4 class="step-title">환경 설정</h4>
-                    <p class="step-desc">
-                        <code>.env</code> 파일을 생성하고 필요한 환경 변수를 설정합니다.
-                        OLLAMA_MODEL, EMBED_MODEL 등의 핵심 설정을 구성합니다.
-                    </p>
-                </div>
-                <div class="step-item" data-step="2">
-                    <h4 class="step-title">이미지 빌드</h4>
-                    <div class="code-block" data-lang="bash">
-                        <code>docker compose build</code>
+            <div class="features-grid" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <!-- Docker Compose -->
+                <div class="card" style="border: 1px solid rgba(6, 182, 212, 0.3);">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                        <span style="font-size: 2.5rem;">🐳</span>
+                        <div>
+                            <h3 class="card-title" style="margin: 0;">Docker 컨테이너 도입</h3>
+                            <span style="font-size: 0.9em; color: var(--color-text-secondary);">신속한 초기 구축 및 간편한
+                                운영</span>
+                        </div>
                     </div>
+                    <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1rem;">
+                        <li style="display: flex; gap: 12px; align-items: start;">
+                            <span style="color: var(--color-success); margin-top: 4px;">✔</span>
+                            <div>
+                                <strong>All-in-One 패키지</strong>
+                                <p style="font-size: 0.9em; margin-top: 4px; opacity: 0.8;">DB, API, UI, AI 모델 등 시스템 구동에
+                                    필요한 모든 구성요소가 하나의 패키지로 제공되어 10분 내 설치 완료</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 12px; align-items: start;">
+                            <span style="color: var(--color-success); margin-top: 4px;">✔</span>
+                            <div>
+                                <strong>표준화된 운영 환경</strong>
+                                <p style="font-size: 0.9em; margin-top: 4px; opacity: 0.8;">개발, 테스트, 운영 서버 환경을 100% 동일하게
+                                    유지하여 환경 차이로 인한 장애 원천 차단</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 12px; align-items: start;">
+                            <span style="color: var(--color-success); margin-top: 4px;">✔</span>
+                            <div>
+                                <strong>독립된 실행 보장</strong>
+                                <p style="font-size: 0.9em; margin-top: 4px; opacity: 0.8;">기존 레거시 시스템과 라이브러리 충돌 없이
+                                    독립적으로 안전하게 실행</p>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
-                <div class="step-item" data-step="3">
-                    <h4 class="step-title">서비스 시작</h4>
-                    <div class="code-block" data-lang="bash">
-                        <code># 포그라운드 실행<br>docker compose up<br><br># 백그라운드 실행<br>docker compose up -d</code>
+
+                <!-- Kubernetes -->
+                <div class="card"
+                    style="border: 1px solid rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.05);">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                        <span style="font-size: 2.5rem;">☸️</span>
+                        <div>
+                            <h3 class="card-title" style="margin: 0;">Kubernetes 확장 (Enterprise)</h3>
+                            <span style="font-size: 0.9em; color: var(--color-text-secondary);">대규모 트래픽 대응 및 무중단
+                                운영</span>
+                        </div>
                     </div>
-                </div>
-                <div class="step-item" data-step="4">
-                    <h4 class="step-title">접속 확인</h4>
-                    <div class="code-block" data-lang="bash">
-                        <code># UI 대시보드<br>http://localhost:8080/<br><br># API 상태 확인<br>curl http://localhost:8000/health<br>curl http://localhost:8000/rag/status</code>
-                    </div>
+                    <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1rem;">
+                        <li style="display: flex; gap: 12px; align-items: start;">
+                            <span style="color: var(--color-accent-primary); margin-top: 4px;">★</span>
+                            <div>
+                                <strong>트래픽 자동 대응 (Auto-scaling)</strong>
+                                <p style="font-size: 0.9em; margin-top: 4px; opacity: 0.8;">사용자가 몰리는 시간대에는 자동으로 AI 추론
+                                    서버를 증설하여 안정적인 속도 유지</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 12px; align-items: start;">
+                            <span style="color: var(--color-accent-primary); margin-top: 4px;">★</span>
+                            <div>
+                                <strong>무중단 업데이트</strong>
+                                <p style="font-size: 0.9em; margin-top: 4px; opacity: 0.8;">서비스 중단 없이 새로운 문서 학습 데이터나 AI
+                                    모델 버전으로 실시간 교체 가능</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 12px; align-items: start;">
+                            <span style="color: var(--color-accent-primary); margin-top: 4px;">★</span>
+                            <div>
+                                <strong>고가용성 (High Availability)</strong>
+                                <p style="font-size: 0.9em; margin-top: 4px; opacity: 0.8;">특정 서버 장애 발생 시 자동으로 다른 서버로
+                                    요청을 우회하여 365일 24시간 서비스 보장</p>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
 
-            <!-- GPU Environment -->
-            <div style="margin-top: var(--spacing-3xl);">
-                <h3
-                    style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: 8px;">
-                    <span>🎮</span> GPU 환경 설정
-                </h3>
-                <div class="info-card">
-                    <div class="info-icon green">💻</div>
-                    <div class="info-content">
-                        <h4>요구사항</h4>
-                        <p>
-                            • CUDA 12.x 이상<br>
-                            • NVIDIA Container Toolkit 설치<br>
-                            • docker-compose.yml의 <code>deploy.resources</code> 섹션으로 GPU 전달<br>
-                            • GPU 미사용 시 해당 섹션 제거 또는 주석 처리
-                        </p>
-                    </div>
-                </div>
+            <div
+                style="margin-top: 3rem; text-align: center; background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 12px;">
+                <h4 style="margin-bottom: 1rem;">🚀 하이브리드 클라우드 & GPU 최적화 지원</h4>
+                <p style="max-width: 800px; margin: 0 auto; color: var(--color-text-secondary);">
+                    NVIDIA Container Toolkit을 통한 GPU 가속을 기본 지원하며,<br>
+                    AWS EKS, Azure AKS, Google GKE 및 사내 프라이빗 클라우드(OpenShift 등) 환경에 완벽하게 호환됩니다.
+                </p>
             </div>
         </div>
     </section>
