@@ -45,8 +45,7 @@
                         <a href="index.html#ingest-features" class="dropdown-link">인제스트 기능</a>
                         <a href="index.html#ui-features" class="dropdown-link">운영 화면 (UI)</a>
                         <a href="index.html#deployment" class="dropdown-link">배포 및 운용</a>
-                        <a href="index.html#config" class="dropdown-link">환경 변수 설정</a>
-                        <a href="index.html#extension" class="dropdown-link">확장 포인트</a>
+                        <a href="index.html#deployment" class="dropdown-link">배포 및 운용</a>
                         <a href="index.html#operation" class="dropdown-link">운영 프로세스</a>
                         <a href="index.html#quick-start" class="dropdown-link">빠른 PoC 실행</a>
                     </div>
@@ -359,7 +358,7 @@
                 <h3
                     style="color: var(--color-text-primary); margin-bottom: var(--spacing-xl); display: flex; align-items: center; gap: 8px;">
                     <span
-                        style="background: var(--color-accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🔍</span>
+                        style="background: var(--color-accent-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">🔍</span>
                     질의 기능
                 </h3>
                 <div class="features-grid">
@@ -415,7 +414,7 @@
                 <h3
                     style="color: var(--color-text-primary); margin-bottom: var(--spacing-xl); display: flex; align-items: center; gap: 8px;">
                     <span
-                        style="background: var(--color-accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📥</span>
+                        style="background: var(--color-accent-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">📥</span>
                     인제스트 기능
                 </h3>
                 <div class="table-container">
@@ -468,7 +467,7 @@
                 <h3
                     style="color: var(--color-text-primary); margin-bottom: var(--spacing-xl); display: flex; align-items: center; gap: 8px;">
                     <span
-                        style="background: var(--color-accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📊</span>
+                        style="background: var(--color-accent-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">📊</span>
                     운영 화면 (UI)
                 </h3>
                 <div class="features-grid">
@@ -620,187 +619,7 @@
         </div>
     </section>
 
-    <!-- Configuration Section -->
-    <section class="section" id="config">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-label">Configuration</span>
-                <h2 class="section-title">환경 변수 설정</h2>
-                <p class="section-description">
-                    시스템 동작을 제어하는 주요 환경 변수
-                </p>
-            </div>
 
-            <!-- LLM & Embedding -->
-            <div style="margin-bottom: var(--spacing-2xl);">
-                <h3 style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg);">LLM 및 임베딩 설정</h3>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>변수</th>
-                                <th>설명</th>
-                                <th>기본값</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>OLLAMA_HOST</code></td>
-                                <td>Ollama 서버 주소</td>
-                                <td><code>http://ollama:11434</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>OLLAMA_MODEL</code></td>
-                                <td>사용할 LLM 모델</td>
-                                <td><code>qwen2.5:3b-instruct-q4_K_M</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>OLLAMA_NUM_CTX</code></td>
-                                <td>LLM 컨텍스트 크기</td>
-                                <td><code>4096</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>OLLAMA_REQUEST_TIMEOUT</code></td>
-                                <td>요청 타임아웃(초)</td>
-                                <td><code>240</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>EMBED_MODEL</code></td>
-                                <td>SentenceTransformer 모델</td>
-                                <td><code>intfloat/multilingual-e5-base</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>EMBED_MODEL_ALLOW_DOWNLOADS</code></td>
-                                <td>모델 다운로드 허용</td>
-                                <td><code>0</code></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Search Settings -->
-            <div style="margin-bottom: var(--spacing-2xl);">
-                <h3 style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg);">검색 설정</h3>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>변수</th>
-                                <th>설명</th>
-                                <th>기본값</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>TOP_K</code></td>
-                                <td>최종 반환 문서 수</td>
-                                <td><code>5</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>MIN_RELEVANCE_SCORE</code></td>
-                                <td>최소 유사도 스코어</td>
-                                <td><code>0.75</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>RERANKER_MODEL</code></td>
-                                <td>재순위화 모델</td>
-                                <td><code>cross-encoder/ms-marco-MiniLM-L-6-v2</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>RERANKER_TOP_K</code></td>
-                                <td>재순위화 전 후보 수</td>
-                                <td><code>20</code></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Ingest Settings -->
-            <div>
-                <h3 style="color: var(--color-text-primary); margin-bottom: var(--spacing-lg);">인제스트 설정</h3>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>변수</th>
-                                <th>설명</th>
-                                <th>기본값</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>INGEST_ALLOW_DOWNLOADS</code></td>
-                                <td>원격 덤프 다운로드 허용</td>
-                                <td><code>0</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>INGEST_BATCH_SIZE</code></td>
-                                <td>Chroma 업서트 배치 크기</td>
-                                <td><code>4</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>TOPIK_VOCAB_ENABLED</code></td>
-                                <td>TOPIK 어휘 파이프라인 활성화</td>
-                                <td><code>1</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>MDN_ENABLED</code></td>
-                                <td>MDN 파이프라인 활성화</td>
-                                <td><code>1</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>KOREAN_DICT_ENABLED</code></td>
-                                <td>한국어 사전 파이프라인 활성화</td>
-                                <td><code>1</code></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Extension Section -->
-    <section class="section" id="extension">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-label">Extensibility</span>
-                <h2 class="section-title">확장 포인트</h2>
-                <p class="section-description">
-                    새로운 소스 추가 및 시스템 확장 방법
-                </p>
-            </div>
-
-            <div class="steps-container">
-                <div class="step-item" data-step="1">
-                    <h4 class="step-title">모듈 작성</h4>
-                    <p class="step-desc">
-                        <code>app/</code> 디렉토리 아래에 <code>{source}_ingest.py</code> 모듈을 작성합니다.
-                    </p>
-                </div>
-                <div class="step-item" data-step="2">
-                    <h4 class="step-title">함수 구현</h4>
-                    <p class="step-desc">
-                        <code>ensure_{source}_corpus()</code> 함수를 구현하여 데이터 수집 및 전처리 로직을 작성합니다.
-                    </p>
-                </div>
-                <div class="step-item" data-step="3">
-                    <h4 class="step-title">백엔드 등록</h4>
-                    <p class="step-desc">
-                        <code>app/ingest.py</code>에 새로운 소스 선택지를 추가합니다.
-                    </p>
-                </div>
-                <div class="step-item" data-step="4">
-                    <h4 class="step-title">UI 반영</h4>
-                    <p class="step-desc">
-                        <code>frontend/app.js</code>의 소스 목록에 새로운 소스를 추가하면 UI에 자동으로 반영됩니다.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Operation Process Section -->
     <section class="section" id="operation">
@@ -819,28 +638,41 @@
                     <h3 class="card-title">정기 인제스트</h3>
                     <p class="card-description">
                         스케줄러 또는 CLI를 통해 주기적으로 지식베이스를 갱신합니다.
-                        <code>python -m app.ingest --source work_doc</code>
                     </p>
                 </div>
                 <div class="card">
                     <div class="card-icon">📊</div>
                     <h3 class="card-title">헬스 모니터링</h3>
                     <p class="card-description">
-                        UI 대시보드에서 API, Chroma, Redis, Ollama의 상태를 실시간으로 확인합니다.
+                        UI 대시보드에서 API, 데이터베이스, 모델 서버의 상태를 실시간으로 확인합니다.
                     </p>
                 </div>
                 <div class="card">
                     <div class="card-icon">💡</div>
-                    <h3 class="card-title">사용자 피드백</h3>
+                    <h3 class="card-title">사용자 피드백 반영</h3>
                     <p class="card-description">
-                        질의 결과 품질 개선을 위해 시스템 프롬프트를 튜닝하고 최적화합니다.
+                        실제 질의 결과에 대한 사용자 만족도를 분석하여 답변 품질을 지속적으로 개선합니다.
                     </p>
                 </div>
                 <div class="card">
                     <div class="card-icon">🔄</div>
-                    <h3 class="card-title">모델 업그레이드</h3>
+                    <h3 class="card-title">모델 고도화</h3>
                     <p class="card-description">
-                        Ollama 모델 교체 및 임베딩 모델 업데이트를 통해 성능을 향상시킵니다.
+                        최신 오픈소스 모델 업데이트 및 임베딩 최적화를 통해 시스템 성능을 향상시킵니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔒</div>
+                    <h3 class="card-title">보안 및 권한 관리</h3>
+                    <p class="card-description">
+                        부서별/직급별 문서 접근 권한을 정기적으로 점검하고 보안 감사 로그를 관리합니다.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🚀</div>
+                    <h3 class="card-title">성능 최적화 튜닝</h3>
+                    <p class="card-description">
+                        검색 정확도와 응답 속도를 모니터링하여 RAG 파라미터 및 리소스를 최적화합니다.
                     </p>
                 </div>
             </div>
@@ -970,7 +802,6 @@
                 <div class="footer-nav">
                     <h4>리소스</h4>
                     <ul class="footer-links">
-                        <li><a href="#config">환경 변수</a></li>
                         <li><a href="#operation">운영 프로세스</a></li>
                         <li><a href="#contact">도입 문의</a></li>
                     </ul>
