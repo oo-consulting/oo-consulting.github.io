@@ -41,7 +41,7 @@
           <h2 class="text-3xl md:text-4xl font-bold tracking-tight">
             Retrieval-Augmented Generation <br> 운영관리 콘솔
           </h2>
-          <p class="mt-3 text-slate-300">FastAPI 백엔드와 Tomcat UI, Chroma, Redis, Ollama로 구성된 RAG 스택을 제어하고 상태를 확인합니다.</p>
+          <p class="mt-3 text-slate-300">FastAPI 백엔드와 Tomcat UI, PostgreSQL + pgvector, Redis, Ollama로 구성된 RAG 스택을 제어하고 상태를 확인합니다.</p>
           <div class="mt-6 flex flex-wrap gap-3">
             <a href="#quick" class="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 shadow-glow">빠른 실행</a>
             <a href="#stack" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20">서비스 스택</a>
@@ -129,10 +129,10 @@
       <div class="mt-4 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div class="rounded-2xl border border-white/10 bg-white/5 p-5"><div class="text-sm text-slate-400">서비스</div><div class="font-semibold">rag-ui</div><ul class="mt-2 text-sm list-disc list-inside text-slate-300"><li>Tomcat 10 정적 리소스</li><li>frontend/index.html, app.js, styles.css</li><li>포트 8080</li></ul></div>
         <div class="rounded-2xl border border-white/10 bg-white/5 p-5"><div class="text-sm text-slate-400">서비스</div><div class="font-semibold">rag-api</div><ul class="mt-2 text-sm list-disc list-inside text-slate-300"><li>FastAPI 백엔드</li><li>인제스트, 질의, 설정 API</li><li>포트 8000</li></ul></div>
-        <div class="rounded-2xl border border-white/10 bg-white/5 p-5"><div class="text-sm text-slate-400">서비스</div><div class="font-semibold">rag-chroma</div><ul class="mt-2 text-sm list-disc list-inside text-slate-300"><li>Chroma 벡터 스토어</li><li>영구 볼륨 /data/chroma</li><li>포트 8001(호스트)/8000(컨테이너)</li></ul></div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-5"><div class="text-sm text-slate-400">서비스</div><div class="font-semibold">rag-postgres</div><ul class="mt-2 text-sm list-disc list-inside text-slate-300"><li>PostgreSQL + pgvector 벡터 스토어</li><li>영구 볼륨 /data/postgres</li><li>포트 5432</li></ul></div>
         <div class="rounded-2xl border border-white/10 bg-white/5 p-5"><div class="text-sm text-slate-400">서비스</div><div class="font-semibold">rag-redis</div><ul class="mt-2 text-sm list-disc list-inside text-slate-300"><li>작업 큐 및 상태 캐시</li><li>포트 6379</li></ul></div>
         <div class="rounded-2xl border border-white/10 bg-white/5 p-5"><div class="text-sm text-slate-400">서비스</div><div class="font-semibold">rag-ollama</div><ul class="mt-2 text-sm list-disc list-inside text-slate-300"><li>LLM 호스팅(Ollama)</li><li>기본 모델 qwen2.5:3b-instruct-q4_K_M</li><li>포트 11434</li></ul></div>
-        <div class="rounded-2xl border border-white/10 bg-white/5 p-5"><div class="text-sm text-slate-400">볼륨</div><div class="font-semibold">데이터 보존</div><ul class="mt-2 text-sm list-disc list-inside text-slate-300"><li>./data/chroma → /data/chroma</li><li>./data/raw → /data/raw</li><li>./data/models → /data/models</li><li>./data/ollama → /root/.ollama</li><li>.env → /app/.env</li></ul></div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-5"><div class="text-sm text-slate-400">볼륨</div><div class="font-semibold">데이터 보존</div><ul class="mt-2 text-sm list-disc list-inside text-slate-300"><li>./data/postgres → /data/postgres</li><li>./data/raw → /data/raw</li><li>./data/models → /data/models</li><li>./data/ollama → /root/.ollama</li><li>.env → /app/.env</li></ul></div>
       </div>
 
       <details class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
@@ -191,7 +191,7 @@
     participant UI as Tomcat UI
     participant API as FastAPI (api.py)
     participant Ingest as ingest.py
-    participant Chroma DB
+    participant PGVector as "PostgreSQL + pgvector"
     participant Ollama
 
     User->>UI: 버튼 클릭 (질의 / 인제스트)
@@ -201,11 +201,11 @@
 
     API->>Ingest: (인제스트) subprocess + Redis status 갱신
     Ingest->>Sources: ensure_*_corpus()\n(Topik/MDN/Korean dict)
-    Ingest->>Chroma DB: upsert embeddings
+    Ingest->>PGVector: upsert embeddings
     Ingest-->>API: 실시간 로그 스트림
     API-->>UI: 작업 ID / 로그
 
-    API->>Chroma DB: (질의) similarity search
+    API->>PGVector: (질의) similarity search
     API->>Ollama: context + prompt
     Ollama-->>API: 답변/메타데이터
     API-->>UI: JSON 응답(답변, 출처, 토큰 사용량)
@@ -234,7 +234,7 @@
     async function safeFetch(input, init){try{const res=await fetch(input, init);const data=await res.json();return {ok:res.ok,data};}catch(e){return {ok:false,data:{error:e?.message||String(e)}}}}
 
     // Status
-    const statusBox=document.getElementById('statusBox');const statusRaw=document.getElementById('statusRaw');async function loadStatus(){const r=await safeFetch(url('/rag/status'));statusRaw.textContent=JSON.stringify(r.data,null,2);statusRaw.classList.toggle('hidden',!r.ok);statusBox.innerHTML='';const entries=[['API',r.ok?'ok':'err'],['Chroma',r.data?.chroma||'-'],['Redis',r.data?.redis||'-'],['Ollama',r.data?.ollama||'-'],['Docs',r.data?.documents??'-'],['LastIngest',r.data?.last_ingest||'-']];for(const [k,v] of entries){const good=String(v).toLowerCase().includes('ok')||String(v).toLowerCase()==='true';const chip=`<span class="px-2 py-0.5 rounded ${good?'bg-emerald-500/20 text-emerald-300':'bg-rose-500/20 text-rose-300'}">${v}</span>`;statusBox.insertAdjacentHTML('beforeend',`<div class="rounded-xl bg-black/30 border border-white/10 p-3"><div class="text-xs text-slate-400">${k}</div><div class="mt-1">${chip}</div></div>`)} }
+    const statusBox=document.getElementById('statusBox');const statusRaw=document.getElementById('statusRaw');async function loadStatus(){const r=await safeFetch(url('/rag/status'));statusRaw.textContent=JSON.stringify(r.data,null,2);statusRaw.classList.toggle('hidden',!r.ok);statusBox.innerHTML='';const entries=[['API',r.ok?'ok':'err'],['PostgreSQL',r.data?.postgres||'-'],['Redis',r.data?.redis||'-'],['Ollama',r.data?.ollama||'-'],['Docs',r.data?.documents??'-'],['LastIngest',r.data?.last_ingest||'-']];for(const [k,v] of entries){const good=String(v).toLowerCase().includes('ok')||String(v).toLowerCase()==='true';const chip=`<span class="px-2 py-0.5 rounded ${good?'bg-emerald-500/20 text-emerald-300':'bg-rose-500/20 text-rose-300'}">${v}</span>`;statusBox.insertAdjacentHTML('beforeend',`<div class="rounded-xl bg-black/30 border border-white/10 p-3"><div class="text-xs text-slate-400">${k}</div><div class="mt-1">${chip}</div></div>`)} }
     document.getElementById('refreshStatus').addEventListener('click',loadStatus);loadStatus();
 
     // Query
